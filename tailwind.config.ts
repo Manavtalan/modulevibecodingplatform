@@ -22,6 +22,7 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          glow: "hsl(var(--primary-glow))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -38,6 +39,7 @@ export default {
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
+          glow: "hsl(var(--accent-glow))",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -47,16 +49,18 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
+        glass: {
+          DEFAULT: "hsl(var(--glass-background))",
+          border: "hsl(var(--glass-border))",
+          shadow: "hsl(var(--glass-shadow))",
         },
+        // Brand colors
+        warm: "hsl(var(--warm-accent))",
+        purple: "hsl(var(--purple-accent))",
+        "dark-blue": "hsl(var(--dark-blue))",
+        "slate-blue": "hsl(var(--slate-blue))",
+        thistle: "hsl(var(--thistle))",
+        "brown-shadow": "hsl(var(--brown-shadow))",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -65,25 +69,51 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0", opacity: "0" },
+          to: { height: "var(--radix-accordion-content-height)", opacity: "1" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)", opacity: "1" },
+          to: { height: "0", opacity: "0" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0px) rotate(0deg)" },
+          "50%": { transform: "translateY(-10px) rotate(2deg)" },
+        },
+        "fade-in": {
+          from: { opacity: "0", transform: "translateY(10px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "fade-in-scale": {
+          from: { opacity: "0", transform: "scale(0.95)" },
+          to: { opacity: "1", transform: "scale(1)" },
+        },
+        glow: {
+          "0%, 100%": { boxShadow: "0 0 20px hsl(var(--primary-glow))" },
+          "50%": { boxShadow: "0 0 40px hsl(var(--primary-glow)), 0 0 60px hsl(var(--primary-glow))" },
+        },
+        "warm-glow": {
+          "0%, 100%": { boxShadow: "0 0 20px hsl(var(--accent-glow))" },
+          "50%": { boxShadow: "0 0 40px hsl(var(--accent-glow)), 0 0 60px hsl(var(--accent-glow))" },
         },
       },
       animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
+        "accordion-down": "accordion-down 0.3s ease-out",
+        "accordion-up": "accordion-up 0.3s ease-out",
+        float: "float 3s ease-in-out infinite",
+        "fade-in": "fade-in 0.3s ease-out",
+        "fade-in-scale": "fade-in-scale 0.3s ease-out",
+        glow: "glow 2s ease-in-out infinite",
+        "warm-glow": "warm-glow 2s ease-in-out infinite",
+      },
+      backgroundImage: {
+        "gradient-glass": "var(--gradient-glass)",
+        "gradient-primary": "var(--gradient-primary)",
+        "gradient-warm": "var(--gradient-warm)",
+        "gradient-backdrop": "var(--gradient-backdrop)",
+      },
+      backdropFilter: {
+        "glass": "var(--glass-blur)",
       },
     },
   },
