@@ -1,19 +1,31 @@
-import { FC, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { FC, useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Logo from '@/components/Logo';
-import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
-const Signup: FC = () => {
+const Auth: FC = () => {
+  const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
     password: '',
     confirmPassword: ''
   });
+
+  const { signUp, signIn, user } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -22,10 +34,32 @@ const Signup: FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle signup logic here
-    console.log('Signup form submitted:', formData);
+    setLoading(true);
+
+    try {
+      if (isLogin) {
+        const { error } = await signIn(formData.email, formData.password);
+        if (!error) {
+          navigate('/');
+        }
+      } else {
+        if (formData.password !== formData.confirmPassword) {
+          alert('Passwords do not match');
+          return;
+        }
+        await signUp(formData.email, formData.password);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleMode = () => {
+    setIsLogin(!isLogin);
+    setFormData({ email: '', password: '', confirmPassword: '' });
+    setShowPassword(false);
   };
 
   return (
@@ -37,35 +71,19 @@ const Signup: FC = () => {
             <Logo size="xl" />
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            Join <span className="bg-gradient-primary bg-clip-text text-transparent">Module</span>
+            {isLogin ? 'Welcome Back' : 'Join'} <span className="bg-gradient-primary bg-clip-text text-transparent">Module</span>
           </h1>
           <p className="text-muted-foreground">
-            Start your coding journey with AI assistance
+            {isLogin 
+              ? 'Sign in to continue your coding journey'
+              : 'Start your coding journey with AI assistance'
+            }
           </p>
         </div>
 
-        {/* Signup Form */}
+        {/* Auth Form */}
         <form onSubmit={handleSubmit} className="glass-card p-8 space-y-6">
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="name" className="text-foreground font-medium">
-                Full Name
-              </Label>
-              <div className="relative mt-2">
-                <User className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className="chat-input pl-10 border-0 text-foreground"
-                  placeholder="Enter your full name"
-                />
-              </div>
-            </div>
-
             <div>
               <Label htmlFor="email" className="text-foreground font-medium">
                 Email Address
@@ -99,7 +117,7 @@ const Signup: FC = () => {
                   value={formData.password}
                   onChange={handleInputChange}
                   className="chat-input pl-10 pr-10 border-0 text-foreground"
-                  placeholder="Create a password"
+                  placeholder={isLogin ? "Enter your password" : "Create a password"}
                 />
                 <button
                   type="button"
@@ -111,43 +129,54 @@ const Signup: FC = () => {
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="confirmPassword" className="text-foreground font-medium">
-                Confirm Password
-              </Label>
-              <div className="relative mt-2">
-                <Lock className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  className="chat-input pl-10 border-0 text-foreground"
-                  placeholder="Confirm your password"
-                />
+            {!isLogin && (
+              <div>
+                <Label htmlFor="confirmPassword" className="text-foreground font-medium">
+                  Confirm Password
+                </Label>
+                <div className="relative mt-2">
+                  <Lock className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    required
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    className="chat-input pl-10 border-0 text-foreground"
+                    placeholder="Confirm your password"
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           <Button 
             type="submit" 
             variant="hero" 
             className="w-full"
+            disabled={loading}
           >
-            Create Account
+            {loading ? (
+              "Loading..."
+            ) : (
+              <>
+                {isLogin ? <LogIn className="w-4 h-4 mr-2" /> : <UserPlus className="w-4 h-4 mr-2" />}
+                {isLogin ? 'Sign In' : 'Create Account'}
+              </>
+            )}
           </Button>
 
           <div className="text-center">
             <p className="text-muted-foreground">
-              Already have an account?{' '}
-              <Link 
-                to="/login" 
+              {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
+              <button
+                type="button"
+                onClick={toggleMode}
                 className="text-primary hover:text-primary/80 font-medium transition-colors"
               >
-                Sign in
-              </Link>
+                {isLogin ? 'Sign up' : 'Sign in'}
+              </button>
             </p>
           </div>
         </form>
@@ -165,4 +194,4 @@ const Signup: FC = () => {
   );
 };
 
-export default Signup;
+export default Auth;
