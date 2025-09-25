@@ -36,9 +36,9 @@ const Dashboard: FC = () => {
         {/* Hero Section */}
         <div className="mb-12 animate-fade-in">
           <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6 leading-tight">
-            Think It. Type It.{' '}
+            Build, Create, Learn.{' '}
             <span className="bg-gradient-primary bg-clip-text text-transparent">
-              Build It.
+              Love Your Code.
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto">
@@ -94,7 +94,7 @@ const Dashboard: FC = () => {
         </div>
 
         {/* Quick Start Options */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto animate-fade-in">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto animate-fade-in mb-24">
           <div className="glass-card p-6 text-left hover:scale-105 transition-all duration-300 cursor-pointer group">
             <Code2 className="w-10 h-10 text-primary mb-4 group-hover:animate-pulse" />
             <h3 className="text-xl font-semibold text-foreground mb-2">Generate Code</h3>
@@ -111,6 +111,108 @@ const Dashboard: FC = () => {
             <Palette className="w-10 h-10 text-warm mb-4 group-hover:animate-pulse" />
             <h3 className="text-xl font-semibold text-foreground mb-2">Design UI</h3>
             <p className="text-muted-foreground">Create beautiful, responsive interfaces with modern design patterns.</p>
+          </div>
+        </div>
+
+        {/* How It Works Section */}
+        <div className="max-w-6xl mx-auto mb-24">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+              How Module Does It
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              One prompt in, complete application out. Our AI understands your vision and builds it from scratch.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="text-center animate-fade-in">
+              <div className="glass-card p-8 mb-4 hover:scale-105 transition-all duration-300">
+                <Sparkles className="w-12 h-12 text-primary mx-auto mb-4" />
+                <div className="text-3xl font-bold text-foreground mb-2">1</div>
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Describe Your Idea</h3>
+              <p className="text-muted-foreground text-sm">Tell us what you want to build in natural language</p>
+            </div>
+
+            <div className="text-center animate-fade-in" style={{ animationDelay: '200ms' }}>
+              <div className="glass-card p-8 mb-4 hover:scale-105 transition-all duration-300">
+                <Bot className="w-12 h-12 text-accent mx-auto mb-4" />
+                <div className="text-3xl font-bold text-foreground mb-2">2</div>
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">AI Analyzes</h3>
+              <p className="text-muted-foreground text-sm">Our AI breaks down your requirements and plans the architecture</p>
+            </div>
+
+            <div className="text-center animate-fade-in" style={{ animationDelay: '400ms' }}>
+              <div className="glass-card p-8 mb-4 hover:scale-105 transition-all duration-300">
+                <Code2 className="w-12 h-12 text-warm mx-auto mb-4" />
+                <div className="text-3xl font-bold text-foreground mb-2">3</div>
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Code Generation</h3>
+              <p className="text-muted-foreground text-sm">Clean, production-ready code is generated automatically</p>
+            </div>
+
+            <div className="text-center animate-fade-in" style={{ animationDelay: '600ms' }}>
+              <div className="glass-card p-8 mb-4 hover:scale-105 transition-all duration-300">
+                <Rocket className="w-12 h-12 text-purple mx-auto mb-4" />
+                <div className="text-3xl font-bold text-foreground mb-2">4</div>
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Deploy & Launch</h3>
+              <p className="text-muted-foreground text-sm">Your app is ready to deploy and share with the world</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Features Section */}
+        <div className="max-w-6xl mx-auto mb-24">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+              Trusted by Developers Worldwide
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Join thousands of developers who are building faster and better with AI assistance.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8">
+              <div className="flex items-start gap-4">
+                <div className="glass-card p-3 shrink-0">
+                  <Zap className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">Lightning Fast Development</h3>
+                  <p className="text-muted-foreground">Build complete applications in minutes, not days. Our AI handles the heavy lifting.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="glass-card p-3 shrink-0">
+                  <Database className="w-6 h-6 text-accent" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">Full-Stack Ready</h3>
+                  <p className="text-muted-foreground">Frontend, backend, database, and authentication - everything you need in one place.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="glass-card p-3 shrink-0">
+                  <Terminal className="w-6 h-6 text-warm" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">Production Ready</h3>
+                  <p className="text-muted-foreground">Clean, maintainable code that follows best practices and industry standards.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="glass-card p-8 text-center">
+              <div className="text-6xl font-bold text-primary mb-4">100K+</div>
+              <div className="text-xl font-semibold text-foreground mb-2">Apps Created</div>
+              <div className="text-muted-foreground">Developers trust Module for their projects</div>
+            </div>
           </div>
         </div>
       </div>
