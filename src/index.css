@@ -8,54 +8,54 @@ All colors MUST be HSL format. Glassmorphism theme with warm accents and transpa
 
 @layer base {
   :root {
-    /* Base glassmorphism colors */
-    --background: 248 81% 26%; /* Dark blue base */
-    --background-gradient: linear-gradient(135deg, hsl(248, 81%, 26%) 0%, hsl(268, 30%, 47%) 50%, hsl(345, 30%, 32%) 100%);
-    --foreground: 0 0% 98%;
+    /* Base glassmorphism colors with warm background */
+    --background: 195 100% 96%; /* Light teal background */
+    --background-gradient: linear-gradient(135deg, hsl(195, 100%, 96%) 0%, hsl(25, 100%, 97%) 50%, hsl(16, 100%, 95%) 100%);
+    --foreground: 220 50% 15%;
     
     /* Glass card system */
-    --glass-background: 0 0% 100% / 0.1;
-    --glass-border: 0 0% 100% / 0.2;
-    --glass-shadow: 0 0% 0% / 0.1;
-    --glass-backdrop: blur(10px);
+    --glass-background: 195 80% 60% / 0.1;
+    --glass-border: 195 80% 60% / 0.2;
+    --glass-shadow: 220 50% 15% / 0.1;
+    --glass-backdrop: blur(12px);
     
-    /* Brand colors from specification */
-    --warm-accent: 355 41% 53%; /* #b7525e */
-    --purple-accent: 270 85% 79%; /* #c19cf6 */
-    --dark-blue: 248 81% 26%; /* #18087c */
-    --slate-blue: 268 30% 47%; /* #67539f */
-    --thistle: 270 23% 76%; /* #c1bcd0 */
-    --brown-shadow: 345 30% 32%; /* #683844 */
+    /* Brand colors - Orange/Coral with Complementary Teal */
+    --warm-accent: 25 95% 53%; /* Orange */
+    --purple-accent: 195 80% 60%; /* Teal complement */
+    --dark-blue: 195 100% 25%; /* Deep teal */
+    --slate-blue: 200 50% 45%; /* Medium teal */
+    --thistle: 195 100% 85%; /* Light teal */
+    --brown-shadow: 16 50% 30%; /* Deep coral shadow */
     
-    /* Semantic tokens using brand colors */
-    --primary: 270 85% 79%; /* Purple accent */
-    --primary-foreground: 248 81% 26%;
-    --primary-glow: 270 85% 79% / 0.3;
+    /* Semantic tokens using complementary palette */
+    --primary: 25 95% 53%; /* Orange primary */
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 33 100% 70% / 0.4;
     
-    --secondary: 268 30% 47%; /* Slate blue */
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 195 80% 60%; /* Teal secondary */
+    --secondary-foreground: 0 0% 100%;
     
-    --accent: 355 41% 53%; /* Warm accent */
-    --accent-foreground: 0 0% 98%;
-    --accent-glow: 355 41% 53% / 0.3;
+    --accent: 195 100% 70%; /* Bright teal accent */
+    --accent-foreground: 220 50% 15%;
+    --accent-glow: 195 100% 70% / 0.4;
     
-    --muted: 270 23% 76% / 0.3; /* Thistle with transparency */
-    --muted-foreground: 0 0% 90%;
+    --muted: 195 100% 85% / 0.8; /* Light teal with transparency */
+    --muted-foreground: 220 50% 25%;
     
     --destructive: 0 60% 50%;
     --destructive-foreground: 0 0% 98%;
     
-    --border: 0 0% 100% / 0.2;
-    --input: 0 0% 100% / 0.1;
-    --ring: 270 85% 79%;
+    --border: 195 80% 60% / 0.2;
+    --input: 195 100% 85% / 0.5;
+    --ring: 25 95% 53%;
     
     --radius: 16px;
     
-    /* Glassmorphism gradients */
-    --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.1) 0%, hsl(0 0% 100% / 0.05) 100%);
-    --gradient-primary: linear-gradient(135deg, hsl(270 85% 79%) 0%, hsl(355 41% 53%) 100%);
-    --gradient-warm: linear-gradient(135deg, hsl(355 41% 53%) 0%, hsl(270 85% 79%) 100%);
-    --gradient-backdrop: linear-gradient(135deg, hsl(248 81% 26% / 0.8) 0%, hsl(268 30% 47% / 0.6) 50%, hsl(345 30% 32% / 0.8) 100%);
+    /* Glassmorphism gradients with complementary colors */
+    --gradient-glass: linear-gradient(135deg, hsl(195 100% 85% / 0.1) 0%, hsl(195 100% 90% / 0.05) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(25 95% 53%) 0%, hsl(16 100% 66%) 100%);
+    --gradient-warm: linear-gradient(135deg, hsl(33 100% 70%) 0%, hsl(25 95% 53%) 100%);
+    --gradient-backdrop: linear-gradient(135deg, hsl(195 100% 85% / 0.3) 0%, hsl(25 100% 97% / 0.2) 50%, hsl(16 100% 95% / 0.3) 100%);
     
     /* Animations and transitions */
     --transition-glass: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
