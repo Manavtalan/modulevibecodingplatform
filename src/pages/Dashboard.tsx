@@ -54,17 +54,15 @@ const Dashboard: FC = () => {
           </div>
         </div>
 
-        {/* Chat Window - Main Focus */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Chat Window - Main Focus (Centered) */}
+        <div className="max-w-4xl mx-auto space-y-6">
           {/* Main Chat Area */}
-          <div className="lg:col-span-2">
-            <div className="h-[600px] animate-fade-in-scale">
-              <ChatInterface />
-            </div>
+          <div className="h-[500px] animate-fade-in-scale">
+            <ChatInterface />
           </div>
 
-          {/* History Sidebar */}
-          <div className="lg:col-span-1 animate-fade-in" style={{ animationDelay: '150ms' }}>
+          {/* History Section - Below Chat */}
+          <div className="animate-fade-in" style={{ animationDelay: '150ms' }}>
             <ConversationHistory 
               onSelectConversation={handleSelectConversation}
               currentConversationId={currentConversationId}
