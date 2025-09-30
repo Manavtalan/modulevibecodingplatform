@@ -22,7 +22,31 @@ const Dashboard: FC = () => {
   };
 
   return (
-    <div className="min-h-screen relative pb-8">
+    <div className="min-h-screen relative pb-8 overflow-hidden">
+      {/* Background Graphics */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
+        
+        {/* Floating Gradient Orbs */}
+        <div className="absolute top-20 left-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+        
+        {/* Code Snippets Decoration */}
+        <div className="absolute top-32 right-20 text-primary/10 font-mono text-xs animate-fade-in hidden lg:block">
+          <pre>{`const build = () => {
+  return <App />;
+}`}</pre>
+        </div>
+        
+        <div className="absolute bottom-40 left-20 text-primary/10 font-mono text-xs animate-fade-in hidden lg:block" style={{ animationDelay: '1s' }}>
+          <pre>{`function deploy() {
+  ship('production');
+}`}</pre>
+        </div>
+      </div>
+
       {/* Navigation */}
       <Navigation />
       
@@ -43,9 +67,9 @@ const Dashboard: FC = () => {
         </div>
 
         {/* Chat Window - Main Focus (Centered & Smaller) */}
-        <div className="max-w-3xl mx-auto space-y-8">
-          {/* Main Chat Area - Smaller */}
-          <div className="h-[400px] animate-fade-in-scale">
+        <div className="max-w-2xl mx-auto space-y-8">
+          {/* Main Chat Area - Even Smaller like Lovable */}
+          <div className="h-[320px] animate-fade-in-scale">
             <ChatInterface />
           </div>
 

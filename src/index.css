@@ -152,6 +152,14 @@ All colors MUST be HSL format. Glassmorphism theme with warm accents and transpa
     box-shadow: var(--animation-warm-glow);
   }
   
+  /* Background grid pattern */
+  .bg-grid-pattern {
+    background-image: 
+      linear-gradient(hsl(var(--primary) / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--primary) / 0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+  
   /* Logo animation */
   .logo-float {
     animation: float 3s ease-in-out infinite;
