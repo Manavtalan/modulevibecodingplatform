@@ -166,9 +166,9 @@ const ChatInterface: FC = () => {
         />
         <Button 
           onClick={handleSendMessage} 
-          variant="glass"
+          variant="default"
           size="icon"
-          className="shrink-0 hover:glow-primary"
+          className="shrink-0"
           disabled={!inputValue.trim() && attachedFiles.length === 0}
         >
           <Send className="w-4 h-4" />

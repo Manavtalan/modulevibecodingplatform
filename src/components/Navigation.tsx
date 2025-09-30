@@ -33,9 +33,9 @@ const Navigation: FC = () => {
           {location.pathname !== '/auth' && (
             <Link 
               to="/prompts"
-              className="text-sm font-medium text-foreground hover:text-primary transition-colors flex items-center gap-2"
+              className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors flex items-center gap-2 group"
             >
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
               <span className="hidden sm:inline">Prompts</span>
             </Link>
           )}
@@ -81,7 +81,7 @@ const Navigation: FC = () => {
                   variant="default" 
                   size="sm" 
                   asChild
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                  className="font-semibold"
                 >
                   <Link to="/auth">
                     Sign In
