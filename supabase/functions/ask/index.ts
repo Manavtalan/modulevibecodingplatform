@@ -135,20 +135,23 @@ serve(async (req) => {
       conversationId = newConv.id;
     }
 
-    // Rate limit check: count messages today
+    // Rate limit check: count requests today per user (not per conversation)
     const today = new Date().toISOString().split('T')[0];
-    const { data: todayMessages, error: countError } = await supabase
-      .from('messages')
-      .select('id', { count: 'exact', head: true })
-      .eq('conversation_id', conversationId)
+    const { count, error: countError } = await supabase
+      .from('requests_log')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
       .gte('created_at', `${today}T00:00:00Z`)
       .lte('created_at', `${today}T23:59:59Z`);
 
     if (countError) {
       console.error('Rate limit check failed:', countError);
-    } else if (todayMessages && (todayMessages as any).count >= 10) {
+    } else if (count !== null && count >= 10) {
       return new Response(
-        JSON.stringify({ code: 'RATE_LIMIT', message: 'Daily message limit reached (10/day)' }),
+        JSON.stringify({ 
+          code: 'RATE_LIMIT', 
+          message: 'Daily free credits exhausted. Upgrade to premium to continue.' 
+        }),
         { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -260,15 +263,19 @@ serve(async (req) => {
       .update({ last_active: new Date().toISOString() })
       .eq('id', conversationId);
 
-    // Log request
+    // Log request with estimated tokens
     const totalTokens = userTokenEst + assistantTokenEst;
-    await supabase
+    const { error: logError } = await supabase
       .from('requests_log')
       .insert({
         user_id: user.id,
         model: modelUsed,
         tokens_est: totalTokens
       });
+
+    if (logError) {
+      console.error('Failed to log request:', logError);
+    }
 
     // Return success response
     return new Response(

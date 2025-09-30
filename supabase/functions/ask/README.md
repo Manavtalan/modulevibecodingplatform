@@ -127,7 +127,7 @@ curl -X POST "https://ryhhskssaplqakovldlp.supabase.co/functions/v1/ask" \
 ```json
 {
   "code": "RATE_LIMIT",
-  "message": "Daily message limit reached (10/day)"
+  "message": "Daily free credits exhausted. Upgrade to premium to continue."
 }
 ```
 
@@ -193,9 +193,20 @@ Use `template_id` instead of `mode` to select these:
 
 ## Rate Limiting
 
-- **Limit**: 10 messages per conversation per day
-- **Scope**: Per-conversation (not per-user globally)
+- **Limit**: 10 messages per user per day
+- **Scope**: Per-user (all conversations combined)
 - **Reset**: Daily at 00:00 UTC
+- **Error**: Returns 429 with message "Daily free credits exhausted. Upgrade to premium to continue."
+
+## Cost Controls
+
+- **Max tokens per AI response**: 512
+- **Token estimation**: `Math.ceil((promptChars + replyChars)/4)`
+- **Logging**: Every request logged to `requests_log` table with:
+  - `user_id`: authenticated user
+  - `model`: AI model used (e.g., "openai:gpt-4o-mini")
+  - `tokens_est`: estimated token count
+  - `created_at`: timestamp
 
 ## Configuration
 
