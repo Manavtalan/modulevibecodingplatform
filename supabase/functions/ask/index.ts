@@ -51,25 +51,41 @@ serve(async (req) => {
     // Get authorization header
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      console.error('No authorization header found');
       return new Response(
-        JSON.stringify({ code: 'UNAUTHORIZED' }),
+        JSON.stringify({ code: 'UNAUTHORIZED', message: 'No authorization header' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    // Extract JWT token from "Bearer <token>"
+    const token = authHeader.replace('Bearer ', '');
+    
     // Create Supabase client with user's JWT for RLS
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: { headers: { Authorization: authHeader } }
     });
 
-    // Verify user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
+    // Verify user by passing the token directly
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError) {
+      console.error('Auth error:', authError);
       return new Response(
-        JSON.stringify({ code: 'UNAUTHORIZED' }),
+        JSON.stringify({ code: 'UNAUTHORIZED', message: 'Invalid token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+    
+    if (!user) {
+      console.error('No user found from token');
+      return new Response(
+        JSON.stringify({ code: 'UNAUTHORIZED', message: 'User not found' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('User authenticated:', user.id);
 
     // Parse request body
     const body: AskRequest = await req.json();
