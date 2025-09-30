@@ -214,6 +214,8 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          last_active: string | null
+          mode: string | null
           project_id: string | null
           status: Database["public"]["Enums"]["conversation_status"] | null
           title: string
@@ -224,6 +226,8 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
+          last_active?: string | null
+          mode?: string | null
           project_id?: string | null
           status?: Database["public"]["Enums"]["conversation_status"] | null
           title: string
@@ -234,6 +238,8 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
+          last_active?: string | null
+          mode?: string | null
           project_id?: string | null
           status?: Database["public"]["Enums"]["conversation_status"] | null
           title?: string
@@ -258,6 +264,41 @@ export type Database = {
           },
         ]
       }
+      feedback: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          id: string
+          message_id: string | null
+          rating: number | null
+          user_id: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          message_id?: string | null
+          rating?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          message_id?: string | null
+          rating?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -265,7 +306,9 @@ export type Database = {
           created_at: string | null
           id: string
           metadata: Json | null
+          model_used: string | null
           role: Database["public"]["Enums"]["message_role"]
+          token_est: number | null
         }
         Insert: {
           content: string
@@ -273,7 +316,9 @@ export type Database = {
           created_at?: string | null
           id?: string
           metadata?: Json | null
+          model_used?: string | null
           role: Database["public"]["Enums"]["message_role"]
+          token_est?: number | null
         }
         Update: {
           content?: string
@@ -281,7 +326,9 @@ export type Database = {
           created_at?: string | null
           id?: string
           metadata?: Json | null
+          model_used?: string | null
           role?: Database["public"]["Enums"]["message_role"]
+          token_est?: number | null
         }
         Relationships: [
           {
@@ -446,6 +493,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      requests_log: {
+        Row: {
+          created_at: string | null
+          id: number
+          model: string | null
+          tokens_est: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          model?: string | null
+          tokens_est?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          model?: string | null
+          tokens_est?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       user_settings: {
         Row: {
