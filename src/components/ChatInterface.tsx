@@ -1,7 +1,8 @@
-import { FC, useState } from 'react';
+import { FC, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Sparkles } from 'lucide-react';
+import { Send, Sparkles, Paperclip, X } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   id: string;
@@ -11,6 +12,8 @@ interface Message {
 }
 
 const ChatInterface: FC = () => {
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -20,18 +23,25 @@ const ChatInterface: FC = () => {
     }
   ]);
   const [inputValue, setInputValue] = useState('');
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
 
   const handleSendMessage = () => {
-    if (inputValue.trim()) {
+    if (inputValue.trim() || attachedFiles.length > 0) {
+      let messageText = inputValue;
+      if (attachedFiles.length > 0) {
+        messageText += `\n\n📎 Attached ${attachedFiles.length} file(s): ${attachedFiles.map(f => f.name).join(', ')}`;
+      }
+
       const newMessage: Message = {
         id: Date.now().toString(),
-        text: inputValue,
+        text: messageText,
         isUser: true,
         timestamp: new Date()
       };
       
       setMessages(prev => [...prev, newMessage]);
       setInputValue('');
+      setAttachedFiles([]);
       
       // Simulate assistant response
       setTimeout(() => {
@@ -47,9 +57,29 @@ const ChatInterface: FC = () => {
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
       handleSendMessage();
     }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      const validFiles = files.filter(file => file.size <= 10 * 1024 * 1024); // 10MB limit
+      if (validFiles.length < files.length) {
+        toast({
+          title: "File size limit",
+          description: "Some files were too large (max 10MB per file)",
+          variant: "destructive",
+        });
+      }
+      setAttachedFiles(prev => [...prev, ...validFiles]);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setAttachedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -86,12 +116,51 @@ const ChatInterface: FC = () => {
         ))}
       </div>
 
+      {/* File Attachments Preview */}
+      {attachedFiles.length > 0 && (
+        <div className="mb-3 flex flex-wrap gap-2">
+          {attachedFiles.map((file, index) => (
+            <div 
+              key={index}
+              className="flex items-center gap-2 bg-glass/80 px-3 py-2 rounded-lg border border-glass-border"
+            >
+              <Paperclip className="w-3 h-3 text-primary" />
+              <span className="text-xs text-foreground truncate max-w-[150px]">
+                {file.name}
+              </span>
+              <button
+                onClick={() => removeFile(index)}
+                className="hover:text-destructive transition-colors"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Chat Input */}
       <div className="flex gap-3">
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          onChange={handleFileSelect}
+          className="hidden"
+          accept="*/*"
+        />
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => fileInputRef.current?.click()}
+          className="shrink-0"
+        >
+          <Paperclip className="w-4 h-4" />
+        </Button>
         <Input
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyDown={handleKeyPress}
           placeholder="Ask Module to Generate code, Fix bugs..."
           className="chat-input flex-1 border-0 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50"
         />
@@ -100,7 +169,7 @@ const ChatInterface: FC = () => {
           variant="glass"
           size="icon"
           className="shrink-0 hover:glow-primary"
-          disabled={!inputValue.trim()}
+          disabled={!inputValue.trim() && attachedFiles.length === 0}
         >
           <Send className="w-4 h-4" />
         </Button>
