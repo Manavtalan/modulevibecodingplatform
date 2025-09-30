@@ -2,3 +2,6 @@ project_id = "ryhhskssaplqakovldlp"
 
 [functions.test-openai]
 verify_jwt = false
+
+[functions.ask]
+verify_jwt = true
