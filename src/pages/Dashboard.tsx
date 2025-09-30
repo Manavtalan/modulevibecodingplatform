@@ -70,7 +70,10 @@ const Dashboard: FC = () => {
         <div className="max-w-2xl mx-auto space-y-8">
           {/* Main Chat Area - Even Smaller like Lovable */}
           <div className="animate-fade-in-scale">
-            <ChatInterface />
+            <ChatInterface 
+              conversationId={currentConversationId}
+              onConversationCreated={setCurrentConversationId}
+            />
           </div>
 
           {/* Tech Stack Icons */}
