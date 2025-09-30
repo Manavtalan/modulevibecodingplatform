@@ -8,15 +8,15 @@ All colors MUST be HSL format. Glassmorphism theme with warm accents and transpa
 
 @layer base {
   :root {
-    /* Base glassmorphism colors with orange gradient background */
-    --background: 25 90% 65%; /* Peachy orange */
-    --background-gradient: linear-gradient(135deg, hsl(19, 82%, 57%) 0%, hsl(25, 90%, 75%) 50%, hsl(30, 95%, 85%) 100%);
-    --foreground: 0 0% 15%; /* Dark text */
+    /* Base glassmorphism colors with black gradient background */
+    --background: 0 0% 10%; /* Deep black */
+    --background-gradient: linear-gradient(135deg, hsl(0, 0%, 8%) 0%, hsl(0, 0%, 15%) 50%, hsl(0, 0%, 22%) 100%);
+    --foreground: 0 0% 95%; /* Light text for dark background */
     
     /* Glass card system */
-    --glass-background: 0 0% 100% / 0.15;
-    --glass-border: 0 0% 100% / 0.3;
-    --glass-shadow: 0 0% 0% / 0.1;
+    --glass-background: 0 0% 100% / 0.05;
+    --glass-border: 0 0% 100% / 0.15;
+    --glass-shadow: 0 0% 0% / 0.3;
     --glass-backdrop: blur(16px);
     
     /* Brand colors - #eb7037 as primary with peachy and dark accents */
@@ -34,28 +34,28 @@ All colors MUST be HSL format. Glassmorphism theme with warm accents and transpa
     --secondary: 25 90% 75%; /* Peachy accent */
     --secondary-foreground: 0 0% 15%;
     
-    --accent: 0 0% 20%; /* Dark accent */
-    --accent-foreground: 0 0% 100%;
+    --accent: 0 0% 90%; /* Light accent for dark bg */
+    --accent-foreground: 0 0% 10%;
     --accent-glow: 19 82% 57% / 0.5;
     
-    --muted: 0 0% 100% / 0.2; /* White with transparency */
-    --muted-foreground: 0 0% 25%;
+    --muted: 0 0% 100% / 0.08; /* White with transparency */
+    --muted-foreground: 0 0% 75%;
     
     --destructive: 0 60% 50%;
     --destructive-foreground: 0 0% 98%;
     
-    --border: 0 0% 100% / 0.3;
-    --input: 0 0% 100% / 0.25;
+    --border: 0 0% 100% / 0.15;
+    --input: 0 0% 100% / 0.1;
     --ring: 19 82% 57%;
     
     --radius: 16px;
     
-    /* Glassmorphism gradients with #eb7037 and peachy tones */
-    --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.2) 0%, hsl(0 0% 100% / 0.1) 100%);
+    /* Glassmorphism gradients with #eb7037 and dark tones */
+    --gradient-glass: linear-gradient(135deg, hsl(0 0% 100% / 0.08) 0%, hsl(0 0% 100% / 0.04) 100%);
     --gradient-primary: linear-gradient(135deg, hsl(19 82% 57%) 0%, hsl(25 90% 65%) 100%); /* #eb7037 based */
-    --gradient-warm: linear-gradient(135deg, hsl(25 90% 75%) 0%, hsl(30 95% 85%) 100%);
-    --gradient-backdrop: linear-gradient(135deg, hsl(19 82% 57% / 0.3) 0%, hsl(25 90% 75% / 0.2) 50%, hsl(30 95% 85% / 0.3) 100%);
-    --gradient-dark: linear-gradient(135deg, hsl(0 0% 20%) 0%, hsl(0 0% 35%) 100%);
+    --gradient-warm: linear-gradient(135deg, hsl(19 82% 57%) 0%, hsl(25 90% 65%) 100%);
+    --gradient-backdrop: linear-gradient(135deg, hsl(0 0% 5% / 0.5) 0%, hsl(0 0% 10% / 0.3) 50%, hsl(0 0% 15% / 0.5) 100%);
+    --gradient-dark: linear-gradient(135deg, hsl(0 0% 8%) 0%, hsl(0 0% 15%) 100%);
     
     /* Animations and transitions */
     --transition-glass: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -139,8 +139,8 @@ All colors MUST be HSL format. Glassmorphism theme with warm accents and transpa
   }
   
   .glass-card:hover {
-    background: linear-gradient(135deg, hsl(0 0% 100% / 0.25) 0%, hsl(0 0% 100% / 0.15) 100%);
-    box-shadow: 0 12px 40px hsl(var(--glass-shadow) / 0.15), 0 0 0 1px hsl(var(--border));
+    background: linear-gradient(135deg, hsl(0 0% 100% / 0.12) 0%, hsl(0 0% 100% / 0.06) 100%);
+    box-shadow: 0 12px 40px hsl(var(--glass-shadow) / 0.4), 0 0 0 1px hsl(var(--border));
     transform: translateY(-2px);
   }
   

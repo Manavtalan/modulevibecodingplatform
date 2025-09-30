@@ -37,20 +37,50 @@ const Dashboard: FC = () => {
             </span>
           </h1>
           
-          <p className="text-base md:text-lg text-foreground/80 max-w-2xl mx-auto">
+          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
             Discover India's most personalised vibe coding assistant—turn ideas into real websites, projects, and MVPs.
           </p>
         </div>
 
-        {/* Chat Window - Main Focus (Centered) */}
-        <div className="max-w-4xl mx-auto space-y-6">
-          {/* Main Chat Area */}
-          <div className="h-[500px] animate-fade-in-scale">
+        {/* Chat Window - Main Focus (Centered & Smaller) */}
+        <div className="max-w-3xl mx-auto space-y-8">
+          {/* Main Chat Area - Smaller */}
+          <div className="h-[400px] animate-fade-in-scale">
             <ChatInterface />
           </div>
 
-          {/* History Section - Below Chat */}
-          <div className="animate-fade-in" style={{ animationDelay: '150ms' }}>
+          {/* How Module Can Help You - Glass Section */}
+          <div className="glass-card p-8 animate-fade-in" style={{ animationDelay: '100ms' }}>
+            <h2 className="text-2xl font-bold text-foreground mb-6 text-center">
+              How <span className="bg-gradient-primary bg-clip-text text-transparent">Module</span> Can Help You
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center space-y-2">
+                <div className="w-12 h-12 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                  <Sparkles className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground">Quick Prototyping</h3>
+                <p className="text-sm text-muted-foreground">Turn ideas into working MVPs in minutes, not days</p>
+              </div>
+              <div className="text-center space-y-2">
+                <div className="w-12 h-12 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                  <Sparkles className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground">Learn by Building</h3>
+                <p className="text-sm text-muted-foreground">Understand code patterns as you create real projects</p>
+              </div>
+              <div className="text-center space-y-2">
+                <div className="w-12 h-12 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                  <Sparkles className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground">Ship Faster</h3>
+                <p className="text-sm text-muted-foreground">Deploy production-ready apps with confidence</p>
+              </div>
+            </div>
+          </div>
+
+          {/* History Section - Below */}
+          <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
             <ConversationHistory 
               onSelectConversation={handleSelectConversation}
               currentConversationId={currentConversationId}

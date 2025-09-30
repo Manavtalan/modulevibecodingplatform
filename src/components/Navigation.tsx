@@ -21,8 +21,8 @@ const Navigation: FC = () => {
       <div className="flex items-center justify-between max-w-7xl mx-auto px-4">
         {/* Left: Logo + Name */}
         <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-          <Logo size="sm" animated={false} />
-          <span className="text-lg font-bold text-foreground">
+          <Logo size="md" animated={true} />
+          <span className="text-xl font-bold text-foreground">
             Module
           </span>
         </Link>
