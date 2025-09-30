@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Logo from '@/components/Logo';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, Sparkles, LogOut, Settings } from 'lucide-react';
+import { User, Sparkles, LogOut, Settings, Github } from 'lucide-react';
 
 const Navigation: FC = () => {
   const location = useLocation();
@@ -27,8 +27,21 @@ const Navigation: FC = () => {
           </span>
         </Link>
 
-        {/* Right: Prompts + Login/Logout */}
+        {/* Right: GitHub + Prompts + Login/Logout */}
         <div className="flex items-center gap-4">
+          {/* GitHub Integration */}
+          {location.pathname !== '/auth' && (
+            <Button 
+              variant="ghost" 
+              size="sm"
+              className="hover:bg-white/10 flex items-center gap-2"
+              onClick={() => window.open('https://github.com', '_blank')}
+            >
+              <Github className="w-4 h-4" />
+              <span className="hidden sm:inline">GitHub</span>
+            </Button>
+          )}
+
           {/* Prompts Link */}
           {location.pathname !== '/auth' && (
             <Link 
