@@ -1,1 +1,4 @@
 project_id = "ryhhskssaplqakovldlp"
+
+[functions.test-openai]
+verify_jwt = false

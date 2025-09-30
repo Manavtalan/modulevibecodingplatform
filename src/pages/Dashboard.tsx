@@ -3,9 +3,44 @@ import Navigation from '@/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Rocket, Code2, Database, Palette, Zap, Bot, Terminal, Sparkles, Send } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const Dashboard: FC = () => {
   const [inputValue, setInputValue] = useState('');
+  const [isTestingOpenAI, setIsTestingOpenAI] = useState(false);
+  const { toast } = useToast();
+
+  const testOpenAI = async () => {
+    setIsTestingOpenAI(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('test-openai');
+      
+      if (error) throw error;
+      
+      if (data.success) {
+        toast({
+          title: "✅ OpenAI API Working!",
+          description: data.message,
+        });
+      } else {
+        toast({
+          title: "❌ OpenAI API Error",
+          description: data.error || "Unknown error",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('OpenAI test error:', error);
+      toast({
+        title: "❌ Test Failed",
+        description: error instanceof Error ? error.message : "Failed to test OpenAI API",
+        variant: "destructive",
+      });
+    } finally {
+      setIsTestingOpenAI(false);
+    }
+  };
 
   const frameworks = [
     { icon: Code2, name: 'React', color: 'text-blue-400' },
@@ -22,13 +57,25 @@ const Dashboard: FC = () => {
       <Navigation />
       
       {/* Notification Banner */}
-      <div className="flex justify-center mb-8">
+      <div className="flex flex-col items-center gap-4 mb-8">
         <div className="glass-card px-6 py-3 animate-fade-in">
           <div className="flex items-center gap-2 text-sm font-medium text-foreground">
             <Rocket className="w-4 h-4 text-primary" />
             MODULE POWERED BY AI CODING ASSISTANT
           </div>
         </div>
+        
+        {/* OpenAI Test Button */}
+        <Button 
+          onClick={testOpenAI} 
+          disabled={isTestingOpenAI}
+          variant="secondary"
+          size="sm"
+          className="gap-2"
+        >
+          <Bot className="w-4 h-4" />
+          {isTestingOpenAI ? 'Testing OpenAI...' : 'Test OpenAI API'}
+        </Button>
       </div>
 
       {/* Main Content */}
