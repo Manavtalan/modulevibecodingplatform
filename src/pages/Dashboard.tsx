@@ -9,6 +9,7 @@ const Dashboard: FC = () => {
   const location = useLocation();
   const [currentConversationId, setCurrentConversationId] = useState<string | undefined>();
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     // Check if user selected a template from Prompts page
@@ -19,6 +20,15 @@ const Dashboard: FC = () => {
 
   const handleSelectConversation = (conversationId: string) => {
     setCurrentConversationId(conversationId);
+  };
+
+  const handleNewConversation = () => {
+    setCurrentConversationId(undefined);
+  };
+
+  const handleConversationCreated = (conversationId: string) => {
+    setCurrentConversationId(conversationId);
+    setRefreshKey(prev => prev + 1);
   };
 
   return (
@@ -72,7 +82,7 @@ const Dashboard: FC = () => {
           <div className="animate-fade-in-scale">
             <ChatInterface 
               conversationId={currentConversationId}
-              onConversationCreated={setCurrentConversationId}
+              onConversationCreated={handleConversationCreated}
             />
           </div>
 
@@ -133,7 +143,9 @@ const Dashboard: FC = () => {
           {/* History Section - Below */}
           <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
             <ConversationHistory 
+              key={refreshKey}
               onSelectConversation={handleSelectConversation}
+              onNewConversation={handleNewConversation}
               currentConversationId={currentConversationId}
             />
           </div>

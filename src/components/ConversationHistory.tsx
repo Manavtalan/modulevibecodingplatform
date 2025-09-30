@@ -18,11 +18,15 @@ interface Conversation {
 
 interface ConversationHistoryProps {
   onSelectConversation: (conversationId: string) => void;
+  onNewConversation: () => void;
+  onConversationsUpdate?: () => void;
   currentConversationId?: string;
 }
 
 const ConversationHistory: FC<ConversationHistoryProps> = ({ 
-  onSelectConversation, 
+  onSelectConversation,
+  onNewConversation,
+  onConversationsUpdate,
   currentConversationId 
 }) => {
   const { user } = useAuth();
@@ -35,6 +39,12 @@ const ConversationHistory: FC<ConversationHistoryProps> = ({
       fetchConversations();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (onConversationsUpdate) {
+      onConversationsUpdate();
+    }
+  }, []);
 
   const fetchConversations = async () => {
     try {
@@ -91,11 +101,22 @@ const ConversationHistory: FC<ConversationHistoryProps> = ({
   return (
     <Card className="glass-card">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-foreground">
-          <Clock className="w-5 h-5 text-primary" />
-          Recent Conversations
-        </CardTitle>
-        <CardDescription>Your project history and saved chats</CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <Clock className="w-5 h-5 text-primary" />
+              Recent Conversations
+            </CardTitle>
+            <CardDescription>Your project history and saved chats</CardDescription>
+          </div>
+          <Button 
+            onClick={onNewConversation}
+            className="bg-gradient-primary hover:opacity-90 text-white"
+          >
+            <MessageSquare className="w-4 h-4 mr-2" />
+            New Chat
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         {loading ? (
