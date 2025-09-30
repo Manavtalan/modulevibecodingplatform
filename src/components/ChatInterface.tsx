@@ -1,7 +1,7 @@
 import { FC, useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, Copy, Check, RotateCcw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -31,6 +31,7 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentConversationId, setCurrentConversationId] = useState<string | undefined>(conversationId);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const { session, user } = useAuth();
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -84,9 +85,24 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+  const handleCopyCode = async (code: string, id: string) => {
+    await navigator.clipboard.writeText(code);
+    setCopiedCode(id);
+    setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  const handleRetry = async (messageIndex: number) => {
+    const userMessage = messages[messageIndex - 1];
+    if (!userMessage || userMessage.role !== 'user') return;
     
+    // Remove the assistant message we're retrying
+    setMessages(prev => prev.slice(0, messageIndex));
+    
+    // Re-send the user message
+    await sendMessage(userMessage.content);
+  };
+
+  const sendMessage = async (messageText: string) => {
     if (!session?.access_token || !user) {
       toast({
         title: "Authentication required",
@@ -97,17 +113,19 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
     }
 
     setIsLoading(true);
-    const messageText = inputValue;
-    setInputValue('');
 
-    // Optimistic UI: Add user message immediately
-    const optimisticUserMessage: Message = {
-      id: `temp-user-${Date.now()}`,
-      role: 'user',
-      content: messageText,
-      isOptimistic: true,
-      created_at: new Date().toISOString(),
-    };
+    // Optimistic UI: Add user message immediately (only if it's not already there)
+    const existingMessage = messages.find(m => m.content === messageText && m.role === 'user');
+    if (!existingMessage) {
+      const optimisticUserMessage: Message = {
+        id: `temp-user-${Date.now()}`,
+        role: 'user',
+        content: messageText,
+        isOptimistic: true,
+        created_at: new Date().toISOString(),
+      };
+      setMessages(prev => [...prev, optimisticUserMessage]);
+    }
 
     // Add loading indicator for assistant
     const optimisticAssistantMessage: Message = {
@@ -118,7 +136,7 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
       created_at: new Date().toISOString(),
     };
 
-    setMessages(prev => [...prev, optimisticUserMessage, optimisticAssistantMessage]);
+    setMessages(prev => [...prev, optimisticAssistantMessage]);
 
     try {
       const { data, error } = await supabase.functions.invoke('ask', {
@@ -143,18 +161,26 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
           description: "Your session has expired. Please sign in again.",
           variant: "destructive",
         });
-        // Remove optimistic messages
         setMessages(prev => prev.filter(m => !m.isOptimistic));
         return;
       }
 
       if (data.code === 'RATE_LIMIT') {
         toast({
-          title: "Rate limit exceeded",
-          description: data.message || "Daily free credits exhausted.",
+          title: "Too many requests",
+          description: "Please wait a moment and try again.",
           variant: "destructive",
         });
-        // Remove optimistic messages
+        setMessages(prev => prev.filter(m => !m.isOptimistic));
+        return;
+      }
+
+      if (data.code) {
+        toast({
+          title: "Error",
+          description: data.message || "Something went wrong. Please retry.",
+          variant: "destructive",
+        });
         setMessages(prev => prev.filter(m => !m.isOptimistic));
         return;
       }
@@ -175,11 +201,21 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
         description: "Failed to send message. Please try again.",
         variant: "destructive",
       });
-      // Remove optimistic messages
       setMessages(prev => prev.filter(m => !m.isOptimistic));
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSendMessage = async () => {
+    if (!inputValue.trim()) return;
+    const messageText = inputValue;
+    setInputValue('');
+    await sendMessage(messageText);
+  };
+
+  const handleQuickPrompt = (prompt: string) => {
+    setInputValue(prompt);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -229,15 +265,30 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
                               const { children, className, ...rest } = props;
                               const match = /language-(\w+)/.exec(className || '');
                               const isInline = !match;
+                              const codeId = `code-${message.id}-${Math.random()}`;
                               
                               return !isInline ? (
-                                <SyntaxHighlighter
-                                  style={oneDark as any}
-                                  language={match[1]}
-                                  PreTag="div"
-                                >
-                                  {String(children).replace(/\n$/, '')}
-                                </SyntaxHighlighter>
+                                <div className="relative group">
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="absolute right-2 top-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                    onClick={() => handleCopyCode(String(children), codeId)}
+                                  >
+                                    {copiedCode === codeId ? (
+                                      <Check className="h-4 w-4" />
+                                    ) : (
+                                      <Copy className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                  <SyntaxHighlighter
+                                    style={oneDark as any}
+                                    language={match[1]}
+                                    PreTag="div"
+                                  >
+                                    {String(children).replace(/\n$/, '')}
+                                  </SyntaxHighlighter>
+                                </div>
                               ) : (
                                 <code className={className} {...rest}>
                                   {children}
@@ -253,11 +304,26 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
                       <p className="whitespace-pre-wrap">{message.content}</p>
                     )}
                     
-                    {message.role === 'assistant' && message.model_used && (
-                      <Badge variant="outline" className="mt-2 text-xs">
-                        {message.model_used}
-                      </Badge>
-                    )}
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      {message.role === 'assistant' && message.model_used && (
+                        <Badge variant="outline" className="text-xs">
+                          {message.model_used}
+                        </Badge>
+                      )}
+                      
+                      {message.role === 'assistant' && !message.isOptimistic && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-xs hover:bg-muted"
+                          onClick={() => handleRetry(messages.indexOf(message))}
+                          disabled={isLoading}
+                        >
+                          <RotateCcw className="h-3 w-3 mr-1" />
+                          Retry
+                        </Button>
+                      )}
+                    </div>
                   </>
                 )}
               </div>
@@ -268,7 +334,35 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
       </ScrollArea>
 
       {/* Input Area */}
-      <div className="border-t p-4">
+      <div className="border-t p-4 space-y-3">
+        {/* Quick prompt chips */}
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs h-8 hover:bg-muted transition-colors"
+            onClick={() => handleQuickPrompt("Please help me fix the following error: ")}
+          >
+            Fix error
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs h-8 hover:bg-muted transition-colors"
+            onClick={() => handleQuickPrompt("Can you explain this concept: ")}
+          >
+            Explain
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs h-8 hover:bg-muted transition-colors"
+            onClick={() => handleQuickPrompt("Suggest a project idea related to: ")}
+          >
+            Project idea
+          </Button>
+        </div>
+
         <div className="flex gap-3">
           <Textarea
             value={inputValue}

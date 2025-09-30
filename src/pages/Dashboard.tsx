@@ -3,13 +3,16 @@ import { useLocation } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
 import ChatInterface from '@/components/ChatInterface';
 import ConversationHistory from '@/components/ConversationHistory';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Menu } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 const Dashboard: FC = () => {
   const location = useLocation();
   const [currentConversationId, setCurrentConversationId] = useState<string | undefined>();
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     // Check if user selected a template from Prompts page
@@ -20,10 +23,12 @@ const Dashboard: FC = () => {
 
   const handleSelectConversation = (conversationId: string) => {
     setCurrentConversationId(conversationId);
+    setSidebarOpen(false); // Close sidebar on mobile after selecting
   };
 
   const handleNewConversation = () => {
     setCurrentConversationId(undefined);
+    setSidebarOpen(false); // Close sidebar on mobile
   };
 
   const handleConversationCreated = (conversationId: string) => {
@@ -62,6 +67,27 @@ const Dashboard: FC = () => {
       
       {/* Main Content - Chat Centered */}
       <div className="max-w-7xl mx-auto px-4">
+        {/* Mobile Hamburger Menu */}
+        <div className="lg:hidden mb-4 flex justify-end">
+          <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" className="hover:bg-muted transition-colors">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[300px] sm:w-[400px] p-0">
+              <div className="p-4 h-full overflow-auto">
+                <ConversationHistory 
+                  key={refreshKey}
+                  onSelectConversation={handleSelectConversation}
+                  onNewConversation={handleNewConversation}
+                  currentConversationId={currentConversationId}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+
         {/* Hero Section - Minimal */}
         <div className="text-center mb-10 animate-fade-in">
           <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-3 leading-tight">
@@ -140,8 +166,8 @@ const Dashboard: FC = () => {
             </div>
           </div>
 
-          {/* History Section - Below */}
-          <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
+          {/* History Section - Below (Hidden on mobile, shown on desktop) */}
+          <div className="hidden lg:block animate-fade-in" style={{ animationDelay: '200ms' }}>
             <ConversationHistory 
               key={refreshKey}
               onSelectConversation={handleSelectConversation}
