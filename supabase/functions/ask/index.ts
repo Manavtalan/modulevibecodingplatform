@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { getSystemPrompt, listTemplates } from "./prompts.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,13 +12,8 @@ interface AskRequest {
   user_message: string;
   conversation_id?: string;
   mode?: 'explain' | 'debug' | 'project';
+  template_id?: string; // New: for selecting prompt templates
 }
-
-const SYSTEM_PROMPTS = {
-  explain: "You are a friendly coding tutor. Given user code, explain step-by-step in plain English, list assumptions and pitfalls, and provide a short runnable example when helpful. Be concise.",
-  debug: "You are an expert debugging assistant. Given code and an error, identify the likely root cause, propose minimal fixes, provide corrected snippet, and explain why it works. Include quick test steps.",
-  project: "You are a mentor suggesting student projects. Return 3 ideas with difficulty, stack, 3–5 steps, and a minimal MVP feature list."
-};
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -25,8 +21,14 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Health check
+  // Health check and template listing
   if (req.method === 'GET') {
+    const url = new URL(req.url);
+    if (url.pathname.endsWith('/templates')) {
+      return new Response(JSON.stringify({ templates: listTemplates() }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
     return new Response(JSON.stringify({ status: 'ok' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
@@ -71,7 +73,7 @@ serve(async (req) => {
 
     // Parse request body
     const body: AskRequest = await req.json();
-    let { user_message, conversation_id, mode = 'explain' } = body;
+    let { user_message, conversation_id, mode = 'explain', template_id } = body;
 
     if (!user_message || typeof user_message !== 'string') {
       return new Response(
@@ -164,8 +166,9 @@ serve(async (req) => {
     }
 
     // Build messages array for LLM
+    const systemPrompt = getSystemPrompt({ mode, template_id });
     const messages = [
-      { role: 'system', content: SYSTEM_PROMPTS[mode] }
+      { role: 'system', content: systemPrompt }
     ];
 
     if (contextMessages) {
