@@ -28,30 +28,18 @@ const Dashboard: FC = () => {
       
       {/* Main Content - Chat Centered */}
       <div className="max-w-7xl mx-auto px-4">
-        {/* Hero Section - Compact */}
-        <div className="text-center mb-8 animate-fade-in">
-          <div className="inline-flex items-center gap-2 glass-card px-4 py-2 mb-6">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-foreground">
-              AI-POWERED CODING PLATFORM FOR INDIAN DEVELOPERS
-            </span>
-          </div>
-          
-          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4 leading-tight">
-            Build, Create, Learn.{' '}
+        {/* Hero Section - Minimal */}
+        <div className="text-center mb-10 animate-fade-in">
+          <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-3 leading-tight">
+            Build. Learn. Create.{' '}
             <span className="bg-gradient-primary bg-clip-text text-transparent">
               Love Your Code.
             </span>
           </h1>
           
-          <div className="space-y-2 max-w-3xl mx-auto">
-            <p className="text-lg md:text-xl text-muted-foreground">
-              Build fully functional apps and websites through simple conversations.
-            </p>
-            <p className="text-base text-muted-foreground/80 hidden md:block">
-              From MVPs to landing pages—your ideas, our AI, limitless possibilities.
-            </p>
-          </div>
+          <p className="text-base md:text-lg text-foreground/80 max-w-2xl mx-auto">
+            Discover India's most personalised vibe coding assistant—turn ideas into real websites, projects, and MVPs.
+          </p>
         </div>
 
         {/* Chat Window - Main Focus (Centered) */}

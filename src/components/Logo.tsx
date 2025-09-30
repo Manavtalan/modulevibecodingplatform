@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import logo from '@/assets/logo.png';
+import logo from '@/assets/module-logo.png';
 
 interface LogoProps {
   className?: string;
@@ -27,7 +27,7 @@ const Logo: FC<LogoProps> = ({
     <div className={`${sizeClasses[size]} ${animationClasses} ${className}`}>
       <img 
         src={logo} 
-        alt="Coding Assistant Logo" 
+        alt="Module Logo" 
         className="w-full h-full object-contain filter drop-shadow-lg"
       />
     </div>

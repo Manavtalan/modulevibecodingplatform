@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Logo from '@/components/Logo';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, Bell, Sparkles, LogOut, Settings } from 'lucide-react';
+import { User, Sparkles, LogOut, Settings } from 'lucide-react';
 
 const Navigation: FC = () => {
   const location = useLocation();
@@ -17,90 +17,78 @@ const Navigation: FC = () => {
   };
 
   return (
-    <nav className="glass-card p-4 mb-8 sticky top-0 z-50 backdrop-blur-xl">
-      <div className="flex items-center justify-between max-w-7xl mx-auto">
-        {/* Left: Logo */}
-        <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <Logo size="md" />
-          <span className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+    <nav className="glass-card p-3 mb-6 sticky top-0 z-50 backdrop-blur-xl border-b border-border/50">
+      <div className="flex items-center justify-between max-w-7xl mx-auto px-4">
+        {/* Left: Logo + Name */}
+        <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
+          <Logo size="sm" animated={false} />
+          <span className="text-lg font-bold text-foreground">
             Module
           </span>
         </Link>
 
-        {/* Right: Actions */}
-        <div className="flex items-center gap-3">
-          {/* Prompts Button */}
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            asChild
-            className="gap-2"
-          >
-            <Link to="/prompts">
-              <Sparkles className="w-4 h-4 text-primary" />
+        {/* Right: Prompts + Login/Logout */}
+        <div className="flex items-center gap-4">
+          {/* Prompts Link */}
+          {location.pathname !== '/auth' && (
+            <Link 
+              to="/prompts"
+              className="text-sm font-medium text-foreground hover:text-primary transition-colors flex items-center gap-2"
+            >
+              <Sparkles className="w-4 h-4" />
               <span className="hidden sm:inline">Prompts</span>
             </Link>
-          </Button>
+          )}
 
-          {user ? (
+          {/* Auth */}
+          {location.pathname !== '/auth' && location.pathname !== '/login' && location.pathname !== '/signup' && (
             <>
-              {/* Notifications */}
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="relative"
-              >
-                <Bell className="w-4 h-4" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
-              </Button>
-
-              {/* Profile Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    className="rounded-full"
-                  >
-                    <User className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 bg-card/95 backdrop-blur-xl border-glass-border">
-                  <DropdownMenuItem asChild>
-                    <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="hover:bg-white/10"
+                    >
                       <User className="w-4 h-4" />
-                      Profile
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
-                      <Settings className="w-4 h-4" />
-                      Settings
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={handleSignOut}
-                    className="text-destructive focus:text-destructive cursor-pointer"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48 bg-card/95 backdrop-blur-xl border-border">
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
+                        <User className="w-4 h-4" />
+                        Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
+                        <Settings className="w-4 h-4" />
+                        Settings
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={handleSignOut}
+                      className="text-destructive focus:text-destructive cursor-pointer"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  asChild
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                >
+                  <Link to="/auth">
+                    Sign In
+                  </Link>
+                </Button>
+              )}
             </>
-          ) : (
-            location.pathname !== '/login' && location.pathname !== '/signup' && (
-              <Button 
-                variant="default" 
-                size="sm" 
-                asChild
-                className="bg-gradient-primary hover:scale-105 transition-transform"
-              >
-                <Link to="/login">
-                  Sign In
-                </Link>
-              </Button>
-            )
           )}
         </div>
       </div>
