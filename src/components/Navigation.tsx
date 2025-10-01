@@ -17,28 +17,28 @@ const Navigation: FC = () => {
   };
 
   return (
-    <nav className="glass-card p-3 mb-6 sticky top-0 z-50 backdrop-blur-xl border-b border-border/50">
-      <div className="flex items-center justify-between max-w-7xl mx-auto px-4">
+    <nav className="glass-card p-2 sm:p-3 mb-4 sm:mb-6 sticky top-0 z-50 backdrop-blur-xl border-b border-border/50">
+      <div className="flex items-center justify-between max-w-7xl mx-auto px-2 sm:px-4">
         {/* Left: Logo + Name */}
-        <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-          <Logo size="md" animated={true} />
-          <span className="text-xl font-bold text-foreground">
+        <Link to="/" className="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition-opacity">
+          <Logo size="sm" animated={true} />
+          <span className="text-lg sm:text-xl font-bold text-foreground">
             Module
           </span>
         </Link>
 
         {/* Right: GitHub + Prompts + Login/Logout */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           {/* GitHub Integration */}
           {location.pathname !== '/auth' && (
             <Button 
               variant="ghost" 
               size="sm"
-              className="hover:bg-white/10 flex items-center gap-2"
+              className="hover:bg-white/10 flex items-center gap-1 sm:gap-2 h-8 sm:h-9 px-2 sm:px-3"
               onClick={() => window.open('https://github.com', '_blank')}
             >
               <Github className="w-4 h-4" />
-              <span className="hidden sm:inline">GitHub</span>
+              <span className="hidden md:inline text-sm">GitHub</span>
             </Button>
           )}
 
@@ -46,10 +46,10 @@ const Navigation: FC = () => {
           {location.pathname !== '/auth' && (
             <Link 
               to="/prompts"
-              className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors flex items-center gap-2 group"
+              className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors flex items-center gap-1 sm:gap-2 group px-2 sm:px-0"
             >
               <Sparkles className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
-              <span className="hidden sm:inline">Prompts</span>
+              <span className="hidden md:inline">Prompts</span>
             </Link>
           )}
 
@@ -62,7 +62,7 @@ const Navigation: FC = () => {
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      className="hover:bg-white/10"
+                      className="hover:bg-white/10 h-8 sm:h-9 w-8 sm:w-9"
                     >
                       <User className="w-4 h-4" />
                     </Button>
@@ -94,7 +94,7 @@ const Navigation: FC = () => {
                   variant="default" 
                   size="sm" 
                   asChild
-                  className="font-semibold"
+                  className="font-semibold h-8 sm:h-9 text-xs sm:text-sm px-3 sm:px-4"
                 >
                   <Link to="/auth">
                     Sign In

@@ -211,4 +211,14 @@ All colors MUST be HSL format. Glassmorphism theme with warm accents and transpa
   .animate-fade-in-label {
     animation: fadeInLabel 160ms ease-out 40ms both;
   }
+  
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }

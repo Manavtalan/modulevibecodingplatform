@@ -228,61 +228,64 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
   return (
     <div className="glass-card flex flex-col max-w-[900px] mx-auto">
       {/* Input Area */}
-      <div className="p-4 space-y-3">
+      <div className="p-3 sm:p-4 space-y-3">
         {/* Input field with action buttons */}
-        <div className="flex gap-3 items-end">
-          {/* Left side action buttons */}
-          <div className="flex gap-2 mb-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-10 w-10 rounded-full hover:bg-muted"
-              onClick={() => toast({ title: "Coming soon", description: "File attachment feature will be available soon." })}
-            >
-              <Paperclip className="w-5 h-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-10 w-10 rounded-full hover:bg-muted"
-              onClick={() => toast({ title: "Coming soon", description: "GitHub integration will be available soon." })}
-            >
-              <Github className="w-5 h-5" />
-            </Button>
-          </div>
-
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-end">
           {/* Input field */}
           <Textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyPress}
             placeholder="What do you have in your mind to build today..."
-            className="chat-input flex-1 min-h-[56px] max-h-[120px] resize-none rounded-xl border-0 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50"
+            className="chat-input flex-1 min-h-[56px] max-h-[120px] resize-none rounded-xl border-0 text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50"
             rows={2}
           />
 
-          {/* Send button */}
-          <Button 
-            onClick={handleSendMessage} 
-            variant="default"
-            size="icon"
-            className="shrink-0 h-12 w-12 rounded-full mb-1"
-            disabled={!inputValue.trim() || isLoading}
-          >
-            {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <Send className="w-5 h-5" />
-            )}
-          </Button>
+          {/* Action buttons row (mobile) / column (desktop) */}
+          <div className="flex gap-2 justify-between sm:flex-col sm:justify-end">
+            {/* Left side action buttons */}
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 sm:h-10 sm:w-10 rounded-full hover:bg-muted"
+                onClick={() => toast({ title: "Coming soon", description: "File attachment feature will be available soon." })}
+              >
+                <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 sm:h-10 sm:w-10 rounded-full hover:bg-muted"
+                onClick={() => toast({ title: "Coming soon", description: "GitHub integration will be available soon." })}
+              >
+                <Github className="w-4 h-4 sm:w-5 sm:h-5" />
+              </Button>
+            </div>
+
+            {/* Send button */}
+            <Button 
+              onClick={handleSendMessage} 
+              variant="default"
+              size="icon"
+              className="shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full"
+              disabled={!inputValue.trim() || isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* Quick prompt chips - BELOW input */}
-        <div className="flex flex-wrap gap-2 overflow-x-auto pb-1">
+        <div className="flex flex-wrap gap-2 overflow-x-auto pb-1 scrollbar-hide">
           <Button
             variant="outline"
             size="sm"
-            className="text-xs h-8 rounded-full border-border/50 hover:bg-muted transition-colors whitespace-nowrap"
+            className="text-xs sm:text-sm h-7 sm:h-8 rounded-full border-border/50 hover:bg-muted transition-colors whitespace-nowrap px-3 sm:px-4"
             onClick={() => handleQuickPrompt("Please help me fix the following error: ")}
           >
             Fix error
@@ -290,7 +293,7 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
           <Button
             variant="outline"
             size="sm"
-            className="text-xs h-8 rounded-full border-border/50 hover:bg-muted transition-colors whitespace-nowrap"
+            className="text-xs sm:text-sm h-7 sm:h-8 rounded-full border-border/50 hover:bg-muted transition-colors whitespace-nowrap px-3 sm:px-4"
             onClick={() => handleQuickPrompt("Can you explain this concept: ")}
           >
             Explain
@@ -298,7 +301,7 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
           <Button
             variant="outline"
             size="sm"
-            className="text-xs h-8 rounded-full border-border/50 hover:bg-muted transition-colors whitespace-nowrap"
+            className="text-xs sm:text-sm h-7 sm:h-8 rounded-full border-border/50 hover:bg-muted transition-colors whitespace-nowrap px-3 sm:px-4"
             onClick={() => handleQuickPrompt("Suggest a project idea related to: ")}
           >
             Project idea
