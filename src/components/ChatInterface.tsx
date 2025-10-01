@@ -1,7 +1,7 @@
 import { FC, useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Loader2, Copy, Check, RotateCcw } from 'lucide-react';
+import { Send, Loader2, Copy, Check, RotateCcw, Paperclip, Github } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -226,7 +226,7 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
   };
 
   return (
-    <div className="glass-card flex flex-col h-[600px]">
+    <div className="glass-card flex flex-col h-[500px] max-w-[900px] mx-auto">
       {/* Messages Area */}
       <ScrollArea ref={scrollAreaRef} className="flex-1 p-6">
         <div className="space-y-4">
@@ -335,48 +335,44 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
 
       {/* Input Area */}
       <div className="border-t p-4 space-y-3">
-        {/* Quick prompt chips */}
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-xs h-8 hover:bg-muted transition-colors"
-            onClick={() => handleQuickPrompt("Please help me fix the following error: ")}
-          >
-            Fix error
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-xs h-8 hover:bg-muted transition-colors"
-            onClick={() => handleQuickPrompt("Can you explain this concept: ")}
-          >
-            Explain
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-xs h-8 hover:bg-muted transition-colors"
-            onClick={() => handleQuickPrompt("Suggest a project idea related to: ")}
-          >
-            Project idea
-          </Button>
-        </div>
+        {/* Input field with action buttons */}
+        <div className="flex gap-3 items-end">
+          {/* Left side action buttons */}
+          <div className="flex gap-2 mb-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 rounded-full hover:bg-muted"
+              onClick={() => toast({ title: "Coming soon", description: "File attachment feature will be available soon." })}
+            >
+              <Paperclip className="w-5 h-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 rounded-full hover:bg-muted"
+              onClick={() => toast({ title: "Coming soon", description: "GitHub integration will be available soon." })}
+            >
+              <Github className="w-5 h-5" />
+            </Button>
+          </div>
 
-        <div className="flex gap-3">
+          {/* Input field */}
           <Textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyPress}
             placeholder="Type your message... (Shift+Enter for new line)"
-            className="chat-input flex-1 min-h-[60px] max-h-[120px] resize-none border-0 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50"
+            className="chat-input flex-1 min-h-[56px] max-h-[120px] resize-none rounded-xl border-0 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50"
             rows={2}
           />
+
+          {/* Send button */}
           <Button 
             onClick={handleSendMessage} 
             variant="default"
             size="icon"
-            className="shrink-0 h-[60px] w-[60px]"
+            className="shrink-0 h-12 w-12 rounded-full mb-1"
             disabled={!inputValue.trim() || isLoading}
           >
             {isLoading ? (
@@ -384,6 +380,34 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
             ) : (
               <Send className="w-5 h-5" />
             )}
+          </Button>
+        </div>
+
+        {/* Quick prompt chips - BELOW input */}
+        <div className="flex flex-wrap gap-2 overflow-x-auto pb-1">
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs h-8 rounded-full border-border/50 hover:bg-muted transition-colors whitespace-nowrap"
+            onClick={() => handleQuickPrompt("Please help me fix the following error: ")}
+          >
+            Fix error
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs h-8 rounded-full border-border/50 hover:bg-muted transition-colors whitespace-nowrap"
+            onClick={() => handleQuickPrompt("Can you explain this concept: ")}
+          >
+            Explain
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs h-8 rounded-full border-border/50 hover:bg-muted transition-colors whitespace-nowrap"
+            onClick={() => handleQuickPrompt("Suggest a project idea related to: ")}
+          >
+            Project idea
           </Button>
         </div>
       </div>
