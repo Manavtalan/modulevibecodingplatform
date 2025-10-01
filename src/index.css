@@ -195,4 +195,20 @@ All colors MUST be HSL format. Glassmorphism theme with warm accents and transpa
     @apply glass-card;
     background: hsl(var(--muted));
   }
+  
+  /* Sidebar label fade animation */
+  @keyframes fadeInLabel {
+    0% {
+      opacity: 0;
+      transform: translateX(-6px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  .animate-fade-in-label {
+    animation: fadeInLabel 160ms ease-out 40ms both;
+  }
 }
