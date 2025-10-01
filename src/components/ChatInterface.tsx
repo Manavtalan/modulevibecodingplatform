@@ -335,56 +335,102 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
 
       {/* Input Area */}
       <div className="border-t p-4 space-y-3">
-        {/* Quick prompt chips */}
+        {/* Quick action chips */}
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
             size="sm"
-            className="text-xs h-8 hover:bg-muted transition-colors"
-            onClick={() => handleQuickPrompt("Please help me fix the following error: ")}
+            className="text-xs h-8 rounded-full hover:bg-primary/10 hover:border-primary transition-colors"
+            onClick={() => handleQuickPrompt("Build an MVP for ")}
           >
-            Fix error
+            MVP Build
           </Button>
           <Button
             variant="outline"
             size="sm"
-            className="text-xs h-8 hover:bg-muted transition-colors"
-            onClick={() => handleQuickPrompt("Can you explain this concept: ")}
+            className="text-xs h-8 rounded-full hover:bg-primary/10 hover:border-primary transition-colors"
+            onClick={() => handleQuickPrompt("Create a web app for ")}
           >
-            Explain
+            Web App
           </Button>
           <Button
             variant="outline"
             size="sm"
-            className="text-xs h-8 hover:bg-muted transition-colors"
-            onClick={() => handleQuickPrompt("Suggest a project idea related to: ")}
+            className="text-xs h-8 rounded-full hover:bg-primary/10 hover:border-primary transition-colors"
+            onClick={() => handleQuickPrompt("Build a portfolio website with ")}
           >
-            Project idea
+            Portfolio
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs h-8 rounded-full hover:bg-primary/10 hover:border-primary transition-colors"
+            onClick={() => handleQuickPrompt("Design a landing page for ")}
+          >
+            Landing Page
           </Button>
         </div>
 
-        <div className="flex gap-3">
-          <Textarea
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyPress}
-            placeholder="Type your message... (Shift+Enter for new line)"
-            className="chat-input flex-1 min-h-[60px] max-h-[120px] resize-none border-0 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50"
-            rows={2}
-          />
-          <Button 
-            onClick={handleSendMessage} 
-            variant="default"
-            size="icon"
-            className="shrink-0 h-[60px] w-[60px]"
-            disabled={!inputValue.trim() || isLoading}
-          >
-            {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <Send className="w-5 h-5" />
-            )}
-          </Button>
+        <div className="space-y-3">
+          <div className="flex gap-3">
+            <Textarea
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleKeyPress}
+              placeholder="Type your message... (Shift+Enter for new line)"
+              className="chat-input flex-1 min-h-[60px] max-h-[120px] resize-none border-0 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50"
+              rows={2}
+            />
+            <Button 
+              onClick={handleSendMessage} 
+              variant="default"
+              size="icon"
+              className="shrink-0 h-[60px] w-[60px]"
+              disabled={!inputValue.trim() || isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Send className="w-5 h-5" />
+              )}
+            </Button>
+          </div>
+
+          {/* Action buttons below input */}
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs h-8 hover:bg-muted"
+              disabled
+            >
+              📎 Attachment
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs h-8 hover:bg-muted"
+              disabled
+            >
+              🔗 GitHub
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs h-8 hover:bg-muted"
+              disabled
+            >
+              🔒 Public/Private
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs h-8 hover:bg-muted"
+              disabled
+            >
+              🎨 Figma
+            </Button>
+          </div>
         </div>
       </div>
     </div>

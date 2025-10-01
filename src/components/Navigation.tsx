@@ -2,9 +2,10 @@ import { FC } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
 import Logo from '@/components/Logo';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, Sparkles, LogOut, Settings, Github } from 'lucide-react';
+import { User, Sparkles, LogOut, Settings } from 'lucide-react';
 
 const Navigation: FC = () => {
   const location = useLocation();
@@ -27,30 +28,38 @@ const Navigation: FC = () => {
           </span>
         </Link>
 
-        {/* Right: GitHub + Prompts + Login/Logout */}
+        {/* Right: Navigation Links + Credits + Profile */}
         <div className="flex items-center gap-4">
-          {/* GitHub Integration */}
           {location.pathname !== '/auth' && (
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="hover:bg-white/10 flex items-center gap-2"
-              onClick={() => window.open('https://github.com', '_blank')}
-            >
-              <Github className="w-4 h-4" />
-              <span className="hidden sm:inline">GitHub</span>
-            </Button>
-          )}
+            <>
+              <Link 
+                to="/about"
+                className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors hidden md:inline"
+              >
+                About
+              </Link>
+              
+              <Link 
+                to="/pricing"
+                className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors hidden md:inline"
+              >
+                Pricing
+              </Link>
+              
+              <Link 
+                to="/prompts"
+                className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors flex items-center gap-2 group"
+              >
+                <Sparkles className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
+                <span className="hidden sm:inline">Prompts</span>
+              </Link>
 
-          {/* Prompts Link */}
-          {location.pathname !== '/auth' && (
-            <Link 
-              to="/prompts"
-              className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors flex items-center gap-2 group"
-            >
-              <Sparkles className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
-              <span className="hidden sm:inline">Prompts</span>
-            </Link>
+              {user && (
+                <Badge variant="outline" className="text-xs font-medium">
+                  7/10 Credits
+                </Badge>
+              )}
+            </>
           )}
 
           {/* Auth */}
