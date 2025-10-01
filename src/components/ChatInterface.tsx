@@ -230,13 +230,6 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
       {/* Messages Area */}
       <ScrollArea ref={scrollAreaRef} className="flex-1 p-6">
         <div className="space-y-4">
-          {messages.length === 0 && (
-            <div className="text-center text-muted-foreground py-12">
-              <p className="text-lg">Start a conversation</p>
-              <p className="text-sm">Send a message to begin</p>
-            </div>
-          )}
-          
           {messages.map((message) => (
             <div
               key={message.id}
@@ -362,7 +355,7 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyPress}
-            placeholder="Type your message... (Shift+Enter for new line)"
+            placeholder="What do you have in your mind to build today..."
             className="chat-input flex-1 min-h-[56px] max-h-[120px] resize-none rounded-xl border-0 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50"
             rows={2}
           />
