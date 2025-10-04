@@ -46,10 +46,10 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    // Get user profile for email
+    // Get user profile for display name only (email comes from auth.users)
     const { data: profile } = await supabase
       .from('profiles')
-      .select('email, display_name')
+      .select('display_name')
       .eq('id', user.id)
       .single();
 
@@ -69,9 +69,9 @@ serve(async (req) => {
       order_currency: 'INR',
       customer_details: {
         customer_id: user.id,
-        customer_email: profile?.email || user.email,
+        customer_email: user.email, // Get email from auth.users (secure)
         customer_phone: '9999999999', // You may want to collect this
-        customer_name: profile?.display_name || 'User',
+        customer_name: profile?.display_name || user.email?.split('@')[0] || 'User',
       },
       order_meta: {
         return_url: `${req.headers.get('origin')}/pricing?session_id={order_id}`,
