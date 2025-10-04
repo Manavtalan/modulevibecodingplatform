@@ -37,9 +37,9 @@ const Dashboard: FC = () => {
       {/* Sidebar */}
       <Sidebar initialCollapsed={true} />
       
-      {/* Main Content Area - Responsive width for output window */}
+      {/* Main Content Area */}
       <div 
-        className="flex-1 min-h-screen pb-20 sm:pb-8 transition-all duration-300 ease-in-out ml-0 sm:ml-[72px]"
+        className="flex-1 min-h-screen pb-20 sm:pb-8 transition-[margin-left] duration-[260ms] ease-[cubic-bezier(0.2,0.9,0.2,1)] ml-0 sm:ml-[72px]"
       >
         {/* Background Graphics */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden">
