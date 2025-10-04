@@ -13,6 +13,7 @@ interface Message {
   content: string;
   model_used?: string;
   created_at?: string;
+  isOptimistic?: boolean;
 }
 
 interface OutputWindowProps {
@@ -23,11 +24,31 @@ interface OutputWindowProps {
 
 const OutputWindow: FC<OutputWindowProps> = ({ messages, isOpen, onClose }) => {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [expandedMessages, setExpandedMessages] = useState<Set<string>>(new Set());
 
-  // Get the latest assistant message
-  const latestAssistantMessage = messages
-    .filter(m => m.role === 'assistant')
-    .slice(-1)[0];
+  // Get all assistant messages (reverse chronological order)
+  const assistantMessages = messages
+    .filter(m => m.role === 'assistant' && !m.isOptimistic)
+    .reverse();
+
+  const toggleMessageExpanded = (id: string) => {
+    setExpandedMessages(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  // Auto-expand latest message
+  useEffect(() => {
+    if (assistantMessages.length > 0) {
+      setExpandedMessages(new Set([assistantMessages[0].id]));
+    }
+  }, [assistantMessages.length]);
 
   const handleCopyCode = async (code: string, id: string) => {
     await navigator.clipboard.writeText(code);
@@ -99,7 +120,7 @@ const OutputWindow: FC<OutputWindowProps> = ({ messages, isOpen, onClose }) => {
     ),
   };
 
-  if (!isOpen || !latestAssistantMessage) {
+  if (!isOpen || assistantMessages.length === 0) {
     return null;
   }
 
@@ -116,7 +137,7 @@ const OutputWindow: FC<OutputWindowProps> = ({ messages, isOpen, onClose }) => {
         style={{ height: '85vh' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b bg-background/95 backdrop-blur">
+        <div className="flex items-center justify-between px-4 py-3 border-b bg-background/95 backdrop-blur sticky top-0 z-10">
           <h2 className="text-base font-bold text-foreground">Output</h2>
           <Button
             variant="ghost"
@@ -128,20 +149,54 @@ const OutputWindow: FC<OutputWindowProps> = ({ messages, isOpen, onClose }) => {
           </Button>
         </div>
 
-        {/* Content */}
+        {/* Content - History of all outputs */}
         <ScrollArea className="h-[calc(100%-52px)]">
-          <div className="p-4 prose prose-sm max-w-none dark:prose-invert">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={markdownComponents}
-            >
-              {latestAssistantMessage.content}
-            </ReactMarkdown>
+          <div className="p-4 space-y-4">
+            {assistantMessages.map((message, index) => {
+              const isExpanded = expandedMessages.has(message.id);
+              const isLatest = index === 0;
+              
+              return (
+                <div key={message.id} className="border rounded-lg overflow-hidden bg-card">
+                  {/* Collapsible Header */}
+                  <button
+                    onClick={() => toggleMessageExpanded(message.id)}
+                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-foreground">
+                        {isLatest ? 'Latest Output' : `Output ${assistantMessages.length - index}`}
+                      </span>
+                      {message.created_at && (
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(message.created_at).toLocaleTimeString()}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-muted-foreground">
+                      {isExpanded ? '−' : '+'}
+                    </span>
+                  </button>
+
+                  {/* Expandable Content */}
+                  {isExpanded && (
+                    <div className="px-4 pb-4 prose prose-sm max-w-none dark:prose-invert">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={markdownComponents}
+                      >
+                        {message.content}
+                      </ReactMarkdown>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </ScrollArea>
       </div>
 
-      {/* Desktop: Side panel (35% width) */}
+      {/* Desktop: Fixed-width side panel (420px) */}
       <div 
         className={`
           hidden lg:block
@@ -149,10 +204,10 @@ const OutputWindow: FC<OutputWindowProps> = ({ messages, isOpen, onClose }) => {
           transition-transform duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : 'translate-x-full'}
         `}
-        style={{ width: '35%' }}
+        style={{ width: '420px' }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b bg-background/95 backdrop-blur">
+        <div className="flex items-center justify-between px-6 py-3 border-b bg-background/95 backdrop-blur sticky top-0 z-10">
           <h2 className="text-base font-bold text-foreground">Output</h2>
           <Button
             variant="ghost"
@@ -164,20 +219,54 @@ const OutputWindow: FC<OutputWindowProps> = ({ messages, isOpen, onClose }) => {
           </Button>
         </div>
 
-        {/* Content */}
-        <ScrollArea className="h-[calc(100vh-64px)]">
-          <div className="p-6 prose prose-sm max-w-none dark:prose-invert">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={markdownComponents}
-            >
-              {latestAssistantMessage.content}
-            </ReactMarkdown>
+        {/* Content - History of all outputs */}
+        <ScrollArea className="h-[calc(100vh-57px)]">
+          <div className="p-6 space-y-4">
+            {assistantMessages.map((message, index) => {
+              const isExpanded = expandedMessages.has(message.id);
+              const isLatest = index === 0;
+              
+              return (
+                <div key={message.id} className="border rounded-lg overflow-hidden bg-card">
+                  {/* Collapsible Header */}
+                  <button
+                    onClick={() => toggleMessageExpanded(message.id)}
+                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-foreground">
+                        {isLatest ? 'Latest Output' : `Output ${assistantMessages.length - index}`}
+                      </span>
+                      {message.created_at && (
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(message.created_at).toLocaleTimeString()}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-muted-foreground">
+                      {isExpanded ? '−' : '+'}
+                    </span>
+                  </button>
+
+                  {/* Expandable Content */}
+                  {isExpanded && (
+                    <div className="px-4 pb-4 prose prose-sm max-w-none dark:prose-invert">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={markdownComponents}
+                      >
+                        {message.content}
+                      </ReactMarkdown>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </ScrollArea>
       </div>
 
-      {/* Backdrop overlay for mobile */}
+      {/* Backdrop overlay for mobile only */}
       {isOpen && (
         <div 
           className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden"
