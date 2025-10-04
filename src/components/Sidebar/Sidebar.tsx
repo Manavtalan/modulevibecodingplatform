@@ -178,55 +178,75 @@ const Sidebar: FC<SidebarProps> = ({
 
       {/* Profile section at bottom */}
       <div className="absolute bottom-0 left-0 right-0 border-t border-border">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              className={`
-                w-full h-[72px] flex items-center gap-3 px-4 py-3
-                hover:bg-muted/50 transition-colors
-                ${expanded ? 'justify-start' : 'justify-center px-0'}
-              `}
-              aria-label="User menu"
-            >
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                <User className="w-5 h-5 text-primary" />
-              </div>
-              {expanded && (
-                <div className="flex-1 flex items-center justify-between animate-fade-in-label">
-                  <span className="text-sm font-medium">
-                    {user?.email?.split('@')[0] || 'User'}
-                  </span>
-                  <ChevronDown className="w-4 h-4" />
+        {user ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className={`
+                  w-full h-[72px] flex items-center gap-3 px-4 py-3
+                  hover:bg-muted/50 transition-colors
+                  ${expanded ? 'justify-start' : 'justify-center px-0'}
+                `}
+                aria-label="User menu"
+              >
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <User className="w-5 h-5 text-primary" />
                 </div>
-              )}
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent 
-            align="end" 
-            side="right"
-            className="w-48 bg-card/95 backdrop-blur-xl border-border z-50"
-          >
-            <DropdownMenuItem asChild>
-              <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
-                <User className="w-4 h-4" />
-                Profile
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
-                <Settings className="w-4 h-4" />
-                Settings
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={handleSignOut}
-              className="text-destructive focus:text-destructive cursor-pointer"
+                {expanded && (
+                  <div className="flex-1 flex items-center justify-between animate-fade-in-label">
+                    <span className="text-sm font-medium">
+                      {user?.email?.split('@')[0] || 'User'}
+                    </span>
+                    <ChevronDown className="w-4 h-4" />
+                  </div>
+                )}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent 
+              align="end" 
+              side="right"
+              className="w-48 bg-card/95 backdrop-blur-xl border-border z-50"
             >
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuItem asChild>
+                <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
+                  <User className="w-4 h-4" />
+                  Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
+                  <Settings className="w-4 h-4" />
+                  Settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={handleSignOut}
+                className="text-destructive focus:text-destructive cursor-pointer"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Link 
+            to="/auth"
+            className={`
+              w-full h-[72px] flex items-center gap-3 px-4 py-3
+              hover:bg-muted/50 transition-colors
+              ${expanded ? 'justify-start' : 'justify-center px-0'}
+            `}
+          >
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+              <User className="w-5 h-5 text-primary" />
+            </div>
+            {expanded && (
+              <span className="text-sm font-medium animate-fade-in-label">
+                Sign In
+              </span>
+            )}
+          </Link>
+        )}
       </div>
     </aside>
   );

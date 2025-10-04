@@ -213,12 +213,21 @@ const ChatHistory: FC = () => {
             <Card className="glass-card border-border/50 animate-fade-in" style={{ animationDelay: '200ms' }}>
               <CardContent className="p-8 sm:p-12 text-center">
                 <MessageSquare className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-                <p className="text-lg text-muted-foreground mb-2">
-                  {searchQuery ? 'No conversations found' : 'No conversations yet'}
-                </p>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="text-xl font-semibold mb-2">
+                  {searchQuery ? 'No conversations found' : 'You have no conversation to show'}
+                </h3>
+                <p className="text-muted-foreground mb-6">
                   {searchQuery ? 'Try adjusting your search terms' : 'Start a new chat to begin your first conversation'}
                 </p>
+                {!searchQuery && (
+                  <Button 
+                    onClick={() => navigate('/')}
+                    className="bg-gradient-primary hover:opacity-90"
+                  >
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    Go to Main Chat Window
+                  </Button>
+                )}
               </CardContent>
             </Card>
           ) : (
