@@ -204,47 +204,105 @@ serve(async (req) => {
     let modelUsed = 'openai:gpt-5';
 
     try {
-      console.log('Calling OpenAI with model: gpt-5-2025-08-07');
+      console.log('=== OpenAI Request Debug ===');
+      console.log('Model:', 'gpt-5-2025-08-07');
+      console.log('Messages count:', messages.length);
+      console.log('API Key present:', !!OPENAI_API_KEY);
+      console.log('API Key prefix:', OPENAI_API_KEY?.substring(0, 10) + '...');
+      
+      const requestBody = {
+        model: 'gpt-5-2025-08-07',
+        messages: messages,
+        max_completion_tokens: 512,
+      };
+      console.log('Request body:', JSON.stringify(requestBody, null, 2));
+      
       const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${OPENAI_API_KEY}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          model: 'gpt-5-2025-08-07',
-          messages: messages,
-          max_completion_tokens: 512,
-        }),
+        body: JSON.stringify(requestBody),
       });
+
+      console.log('=== OpenAI Response Debug ===');
+      console.log('Status:', openaiResponse.status);
+      console.log('Status Text:', openaiResponse.statusText);
+      console.log('Headers:', JSON.stringify(Object.fromEntries(openaiResponse.headers.entries())));
 
       if (!openaiResponse.ok) {
         const errorText = await openaiResponse.text();
-        console.error('OpenAI API error:', openaiResponse.status, errorText);
-        throw new Error(`OpenAI API failed: ${openaiResponse.status}`);
+        console.error('OpenAI API error response:', errorText);
+        throw new Error(`OpenAI API failed with status ${openaiResponse.status}: ${errorText}`);
       }
 
       const openaiData = await openaiResponse.json();
-      console.log('OpenAI response:', JSON.stringify(openaiData, null, 2));
+      console.log('Full OpenAI response:', JSON.stringify(openaiData, null, 2));
       
-      if (!openaiData.choices || !openaiData.choices[0] || !openaiData.choices[0].message) {
-        console.error('Invalid OpenAI response structure:', openaiData);
-        throw new Error('Invalid response from OpenAI');
+      // Check response structure
+      if (!openaiData.choices) {
+        console.error('Missing choices in response');
+        throw new Error('Invalid response: no choices array');
       }
       
-      assistantReply = openaiData.choices[0].message.content || '';
-      
-      if (!assistantReply) {
-        console.error('OpenAI returned empty content');
-        throw new Error('Empty response from OpenAI');
+      if (!openaiData.choices[0]) {
+        console.error('Empty choices array');
+        throw new Error('Invalid response: empty choices array');
       }
       
-      console.log('Assistant reply length:', assistantReply.length);
+      if (!openaiData.choices[0].message) {
+        console.error('Missing message in first choice');
+        throw new Error('Invalid response: no message in choice');
+      }
+      
+      assistantReply = openaiData.choices[0].message.content;
+      console.log('Extracted content type:', typeof assistantReply);
+      console.log('Extracted content value:', assistantReply);
+      console.log('Content is null?', assistantReply === null);
+      console.log('Content is undefined?', assistantReply === undefined);
+      
+      if (assistantReply === null || assistantReply === undefined) {
+        console.error('OpenAI returned null/undefined content');
+        console.error('Full choice object:', JSON.stringify(openaiData.choices[0]));
+        throw new Error('OpenAI returned null content');
+      }
+      
+      if (typeof assistantReply !== 'string') {
+        console.error('Content is not a string, converting...');
+        assistantReply = String(assistantReply);
+      }
+      
+      if (!assistantReply.trim()) {
+        console.error('OpenAI returned empty or whitespace-only content');
+        throw new Error('OpenAI returned empty content');
+      }
+      
+      console.log('✓ Successfully extracted reply, length:', assistantReply.length);
     } catch (error) {
-      console.error('OpenAI call failed:', error);
-      // Note: Anthropic fallback would go here if ANTHROPIC_API_KEY is configured
+      console.error('=== OpenAI Call Failed ===');
+      console.error('Error type:', error?.constructor?.name);
+      console.error('Error message:', error?.message);
+      console.error('Full error:', error);
+      
+      // Return more specific error message
+      let errorMessage = 'AI service unavailable';
+      if (error?.message?.includes('401') || error?.message?.includes('Unauthorized')) {
+        errorMessage = 'Invalid OpenAI API key. Please check your API key configuration.';
+      } else if (error?.message?.includes('429') || error?.message?.includes('rate limit')) {
+        errorMessage = 'OpenAI rate limit exceeded. Please try again later.';
+      } else if (error?.message?.includes('Empty response') || error?.message?.includes('null content')) {
+        errorMessage = 'OpenAI returned an empty response. This might indicate an API issue.';
+      } else if (error?.message) {
+        errorMessage = `OpenAI error: ${error.message}`;
+      }
+      
       return new Response(
-        JSON.stringify({ code: 'SERVER_ERROR', message: 'AI service unavailable' }),
+        JSON.stringify({ 
+          code: 'AI_SERVICE_ERROR', 
+          message: errorMessage,
+          details: error?.message 
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

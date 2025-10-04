@@ -197,6 +197,16 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
         return;
       }
 
+      if (data?.code === 'AI_SERVICE_ERROR') {
+        toast({
+          title: "AI Service Error",
+          description: data.message || "Failed to get response from AI service.",
+          variant: "destructive",
+        });
+        setMessages(prev => prev.filter(m => !m.isOptimistic));
+        return;
+      }
+
       if (data?.code) {
         toast({
           title: "Error",
