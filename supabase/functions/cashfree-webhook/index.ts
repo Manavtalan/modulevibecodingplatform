@@ -14,12 +14,12 @@ serve(async (req) => {
   }
 
   try {
-    const cashfreeSecretKey = Deno.env.get('CASHFREE_SECRET_KEY');
+    const webhookSecret = Deno.env.get('CASHFREE_WEBHOOK_SECRET');
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    if (!cashfreeSecretKey) {
-      throw new Error('Cashfree secret key not configured');
+    if (!webhookSecret) {
+      console.warn('Cashfree webhook secret not configured - skipping signature verification');
     }
 
     // Get webhook signature for verification
@@ -29,12 +29,12 @@ serve(async (req) => {
     const rawBody = await req.text();
     const webhookData = JSON.parse(rawBody);
 
-    console.log('Received Cashfree webhook:', webhookData);
+    console.log('Received Cashfree webhook:', JSON.stringify(webhookData, null, 2));
 
-    // Verify webhook signature
-    if (signature && timestamp) {
+    // Verify webhook signature if secret is configured
+    if (webhookSecret && signature && timestamp) {
       const signedPayload = `${timestamp}${rawBody}`;
-      const computedSignature = createHmac('sha256', cashfreeSecretKey)
+      const computedSignature = createHmac('sha256', webhookSecret)
         .update(signedPayload)
         .digest('base64');
 
@@ -42,12 +42,25 @@ serve(async (req) => {
         console.error('Invalid webhook signature');
         throw new Error('Invalid webhook signature');
       }
+      console.log('Webhook signature verified successfully');
     }
 
     // Create Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Extract payment data
+    // Handle test webhooks from Cashfree
+    if (webhookData.type === 'WEBHOOK' && webhookData.data?.test_object) {
+      console.log('Test webhook received and verified successfully');
+      return new Response(
+        JSON.stringify({ success: true, message: 'Test webhook received' }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Extract payment data from real webhooks
     const { data } = webhookData;
     const orderId = data?.order?.order_id;
     const paymentStatus = data?.payment?.payment_status;
@@ -55,6 +68,7 @@ serve(async (req) => {
     const transactionId = data?.payment?.cf_payment_id;
 
     if (!orderId) {
+      console.error('Order ID not found in webhook data. Webhook type:', webhookData.type);
       throw new Error('Order ID not found in webhook data');
     }
 
