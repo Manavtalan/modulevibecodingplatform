@@ -18,18 +18,26 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    if (!webhookSecret) {
-      console.warn('Cashfree webhook secret not configured - skipping signature verification');
-    }
-
-    // Get webhook signature for verification
-    const signature = req.headers.get('x-webhook-signature');
-    const timestamp = req.headers.get('x-webhook-timestamp');
-    
     const rawBody = await req.text();
     const webhookData = JSON.parse(rawBody);
 
     console.log('Received Cashfree webhook:', JSON.stringify(webhookData, null, 2));
+
+    // Handle test webhooks from Cashfree FIRST (before signature verification)
+    if (webhookData.type === 'WEBHOOK' && webhookData.data?.test_object) {
+      console.log('Test webhook received - responding with success');
+      return new Response(
+        JSON.stringify({ success: true, message: 'Test webhook received successfully' }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Get webhook signature for verification (for real payment webhooks)
+    const signature = req.headers.get('x-webhook-signature');
+    const timestamp = req.headers.get('x-webhook-timestamp');
 
     // Verify webhook signature if secret is configured
     if (webhookSecret && signature && timestamp) {
@@ -43,22 +51,12 @@ serve(async (req) => {
         throw new Error('Invalid webhook signature');
       }
       console.log('Webhook signature verified successfully');
+    } else if (!webhookSecret) {
+      console.warn('Webhook secret not configured - skipping signature verification');
     }
 
     // Create Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Handle test webhooks from Cashfree
-    if (webhookData.type === 'WEBHOOK' && webhookData.data?.test_object) {
-      console.log('Test webhook received and verified successfully');
-      return new Response(
-        JSON.stringify({ success: true, message: 'Test webhook received' }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
 
     // Extract payment data from real webhooks
     const { data } = webhookData;
