@@ -298,6 +298,10 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
                         <Loader2 className="w-4 h-4 animate-spin" />
                         <span className="text-sm">Module is thinking...</span>
                       </div>
+                    ) : message.role === 'assistant' && !message.content ? (
+                      <div className="flex items-center gap-2 text-destructive">
+                        <span className="text-sm">Failed to generate response. Please try again.</span>
+                      </div>
                     ) : (
                       <div className="prose prose-sm sm:prose dark:prose-invert max-w-none">
                         <ReactMarkdown

@@ -204,6 +204,7 @@ serve(async (req) => {
     let modelUsed = 'openai:gpt-5';
 
     try {
+      console.log('Calling OpenAI with model: gpt-5-2025-08-07');
       const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -224,7 +225,21 @@ serve(async (req) => {
       }
 
       const openaiData = await openaiResponse.json();
-      assistantReply = openaiData.choices[0].message.content;
+      console.log('OpenAI response:', JSON.stringify(openaiData, null, 2));
+      
+      if (!openaiData.choices || !openaiData.choices[0] || !openaiData.choices[0].message) {
+        console.error('Invalid OpenAI response structure:', openaiData);
+        throw new Error('Invalid response from OpenAI');
+      }
+      
+      assistantReply = openaiData.choices[0].message.content || '';
+      
+      if (!assistantReply) {
+        console.error('OpenAI returned empty content');
+        throw new Error('Empty response from OpenAI');
+      }
+      
+      console.log('Assistant reply length:', assistantReply.length);
     } catch (error) {
       console.error('OpenAI call failed:', error);
       // Note: Anthropic fallback would go here if ANTHROPIC_API_KEY is configured
