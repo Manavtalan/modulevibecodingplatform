@@ -106,6 +106,9 @@ All colors MUST be HSL format. Glassmorphism theme with warm accents and transpa
     background: var(--background-gradient);
     min-height: 100vh;
     position: relative;
+    /* Mobile optimization */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   
   body::before {
@@ -220,5 +223,37 @@ All colors MUST be HSL format. Glassmorphism theme with warm accents and transpa
   
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+  
+  /* Mobile-specific improvements */
+  @media (max-width: 640px) {
+    /* Better touch targets */
+    button, a, input, textarea {
+      min-height: 44px;
+    }
+    
+    /* Prevent text overflow */
+    h1, h2, h3, h4, h5, h6 {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    
+    /* Improve spacing on mobile */
+    .glass-card {
+      padding: 1rem;
+    }
+  }
+  
+  /* Ensure dropdowns have proper background and visibility */
+  [data-radix-popper-content-wrapper] {
+    z-index: 100 !important;
+  }
+  
+  .dropdown-menu-content,
+  [role="menu"] {
+    background: hsl(var(--background)) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--border));
   }
 }

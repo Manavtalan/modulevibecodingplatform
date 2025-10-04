@@ -205,7 +205,7 @@ const Sidebar: FC<SidebarProps> = ({
             <DropdownMenuContent 
               align="end" 
               side="right"
-              className="w-48 bg-card/95 backdrop-blur-xl border-border z-50"
+              className="w-48 bg-background/95 backdrop-blur-xl border-border z-[100]"
             >
               <DropdownMenuItem asChild>
                 <Link to="/profile" className="flex items-center gap-2 cursor-pointer">

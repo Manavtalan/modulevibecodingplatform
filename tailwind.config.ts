@@ -54,14 +54,10 @@ export default {
           border: "hsl(var(--glass-border))",
           shadow: "hsl(var(--glass-shadow))",
         },
-        // Brand colors - Orange/Coral with Complementary Teal
-        warm: "hsl(var(--warm-accent))", // Orange
-        coral: "hsl(16 100% 66%)", // Coral
-        teal: "hsl(var(--purple-accent))", // Teal complement
-        "light-teal": "hsl(var(--thistle))", // Light teal
-        "dark-teal": "hsl(var(--dark-blue))", // Deep teal
-        "slate-blue": "hsl(var(--slate-blue))",
-        "brown-shadow": "hsl(var(--brown-shadow))",
+        // Brand colors using defined variables
+        warm: "hsl(var(--warm-accent))",
+        peachy: "hsl(var(--peachy-accent))",
+        "deep-orange": "hsl(var(--deep-orange))",
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -236,38 +236,38 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
   return (
     <div className="glass-card flex flex-col max-w-[900px] mx-auto">
       {/* Input Area */}
-      <div className="p-3 sm:p-4 space-y-3">
+      <div className="p-2 sm:p-3 md:p-4 space-y-2 sm:space-y-3">
         {/* Input field with action buttons */}
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-end">
+        <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-end">
           {/* Input field */}
           <Textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyPress}
             placeholder="What do you have in your mind to build today..."
-            className="chat-input flex-1 min-h-[56px] max-h-[120px] resize-none rounded-xl border-0 text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50"
+            className="chat-input flex-1 min-h-[52px] sm:min-h-[56px] max-h-[100px] sm:max-h-[120px] resize-none rounded-xl border-0 text-xs sm:text-sm md:text-base text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 px-3 py-2"
             rows={2}
           />
 
           {/* Action buttons row (mobile) / column (desktop) */}
-          <div className="flex gap-2 justify-between sm:flex-col sm:justify-end">
+          <div className="flex gap-1.5 sm:gap-2 justify-between sm:flex-col sm:justify-end">
             {/* Left side action buttons */}
-            <div className="flex gap-2">
+            <div className="flex gap-1.5 sm:gap-2">
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-10 w-10 sm:h-10 sm:w-10 rounded-full hover:bg-muted"
+                className="h-9 w-9 sm:h-10 sm:w-10 rounded-full hover:bg-muted shrink-0"
                 onClick={() => toast({ title: "Coming soon", description: "File attachment feature will be available soon." })}
               >
-                <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
+                <Paperclip className="w-4 h-4" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-10 w-10 sm:h-10 sm:w-10 rounded-full hover:bg-muted"
+                className="h-9 w-9 sm:h-10 sm:w-10 rounded-full hover:bg-muted shrink-0"
                 onClick={() => toast({ title: "Coming soon", description: "GitHub integration will be available soon." })}
               >
-                <Github className="w-4 h-4 sm:w-5 sm:h-5" />
+                <Github className="w-4 h-4" />
               </Button>
             </div>
 
@@ -276,7 +276,7 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
               onClick={handleSendMessage} 
               variant="default"
               size="icon"
-              className="shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full"
+              className="shrink-0 h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 rounded-full"
               disabled={!inputValue.trim() || isLoading}
             >
               {isLoading ? (
@@ -289,11 +289,11 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
         </div>
 
         {/* Quick prompt chips - BELOW input */}
-        <div className="flex flex-wrap gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        <div className="flex flex-nowrap gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
           <Button
             variant="outline"
             size="sm"
-            className="text-xs sm:text-sm h-7 sm:h-8 rounded-full border-border/50 hover:bg-muted transition-colors whitespace-nowrap px-3 sm:px-4"
+            className="text-[10px] sm:text-xs md:text-sm h-6 sm:h-7 md:h-8 rounded-full border-border/50 hover:bg-muted transition-colors whitespace-nowrap px-2 sm:px-3 md:px-4 flex-shrink-0"
             onClick={() => handleQuickPrompt("Please help me fix the following error: ")}
           >
             Fix error
@@ -301,7 +301,7 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
           <Button
             variant="outline"
             size="sm"
-            className="text-xs sm:text-sm h-7 sm:h-8 rounded-full border-border/50 hover:bg-muted transition-colors whitespace-nowrap px-3 sm:px-4"
+            className="text-[10px] sm:text-xs md:text-sm h-6 sm:h-7 md:h-8 rounded-full border-border/50 hover:bg-muted transition-colors whitespace-nowrap px-2 sm:px-3 md:px-4 flex-shrink-0"
             onClick={() => handleQuickPrompt("Can you explain this concept: ")}
           >
             Explain
@@ -309,7 +309,7 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
           <Button
             variant="outline"
             size="sm"
-            className="text-xs sm:text-sm h-7 sm:h-8 rounded-full border-border/50 hover:bg-muted transition-colors whitespace-nowrap px-3 sm:px-4"
+            className="text-[10px] sm:text-xs md:text-sm h-6 sm:h-7 md:h-8 rounded-full border-border/50 hover:bg-muted transition-colors whitespace-nowrap px-2 sm:px-3 md:px-4 flex-shrink-0"
             onClick={() => handleQuickPrompt("Suggest a project idea related to: ")}
           >
             Project idea
