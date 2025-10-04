@@ -201,7 +201,7 @@ serve(async (req) => {
 
     // Call OpenAI
     let assistantReply = '';
-    let modelUsed = 'openai:gpt-4o-mini';
+    let modelUsed = 'openai:gpt-5';
 
     try {
       const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -211,10 +211,9 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
+          model: 'gpt-5-2025-08-07',
           messages: messages,
-          max_tokens: 512,
-          temperature: 0.2,
+          max_completion_tokens: 512,
         }),
       });
 
