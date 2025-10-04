@@ -158,12 +158,26 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
         },
       });
 
+      // Handle edge function errors
       if (error) {
         console.error('API Error:', error);
+        
+        // Check if it's a rate limit error (429 status)
+        if (error.message?.includes('429') || error.message?.includes('rate limit')) {
+          toast({
+            title: "Daily limit reached",
+            description: "You've used all 10 free requests today. Upgrade to premium for unlimited access.",
+            variant: "destructive",
+          });
+          setMessages(prev => prev.filter(m => !m.isOptimistic));
+          return;
+        }
+        
         throw error;
       }
 
-      if (data.code === 'UNAUTHORIZED') {
+      // Handle response error codes
+      if (data?.code === 'UNAUTHORIZED') {
         toast({
           title: "Unauthorized",
           description: "Your session has expired. Please sign in again.",
@@ -173,17 +187,17 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
         return;
       }
 
-      if (data.code === 'RATE_LIMIT') {
+      if (data?.code === 'RATE_LIMIT') {
         toast({
-          title: "Too many requests",
-          description: "Please wait a moment and try again.",
+          title: "Daily limit reached",
+          description: data.message || "You've used all 10 free requests today. Upgrade to premium for unlimited access.",
           variant: "destructive",
         });
         setMessages(prev => prev.filter(m => !m.isOptimistic));
         return;
       }
 
-      if (data.code) {
+      if (data?.code) {
         toast({
           title: "Error",
           description: data.message || "Something went wrong. Please retry.",
