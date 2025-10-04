@@ -58,9 +58,8 @@ serve(async (req) => {
     // Generate unique order ID
     const orderId = `order_${user.id.substring(0, 8)}_${Date.now()}`;
     
-    // Cashfree API endpoint (use production URL in production)
-    const cashfreeApiUrl = 'https://sandbox.cashfree.com/pg/orders';
-    // For production, use: https://api.cashfree.com/pg/orders
+    // Cashfree API endpoint - using production
+    const cashfreeApiUrl = 'https://api.cashfree.com/pg/orders';
     
     // Create order payload
     const orderPayload = {
