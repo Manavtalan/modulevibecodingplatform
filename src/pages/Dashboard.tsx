@@ -25,6 +25,12 @@ const Dashboard: FC = () => {
       // Clear the state after using it
       window.history.replaceState({}, document.title);
     }
+    if (location.state?.conversationId) {
+      // Load specific conversation when coming from Chat History
+      setCurrentConversationId(location.state.conversationId);
+      // Clear the state after using it
+      window.history.replaceState({}, document.title);
+    }
   }, [location]);
 
   const handleSelectConversation = (conversationId: string) => {

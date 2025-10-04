@@ -26,7 +26,7 @@ const Sidebar: FC<SidebarProps> = ({
   // Default navigation items
   const defaultItems: Omit<SidebarItemProps, 'expanded'>[] = [
     { id: 'new-chat', label: 'New Chat', icon: MessageCircle, href: '/' },
-    { id: 'history', label: 'Chats History', icon: Clock, href: '/' },
+    { id: 'history', label: 'Chats History', icon: Clock, href: '/history' },
   ];
 
   const secondaryItems: Omit<SidebarItemProps, 'expanded'>[] = [
