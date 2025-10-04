@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import ChatInterface from '@/components/ChatInterface';
 import ConversationHistory from '@/components/ConversationHistory';
+import Footer from '@/components/Footer';
 import { Sparkles } from 'lucide-react';
 
 const Dashboard: FC = () => {
@@ -47,14 +48,15 @@ const Dashboard: FC = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex w-full">
-      {/* Sidebar */}
-      <Sidebar initialCollapsed={true} />
-      
-      {/* Main Content Area */}
-      <div 
-        className="flex-1 min-h-screen pb-20 sm:pb-8 transition-[margin-left] duration-[260ms] ease-[cubic-bezier(0.2,0.9,0.2,1)] ml-0 sm:ml-[72px]"
-      >
+    <div className="min-h-screen relative overflow-hidden flex flex-col w-full">
+      <div className="flex flex-1">
+        {/* Sidebar */}
+        <Sidebar initialCollapsed={true} />
+        
+        {/* Main Content Area */}
+        <div 
+          className="flex-1 min-h-screen pb-20 sm:pb-8 transition-[margin-left] duration-[260ms] ease-[cubic-bezier(0.2,0.9,0.2,1)] ml-0 sm:ml-[72px]"
+        >
         {/* Background Graphics */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden">
           {/* Grid Pattern */}
@@ -171,7 +173,10 @@ const Dashboard: FC = () => {
             </div>
           </div>
         </div>
+        </div>
       </div>
+      
+      <Footer />
     </div>
   );
 };

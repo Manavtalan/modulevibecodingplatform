@@ -1,6 +1,7 @@
 import { FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '@/components/Sidebar/Sidebar';
+import Footer from '@/components/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -110,12 +111,13 @@ const ChatHistory: FC = () => {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex w-full">
-      {/* Sidebar */}
-      <Sidebar initialCollapsed={true} />
-      
-      {/* Main Content Area */}
-      <div className="flex-1 min-h-screen transition-[margin-left] duration-[260ms] ease-[cubic-bezier(0.2,0.9,0.2,1)] ml-0 sm:ml-[72px]">
+    <div className="min-h-screen relative overflow-hidden flex flex-col w-full">
+      <div className="flex flex-1">
+        {/* Sidebar */}
+        <Sidebar initialCollapsed={true} />
+        
+        {/* Main Content Area */}
+        <div className="flex-1 min-h-screen transition-[margin-left] duration-[260ms] ease-[cubic-bezier(0.2,0.9,0.2,1)] ml-0 sm:ml-[72px]">
         {/* Background Graphics */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden">
           <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
@@ -303,7 +305,10 @@ const ChatHistory: FC = () => {
             </div>
           )}
         </div>
+        </div>
       </div>
+      
+      <Footer />
     </div>
   );
 };
