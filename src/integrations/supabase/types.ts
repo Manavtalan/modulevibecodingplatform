@@ -450,7 +450,6 @@ export type Database = {
           bio: string | null
           created_at: string | null
           display_name: string | null
-          email: string
           id: string
           is_active: boolean | null
           last_request_reset: string | null
@@ -466,7 +465,6 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           display_name?: string | null
-          email: string
           id: string
           is_active?: boolean | null
           last_request_reset?: string | null
@@ -482,7 +480,6 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           display_name?: string | null
-          email?: string
           id?: string
           is_active?: boolean | null
           last_request_reset?: string | null
