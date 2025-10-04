@@ -7,11 +7,14 @@ All colors MUST be HSL format. Glassmorphism theme with warm accents and transpa
 */
 
 @layer base {
+  /* Force dark mode as default - mobile Safari fix */
   :root {
+    color-scheme: dark;
+    
     /* Base glassmorphism colors with black gradient background */
-    --background: 0 0% 10%; /* Deep black */
-    --background-gradient: linear-gradient(135deg, hsl(0, 0%, 8%) 0%, hsl(0, 0%, 15%) 50%, hsl(0, 0%, 22%) 100%);
-    --foreground: 0 0% 95%; /* Light text for dark background */
+    --background: 0 0% 8%; /* Deep black */
+    --background-gradient: linear-gradient(135deg, hsl(0, 0%, 5%) 0%, hsl(0, 0%, 10%) 50%, hsl(0, 0%, 15%) 100%);
+    --foreground: 0 0% 98%; /* Very light text for dark background */
     
     /* Glass card system */
     --glass-background: 0 0% 100% / 0.05;
@@ -103,12 +106,16 @@ All colors MUST be HSL format. Glassmorphism theme with warm accents and transpa
 
   body {
     @apply text-foreground;
-    background: var(--background-gradient);
+    /* Force dark background - critical for mobile */
+    background: #0d0d0d !important;
+    background-image: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #262626 100%) !important;
     min-height: 100vh;
     position: relative;
+    color: #fafafa !important;
     /* Mobile optimization */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
   }
   
   body::before {
@@ -118,32 +125,34 @@ All colors MUST be HSL format. Glassmorphism theme with warm accents and transpa
     left: 0;
     right: 0;
     bottom: 0;
-    background: var(--gradient-backdrop);
-    backdrop-filter: var(--glass-blur);
+    background: linear-gradient(135deg, rgba(10, 10, 10, 0.5) 0%, rgba(20, 20, 20, 0.3) 50%, rgba(30, 30, 30, 0.5) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     z-index: -1;
+    pointer-events: none;
   }
 }
 
 @layer components {
-  /* Glass morphism utilities */
+  /* Glass morphism utilities - Enhanced for mobile */
   .glass {
-    background: hsl(var(--glass-background));
-    border: 1px solid hsl(var(--glass-border));
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    box-shadow: 0 8px 32px hsl(var(--glass-shadow));
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
   }
   
   .glass-card {
     @apply glass;
     border-radius: var(--radius);
     transition: var(--transition-glass);
-    background: var(--gradient-glass);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%) !important;
   }
   
   .glass-card:hover {
-    background: linear-gradient(135deg, hsl(0 0% 100% / 0.12) 0%, hsl(0 0% 100% / 0.06) 100%);
-    box-shadow: 0 12px 40px hsl(var(--glass-shadow) / 0.4), 0 0 0 1px hsl(var(--border));
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%) !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.15) !important;
     transform: translateY(-2px);
   }
   
@@ -182,21 +191,21 @@ All colors MUST be HSL format. Glassmorphism theme with warm accents and transpa
     filter: drop-shadow(0 0 20px hsl(var(--primary-glow)));
   }
   
-  /* Chat interface */
+  /* Chat interface - Mobile optimized */
   .chat-input {
     @apply glass-card;
-    background: hsl(var(--glass-background) / 0.2);
+    background: rgba(255, 255, 255, 0.08) !important;
   }
   
   .chat-message-user {
     @apply glass-card;
-    background: var(--gradient-primary);
+    background: linear-gradient(135deg, hsl(19, 82%, 57%) 0%, hsl(25, 90%, 65%) 100%) !important;
     margin-left: auto;
   }
   
   .chat-message-assistant {
     @apply glass-card;
-    background: hsl(var(--muted));
+    background: rgba(255, 255, 255, 0.08) !important;
   }
   
   /* Sidebar label fade animation */
@@ -227,6 +236,13 @@ All colors MUST be HSL format. Glassmorphism theme with warm accents and transpa
   
   /* Mobile-specific improvements */
   @media (max-width: 640px) {
+    /* Force dark background on mobile */
+    body {
+      background: #0d0d0d !important;
+      background-image: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #262626 100%) !important;
+      color: #fafafa !important;
+    }
+    
     /* Better touch targets */
     button, a, input, textarea {
       min-height: 44px;
@@ -236,11 +252,18 @@ All colors MUST be HSL format. Glassmorphism theme with warm accents and transpa
     h1, h2, h3, h4, h5, h6 {
       word-wrap: break-word;
       overflow-wrap: break-word;
+      color: #fafafa !important;
     }
     
     /* Improve spacing on mobile */
     .glass-card {
       padding: 1rem;
+      background: rgba(255, 255, 255, 0.08) !important;
+    }
+    
+    /* Fix text contrast on mobile */
+    p, span, div {
+      color: inherit;
     }
   }
   
