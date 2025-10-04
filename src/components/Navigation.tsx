@@ -53,6 +53,16 @@ const Navigation: FC = () => {
             </Link>
           )}
 
+          {/* About Link */}
+          {location.pathname !== '/auth' && (
+            <Link 
+              to="/about"
+              className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors px-2 sm:px-0"
+            >
+              <span className="hidden md:inline">About</span>
+            </Link>
+          )}
+
           {/* Auth */}
           {location.pathname !== '/auth' && location.pathname !== '/login' && location.pathname !== '/signup' && (
             <>
