@@ -226,9 +226,167 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
   };
 
   return (
-    <div className="glass-card flex flex-col max-w-[900px] mx-auto">
-      {/* Input Area */}
-      <div className="p-3 sm:p-4 space-y-3">
+    <div className="flex flex-col h-[calc(100vh-120px)] max-w-[900px] mx-auto">
+      {/* Messages Area */}
+      <ScrollArea className="flex-1 px-4" ref={scrollAreaRef}>
+        <div className="space-y-6 py-6">
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center px-4">
+              <div className="glass-card p-8 max-w-md">
+                <h2 className="text-xl font-semibold mb-2 text-foreground">Welcome to Module AI</h2>
+                <p className="text-muted-foreground mb-4">
+                  Start a conversation by typing a message below or choosing a quick prompt.
+                </p>
+              </div>
+            </div>
+          ) : (
+            messages.map((message, index) => (
+              <div
+                key={message.id}
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-[85%] ${
+                    message.role === 'user'
+                      ? 'chat-message-user text-primary-foreground'
+                      : 'chat-message-assistant'
+                  } p-4 rounded-2xl`}
+                >
+                  {message.role === 'user' ? (
+                    <p className="text-[15px] leading-[1.7] whitespace-pre-wrap">{message.content}</p>
+                  ) : (
+                    <div className="prose prose-sm max-w-none dark:prose-invert">
+                      {message.isOptimistic && !message.content ? (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Thinking...</span>
+                        </div>
+                      ) : (
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            h1: ({ children }) => (
+                              <h1 className="text-2xl font-bold mt-6 mb-4 text-foreground">{children}</h1>
+                            ),
+                            h2: ({ children }) => (
+                              <h2 className="text-xl font-semibold mt-5 mb-3 text-foreground">{children}</h2>
+                            ),
+                            h3: ({ children }) => (
+                              <h3 className="text-lg font-semibold mt-4 mb-2 text-foreground">{children}</h3>
+                            ),
+                            p: ({ children }) => (
+                              <p className="text-[15px] leading-[1.7] mb-4 text-foreground">{children}</p>
+                            ),
+                            ul: ({ children }) => (
+                              <ul className="list-disc list-inside mb-4 space-y-2 text-[15px] text-foreground">
+                                {children}
+                              </ul>
+                            ),
+                            ol: ({ children }) => (
+                              <ol className="list-decimal list-inside mb-4 space-y-2 text-[15px] text-foreground">
+                                {children}
+                              </ol>
+                            ),
+                            li: ({ children }) => <li className="leading-[1.7]">{children}</li>,
+                            code: ({ inline, className, children, ...props }: any) => {
+                              const match = /language-(\w+)/.exec(className || '');
+                              const codeString = String(children).replace(/\n$/, '');
+                              const codeId = `${message.id}-${match?.[1] || 'code'}`;
+
+                              return !inline && match ? (
+                                <div className="my-4 rounded-xl overflow-hidden border border-border/50 bg-muted/30">
+                                  {/* Code block header */}
+                                  <div className="flex items-center justify-between px-4 py-2 bg-muted/50 border-b border-border/50">
+                                    <span className="text-xs font-medium text-muted-foreground uppercase">
+                                      {match[1]}
+                                    </span>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-7 px-2 text-xs hover:bg-background/50"
+                                      onClick={() => handleCopyCode(codeString, codeId)}
+                                    >
+                                      {copiedCode === codeId ? (
+                                        <>
+                                          <Check className="w-3 h-3 mr-1" />
+                                          Copied
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Copy className="w-3 h-3 mr-1" />
+                                          Copy
+                                        </>
+                                      )}
+                                    </Button>
+                                  </div>
+                                  {/* Code content */}
+                                  <SyntaxHighlighter
+                                    style={oneDark}
+                                    language={match[1]}
+                                    PreTag="div"
+                                    customStyle={{
+                                      margin: 0,
+                                      padding: '16px',
+                                      background: 'transparent',
+                                      fontSize: '13px',
+                                      lineHeight: '1.6',
+                                    }}
+                                    {...props}
+                                  >
+                                    {codeString}
+                                  </SyntaxHighlighter>
+                                </div>
+                              ) : (
+                                <code
+                                  className="px-1.5 py-0.5 rounded bg-muted/50 text-[13px] font-mono text-primary"
+                                  {...props}
+                                >
+                                  {children}
+                                </code>
+                              );
+                            },
+                          }}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+                      )}
+                      
+                      {/* Retry button for assistant messages (if not optimistic) */}
+                      {!message.isOptimistic && message.role === 'assistant' && (
+                        <div className="flex gap-2 mt-4 pt-3 border-t border-border/30">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 text-xs hover:bg-muted"
+                            onClick={() => handleRetry(index)}
+                          >
+                            <RotateCcw className="w-3 h-3 mr-1.5" />
+                            Retry
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Timestamp */}
+                  {message.created_at && (
+                    <div className="text-xs text-muted-foreground mt-2 opacity-70">
+                      {new Date(message.created_at).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+      </ScrollArea>
+
+      {/* Input Area - Fixed at bottom */}
+      <div className="glass-card p-3 sm:p-4 space-y-3 border-t border-border/50">
         {/* Input field with action buttons */}
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-end">
           {/* Input field */}
