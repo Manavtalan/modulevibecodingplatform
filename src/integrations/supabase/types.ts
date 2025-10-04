@@ -387,6 +387,63 @@ export type Database = {
           },
         ]
       }
+      payment_orders: {
+        Row: {
+          amount: number
+          billing_cycle: string
+          cashfree_order_id: string | null
+          completed_at: string | null
+          created_at: string | null
+          currency: string
+          id: string
+          metadata: Json | null
+          order_id: string
+          payment_method: string | null
+          plan_id: string
+          plan_name: string
+          status: string
+          transaction_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          billing_cycle: string
+          cashfree_order_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string
+          id?: string
+          metadata?: Json | null
+          order_id: string
+          payment_method?: string | null
+          plan_id: string
+          plan_name: string
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          billing_cycle?: string
+          cashfree_order_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          currency?: string
+          id?: string
+          metadata?: Json | null
+          order_id?: string
+          payment_method?: string | null
+          plan_id?: string
+          plan_name?: string
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
