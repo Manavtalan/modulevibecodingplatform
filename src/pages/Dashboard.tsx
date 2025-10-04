@@ -16,6 +16,14 @@ const Dashboard: FC = () => {
     // Check if user selected a template from Prompts page
     if (location.state?.selectedTemplate) {
       setSelectedTemplate(location.state.selectedTemplate);
+      // Clear the state after using it
+      window.history.replaceState({}, document.title);
+    }
+    if (location.state?.selectedPrompt) {
+      // Set the prompt text in input when coming from Prompts page
+      setSelectedTemplate(location.state.selectedPrompt);
+      // Clear the state after using it
+      window.history.replaceState({}, document.title);
     }
   }, [location]);
 
@@ -88,6 +96,7 @@ const Dashboard: FC = () => {
               <ChatInterface 
                 conversationId={currentConversationId}
                 onConversationCreated={handleConversationCreated}
+                initialPrompt={selectedTemplate}
               />
             </div>
 

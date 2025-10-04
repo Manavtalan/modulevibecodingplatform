@@ -24,9 +24,10 @@ interface Message {
 interface ChatInterfaceProps {
   conversationId?: string;
   onConversationCreated?: (id: string) => void;
+  initialPrompt?: string;
 }
 
-const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationCreated }) => {
+const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationCreated, initialPrompt }) => {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -36,6 +37,13 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  // Set initial prompt if provided
+  useEffect(() => {
+    if (initialPrompt) {
+      setInputValue(initialPrompt);
+    }
+  }, [initialPrompt]);
 
   // Fetch conversation messages on mount or when conversationId changes
   useEffect(() => {
