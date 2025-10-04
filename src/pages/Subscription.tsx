@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Sidebar from '@/components/Sidebar/Sidebar';
+import { supabase } from '@/integrations/supabase/client';
 
 const Subscription = () => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
@@ -62,8 +63,59 @@ const Subscription = () => {
     },
   ];
 
-  const handleUpgrade = (planName: string) => {
-    alert(`Payment integration coming soon for ${planName} plan!`);
+  const handleUpgrade = async (plan: typeof plans[0]) => {
+    if (plan.id === 'enterprise') {
+      // For enterprise, redirect to contact sales
+      window.location.href = 'mailto:sales@module.com?subject=Enterprise Plan Inquiry';
+      return;
+    }
+
+    try {
+      const price = billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice;
+      
+      if (!price) {
+        alert('Invalid plan selected');
+        return;
+      }
+
+      // Call the edge function to create Cashfree order
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        alert('Please login to continue');
+        window.location.href = '/auth';
+        return;
+      }
+
+      const response = await fetch(
+        `https://ryhhskssaplqakovldlp.supabase.co/functions/v1/create-cashfree-order`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            planId: plan.id,
+            planName: plan.name,
+            amount: price,
+            billingCycle: billingCycle,
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.success && result.payment_url) {
+        // Redirect to Cashfree payment page
+        window.location.href = result.payment_url;
+      } else {
+        alert(`Error: ${result.error || 'Failed to initiate payment'}`);
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      alert('Failed to process payment. Please try again.');
+    }
   };
 
   const getPrice = (plan: typeof plans[0]) => {
@@ -189,7 +241,7 @@ const Subscription = () => {
                     variant={plan.popular ? 'default' : 'outline'}
                     className="w-full"
                     size="lg"
-                    onClick={() => handleUpgrade(plan.name)}
+                    onClick={() => handleUpgrade(plan)}
                   >
                     {plan.cta}
                   </Button>
