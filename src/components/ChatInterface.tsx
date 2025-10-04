@@ -226,32 +226,33 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)] max-w-[900px] mx-auto">
-      {/* Messages Area */}
-      <ScrollArea className="flex-1 px-4" ref={scrollAreaRef}>
-        <div className="space-y-6 py-6">
-          {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center px-4">
-              <div className="glass-card p-8 max-w-md">
-                <h2 className="text-xl font-semibold mb-2 text-foreground">Welcome to Module AI</h2>
-                <p className="text-muted-foreground mb-4">
-                  Start a conversation by typing a message below or choosing a quick prompt.
-                </p>
+    <div className="flex flex-col h-full w-full">
+      {/* Messages Area - Full Width */}
+      <ScrollArea className="flex-1" ref={scrollAreaRef}>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="space-y-6 py-8">
+            {messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full min-h-[60vh] text-center px-4">
+                <div className="max-w-md space-y-4">
+                  <h2 className="text-3xl font-bold text-foreground">Welcome to Module AI</h2>
+                  <p className="text-muted-foreground text-lg">
+                    Start a conversation by typing a message below or choosing a quick prompt.
+                  </p>
+                </div>
               </div>
-            </div>
-          ) : (
-            messages.map((message, index) => (
-              <div
-                key={message.id}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
+            ) : (
+              messages.map((message, index) => (
                 <div
-                  className={`max-w-[85%] ${
-                    message.role === 'user'
-                      ? 'chat-message-user text-primary-foreground'
-                      : 'chat-message-assistant'
-                  } p-4 rounded-2xl`}
+                  key={message.id}
+                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
+                  <div
+                    className={`max-w-[85%] ${
+                      message.role === 'user'
+                        ? 'bg-gradient-primary text-primary-foreground'
+                        : 'bg-muted/50'
+                    } p-4 rounded-2xl`}
+                  >
                   {message.role === 'user' ? (
                     <p className="text-[15px] leading-[1.7] whitespace-pre-wrap">{message.content}</p>
                   ) : (
@@ -383,19 +384,21 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
           )}
           <div ref={messagesEndRef} />
         </div>
+        </div>
       </ScrollArea>
 
-      {/* Input Area - Fixed at bottom */}
-      <div className="glass-card p-3 sm:p-4 space-y-3 border-t border-border/50">
-        {/* Input field with action buttons */}
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-end">
+      {/* Input Area - Fixed at bottom, full width */}
+      <div className="border-t border-border/30 bg-background/95 backdrop-blur-sm">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 space-y-3">
+          {/* Input field with action buttons */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-end">
           {/* Input field */}
           <Textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyPress}
-            placeholder="What do you have in your mind to build today..."
-            className="chat-input flex-1 min-h-[56px] max-h-[120px] resize-none rounded-xl border-0 text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50"
+            placeholder="Message Module..."
+            className="flex-1 min-h-[56px] max-h-[120px] resize-none rounded-xl bg-muted/50 border border-border/50 text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/50 focus-visible:outline-none px-4 py-3"
             rows={2}
           />
 
@@ -438,32 +441,35 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
           </div>
         </div>
 
-        {/* Quick prompt chips - BELOW input */}
-        <div className="flex flex-wrap gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-xs sm:text-sm h-7 sm:h-8 rounded-full border-border/50 hover:bg-muted transition-colors whitespace-nowrap px-3 sm:px-4"
-            onClick={() => handleQuickPrompt("Please help me fix the following error: ")}
-          >
-            Fix error
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-xs sm:text-sm h-7 sm:h-8 rounded-full border-border/50 hover:bg-muted transition-colors whitespace-nowrap px-3 sm:px-4"
-            onClick={() => handleQuickPrompt("Can you explain this concept: ")}
-          >
-            Explain
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-xs sm:text-sm h-7 sm:h-8 rounded-full border-border/50 hover:bg-muted transition-colors whitespace-nowrap px-3 sm:px-4"
-            onClick={() => handleQuickPrompt("Suggest a project idea related to: ")}
-          >
-            Project idea
-          </Button>
+          {/* Quick prompt chips - BELOW input (only show when empty) */}
+          {messages.length === 0 && (
+            <div className="flex flex-wrap gap-2 overflow-x-auto pb-1 scrollbar-hide">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs sm:text-sm h-8 rounded-full border-border/50 hover:bg-muted transition-colors whitespace-nowrap px-4"
+                onClick={() => handleQuickPrompt("Create a landing page for a SaaS product")}
+              >
+                Landing page
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs sm:text-sm h-8 rounded-full border-border/50 hover:bg-muted transition-colors whitespace-nowrap px-4"
+                onClick={() => handleQuickPrompt("Build a todo app with React")}
+              >
+                Todo app
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs sm:text-sm h-8 rounded-full border-border/50 hover:bg-muted transition-colors whitespace-nowrap px-4"
+                onClick={() => handleQuickPrompt("Explain how React hooks work")}
+              >
+                Explain React
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>
