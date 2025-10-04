@@ -191,7 +191,9 @@ serve(async (req) => {
     ];
 
     if (contextMessages) {
-      messages.push(...contextMessages.map(m => ({
+      // Filter out empty messages from context
+      const validMessages = contextMessages.filter(m => m.content && m.content.trim());
+      messages.push(...validMessages.map(m => ({
         role: m.role as 'user' | 'assistant',
         content: m.content
       })));
@@ -213,7 +215,7 @@ serve(async (req) => {
       const requestBody = {
         model: 'gpt-5-2025-08-07',
         messages: messages,
-        max_completion_tokens: 512,
+        max_completion_tokens: 2048, // Increased for GPT-5's extended thinking
       };
       console.log('Request body:', JSON.stringify(requestBody, null, 2));
       
