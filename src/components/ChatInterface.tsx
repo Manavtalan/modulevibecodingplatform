@@ -234,9 +234,136 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
   };
 
   return (
-    <div className="glass-card flex flex-col max-w-[900px] mx-auto">
+    <div className="glass-card flex flex-col h-[calc(100vh-200px)] max-w-[900px] mx-auto">
+      {/* Header */}
+      <div className="p-3 sm:p-4 border-b border-border/20 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="text-xs sm:text-sm">Project Chat</Badge>
+          {currentConversationId && (
+            <span className="text-xs text-muted-foreground hidden sm:inline">
+              Active conversation
+            </span>
+          )}
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setCurrentConversationId(undefined);
+            setMessages([]);
+            onConversationCreated?.(undefined as any);
+          }}
+          className="text-xs sm:text-sm"
+        >
+          New Chat
+        </Button>
+      </div>
+
+      {/* Messages Area */}
+      <ScrollArea className="flex-1 px-2 sm:px-4" ref={scrollAreaRef}>
+        <div className="py-4 space-y-4">
+          {messages.length === 0 && !isLoading && (
+            <div className="flex flex-col items-center justify-center h-[300px] text-center px-4">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <Send className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Start a Conversation</h3>
+              <p className="text-sm text-muted-foreground max-w-md">
+                Ask Module anything about your project, get code help, or discuss ideas.
+              </p>
+            </div>
+          )}
+
+          {messages.map((message, index) => (
+            <div
+              key={message.id}
+              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
+            >
+              <div
+                className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 ${
+                  message.role === 'user'
+                    ? 'bg-primary text-primary-foreground ml-auto'
+                    : 'bg-muted/50 text-foreground'
+                }`}
+              >
+                {message.role === 'assistant' && !message.content && message.isOptimistic ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="text-sm">Module is thinking...</span>
+                  </div>
+                ) : (
+                  <div className="prose prose-sm sm:prose dark:prose-invert max-w-none">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        code({ node, inline, className, children, ...props }: any) {
+                          const match = /language-(\w+)/.exec(className || '');
+                          const codeId = `code-${message.id}-${index}`;
+                          
+                          return !inline && match ? (
+                            <div className="relative group my-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                onClick={() => handleCopyCode(String(children).replace(/\n$/, ''), codeId)}
+                              >
+                                {copiedCode === codeId ? (
+                                  <Check className="w-4 h-4" />
+                                ) : (
+                                  <Copy className="w-4 h-4" />
+                                )}
+                              </Button>
+                              <SyntaxHighlighter
+                                style={oneDark}
+                                language={match[1]}
+                                PreTag="div"
+                                className="rounded-lg !bg-gray-900 !mt-0"
+                                {...props}
+                              >
+                                {String(children).replace(/\n$/, '')}
+                              </SyntaxHighlighter>
+                            </div>
+                          ) : (
+                            <code className={`${className} bg-muted px-1.5 py-0.5 rounded text-xs`} {...props}>
+                              {children}
+                            </code>
+                          );
+                        },
+                      }}
+                    >
+                      {message.content}
+                    </ReactMarkdown>
+                  </div>
+                )}
+
+                {message.role === 'assistant' && message.content && (
+                  <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/20">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => handleRetry(index)}
+                    >
+                      <RotateCcw className="w-3 h-3 mr-1" />
+                      Retry
+                    </Button>
+                    {message.model_used && (
+                      <Badge variant="outline" className="text-[10px] h-6">
+                        {message.model_used}
+                      </Badge>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+      </ScrollArea>
+
       {/* Input Area */}
-      <div className="p-2 sm:p-3 md:p-4 space-y-2 sm:space-y-3">
+      <div className="p-2 sm:p-3 md:p-4 space-y-2 sm:space-y-3 border-t border-border/20">
         {/* Input field with action buttons */}
         <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-end">
           {/* Input field */}
