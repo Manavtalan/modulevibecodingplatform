@@ -94,7 +94,11 @@ const Sidebar: FC<SidebarProps> = ({
   if (isMobile) {
     return (
       <nav 
-        className="fixed bottom-0 left-0 right-0 h-16 bg-background/95 backdrop-blur-xl border-t border-border z-50"
+        className="fixed bottom-0 left-0 right-0 h-16 border-t z-50"
+        style={{ 
+          background: '#0D0D0D',
+          borderColor: 'rgba(255, 255, 255, 0.05)'
+        }}
         role="navigation"
         aria-label="Mobile navigation"
       >
@@ -121,11 +125,16 @@ const Sidebar: FC<SidebarProps> = ({
       ref={sidebarRef}
       className={`
         fixed left-0 top-0 h-screen
-        bg-background/95 backdrop-blur-xl border-r border-border
+        border-r
         transition-[width] duration-[260ms] ease-[cubic-bezier(0.2,0.9,0.2,1)]
         z-10
         ${expanded ? 'w-[280px]' : 'w-[72px]'}
       `}
+      style={{
+        background: 'linear-gradient(180deg, #0D0D0D 0%, #1A1A1A 100%)',
+        borderColor: 'rgba(255, 255, 255, 0.05)',
+        boxShadow: '0 0 20px rgba(0, 0, 0, 0.5)'
+      }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onFocus={handleFocus}
@@ -205,7 +214,11 @@ const Sidebar: FC<SidebarProps> = ({
             <DropdownMenuContent 
               align="end" 
               side="right"
-              className="w-48 bg-background/95 backdrop-blur-xl border-border z-[100]"
+              className="w-48 z-[100]"
+              style={{
+                background: '#0D0D0D',
+                borderColor: 'rgba(255, 255, 255, 0.05)'
+              }}
             >
               <DropdownMenuItem asChild>
                 <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
