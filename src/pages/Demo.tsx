@@ -81,18 +81,36 @@ const Demo = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div 
+      className="flex flex-col h-screen overflow-hidden"
+      style={{
+        background: 'linear-gradient(180deg, #0A0A0A 0%, #1C1C1C 100%)',
+        fontFamily: 'Inter, system-ui, sans-serif'
+      }}
+    >
       {/* Header */}
-      <header className="flex items-center gap-4 p-4 border-b border-border bg-background/50 backdrop-blur-sm">
+      <header 
+        className="flex items-center gap-4 p-4 border-b"
+        style={{
+          borderColor: 'rgba(255, 255, 255, 0.05)',
+          background: 'rgba(10, 10, 10, 0.8)',
+          backdropFilter: 'blur(10px)'
+        }}
+      >
         <Button
           variant="ghost"
           size="icon"
           onClick={handleBack}
-          className="hover:bg-muted"
+          className="hover:bg-white/5"
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className="h-5 w-5 text-white/70" />
         </Button>
-        <h1 className="text-xl font-semibold bg-gradient-orange bg-clip-text text-transparent">
+        <h1 
+          className="text-xl font-semibold bg-clip-text text-transparent"
+          style={{
+            backgroundImage: 'linear-gradient(90deg, #FF7A18, #FFB347)'
+          }}
+        >
           Module AI
         </h1>
       </header>
@@ -108,12 +126,33 @@ const Demo = () => {
             />
           ))}
           {isLoading && (
-            <div className="flex justify-start mb-4 animate-fade-in">
-              <div className="bg-transparent border-l-2 border-[hsl(var(--accent))] pl-4 py-3">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-[hsl(var(--accent))] rounded-full animate-pulse" />
-                  <div className="w-2 h-2 bg-[hsl(var(--accent))] rounded-full animate-pulse delay-100" />
-                  <div className="w-2 h-2 bg-[hsl(var(--accent))] rounded-full animate-pulse delay-200" />
+            <div className="flex justify-start mb-6 animate-fade-in">
+              <div 
+                className="pl-4 py-3 border-l-2"
+                style={{
+                  borderColor: '#FF7A18',
+                  background: 'transparent'
+                }}
+              >
+                <div className="flex gap-1.5">
+                  <div 
+                    className="w-2 h-2 rounded-full animate-pulse"
+                    style={{ backgroundColor: '#FF7A18' }}
+                  />
+                  <div 
+                    className="w-2 h-2 rounded-full animate-pulse"
+                    style={{ 
+                      backgroundColor: '#FF7A18',
+                      animationDelay: '0.2s'
+                    }}
+                  />
+                  <div 
+                    className="w-2 h-2 rounded-full animate-pulse"
+                    style={{ 
+                      backgroundColor: '#FF7A18',
+                      animationDelay: '0.4s'
+                    }}
+                  />
                 </div>
               </div>
             </div>
