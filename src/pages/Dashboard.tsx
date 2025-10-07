@@ -1,13 +1,15 @@
 import { FC } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Footer from '@/components/Footer';
 import Logo from '@/components/Logo';
 import { Rocket, Code2, Zap, Users, Sparkles, Layout, Globe } from 'lucide-react';
 
 const Dashboard: FC = () => {
+  const navigate = useNavigate();
+  
   const handleTryDemo = () => {
-    // TODO: Update this URL to your actual Chat Interface demo project
-    window.location.href = '/chat-demo';
+    navigate('/demo');
   };
 
   return (

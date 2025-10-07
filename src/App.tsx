@@ -11,6 +11,7 @@ import Prompts from "./pages/Prompts";
 import Subscription from "./pages/Subscription";
 import About from "./pages/About";
 import ChatHistory from "./pages/ChatHistory";
+import Demo from "./pages/Demo";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/pricing" element={<Subscription />} />
             <Route path="/about" element={<About />} />
             <Route path="/history" element={<ChatHistory />} />
+            <Route path="/demo" element={<Demo />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
