@@ -79,20 +79,20 @@ const Dashboard: FC = () => {
 
             {/* Main Heading */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-center mb-4 sm:mb-6 leading-tight animate-fade-in max-w-5xl" style={{ animationDelay: '100ms', fontFamily: 'Inter, system-ui, sans-serif' }}>
-              Vibe Coding{' '}
+              Build. Learn. Create.{' '}
               <span 
                 className="inline-block bg-clip-text text-transparent"
                 style={{ 
                   backgroundImage: 'linear-gradient(90deg, #FF7A18 0%, #FFB347 100%)'
                 }}
               >
-                AI Platform
+                Love Your Code.
               </span>
             </h1>
 
             {/* Subtitle */}
             <p className="text-lg sm:text-xl md:text-2xl text-center mb-8 sm:mb-12 max-w-3xl animate-fade-in leading-relaxed" style={{ color: '#a1a1a1', animationDelay: '200ms' }}>
-              Learn. Code web apps, websites, landing pages, and portfolio websites — powered by AI, similar to Lovable.
+              Code the future with Module — build web apps, dashboards, and portfolios in minutes.
             </p>
 
             {/* CTA Button */}
