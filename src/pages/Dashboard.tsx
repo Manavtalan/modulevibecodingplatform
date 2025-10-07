@@ -2,7 +2,7 @@ import { FC } from 'react';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Footer from '@/components/Footer';
 import Logo from '@/components/Logo';
-import { Rocket, Code2, Zap, Users } from 'lucide-react';
+import { Rocket, Code2, Zap, Users, Sparkles, Layout, Globe } from 'lucide-react';
 
 const Dashboard: FC = () => {
   const handleTryDemo = () => {
@@ -79,20 +79,20 @@ const Dashboard: FC = () => {
 
             {/* Main Heading */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-center mb-4 sm:mb-6 leading-tight animate-fade-in max-w-5xl" style={{ animationDelay: '100ms', fontFamily: 'Inter, system-ui, sans-serif' }}>
-              The Next Generation{' '}
+              Vibe Coding{' '}
               <span 
                 className="inline-block bg-clip-text text-transparent"
                 style={{ 
                   backgroundImage: 'linear-gradient(90deg, #FF7A18 0%, #FFB347 100%)'
                 }}
               >
-                AI Coding Assistant
+                AI Platform
               </span>
             </h1>
 
             {/* Subtitle */}
             <p className="text-lg sm:text-xl md:text-2xl text-center mb-8 sm:mb-12 max-w-3xl animate-fade-in leading-relaxed" style={{ color: '#a1a1a1', animationDelay: '200ms' }}>
-              Module AI is launching soon — your all-in-one developer companion to chat, code, debug, and build smarter.
+              Learn. Code web apps, websites, landing pages, and portfolio websites — powered by AI, similar to Lovable.
             </p>
 
             {/* CTA Button */}
@@ -133,13 +133,89 @@ const Dashboard: FC = () => {
               </div>
             </div>
           </div>
+
+          {/* How Module Works Section */}
+          <div className="relative z-10 py-16 sm:py-20 md:py-24 px-4 sm:px-6 md:px-8">
+            <div className="max-w-6xl mx-auto">
+              {/* Section Header */}
+              <div className="text-center mb-12 sm:mb-16">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4" style={{ color: '#ffffff' }}>
+                  How Module <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(90deg, #FF7A18 0%, #FFB347 100%)' }}>Works</span>
+                </h2>
+                <p className="text-base sm:text-lg md:text-xl max-w-2xl mx-auto" style={{ color: '#a1a1a1' }}>
+                  Build professional web projects in three simple steps
+                </p>
+              </div>
+
+              {/* Steps Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+                {/* Step 1 */}
+                <div 
+                  className="p-6 sm:p-8 rounded-2xl backdrop-blur-sm transition-all duration-300 hover:scale-105"
+                  style={{ 
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,122,24,0.2)',
+                    boxShadow: '0 4px 20px rgba(255,122,24,0.1)'
+                  }}
+                >
+                  <div className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full mb-4 sm:mb-6" style={{ background: 'linear-gradient(135deg, rgba(255,122,24,0.2) 0%, rgba(255,179,71,0.2) 100%)' }}>
+                    <Sparkles className="w-6 h-6 sm:w-7 sm:h-7" style={{ color: '#FFB347' }} />
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4" style={{ color: '#ffffff' }}>
+                    1. Describe Your Idea
+                  </h3>
+                  <p className="text-sm sm:text-base leading-relaxed" style={{ color: '#a1a1a1' }}>
+                    Tell Module what you want to build. Whether it's a landing page, portfolio, or full web app — just describe it in plain English.
+                  </p>
+                </div>
+
+                {/* Step 2 */}
+                <div 
+                  className="p-6 sm:p-8 rounded-2xl backdrop-blur-sm transition-all duration-300 hover:scale-105"
+                  style={{ 
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,122,24,0.2)',
+                    boxShadow: '0 4px 20px rgba(255,122,24,0.1)'
+                  }}
+                >
+                  <div className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full mb-4 sm:mb-6" style={{ background: 'linear-gradient(135deg, rgba(255,122,24,0.2) 0%, rgba(255,179,71,0.2) 100%)' }}>
+                    <Code2 className="w-6 h-6 sm:w-7 sm:h-7" style={{ color: '#FFB347' }} />
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4" style={{ color: '#ffffff' }}>
+                    2. AI Builds It Live
+                  </h3>
+                  <p className="text-sm sm:text-base leading-relaxed" style={{ color: '#a1a1a1' }}>
+                    Watch as Module's AI generates clean, production-ready code in real-time. See your design come to life instantly.
+                  </p>
+                </div>
+
+                {/* Step 3 */}
+                <div 
+                  className="p-6 sm:p-8 rounded-2xl backdrop-blur-sm transition-all duration-300 hover:scale-105"
+                  style={{ 
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,122,24,0.2)',
+                    boxShadow: '0 4px 20px rgba(255,122,24,0.1)'
+                  }}
+                >
+                  <div className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full mb-4 sm:mb-6" style={{ background: 'linear-gradient(135deg, rgba(255,122,24,0.2) 0%, rgba(255,179,71,0.2) 100%)' }}>
+                    <Globe className="w-6 h-6 sm:w-7 sm:h-7" style={{ color: '#FFB347' }} />
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4" style={{ color: '#ffffff' }}>
+                    3. Deploy & Share
+                  </h3>
+                  <p className="text-sm sm:text-base leading-relaxed" style={{ color: '#a1a1a1' }}>
+                    Deploy your project with one click. Get a live URL and share your creation with the world in seconds.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       
       {/* Footer */}
-      <footer className="relative z-10 text-center py-6 text-sm" style={{ color: '#737373' }}>
-        © 2025 Module AI. All rights reserved.
-      </footer>
+      <Footer />
     </div>
   );
 };
