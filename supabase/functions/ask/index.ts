@@ -203,19 +203,19 @@ serve(async (req) => {
 
     // Call OpenAI
     let assistantReply = '';
-    let modelUsed = 'openai:gpt-5-mini';
+    let modelUsed = 'openai:gpt-4o-mini';
 
     try {
       console.log('=== OpenAI Request Debug ===');
-      console.log('Model:', 'gpt-5-mini-2025-08-07');
+      console.log('Model:', 'gpt-4o-mini');
       console.log('Messages count:', messages.length);
       console.log('API Key present:', !!OPENAI_API_KEY);
       console.log('API Key prefix:', OPENAI_API_KEY?.substring(0, 10) + '...');
       
       const requestBody = {
-        model: 'gpt-5-mini-2025-08-07', // Better for code generation - faster and doesn't waste tokens on reasoning
+        model: 'gpt-4o-mini', // Legacy model - no reasoning tokens, better for code generation
         messages: messages,
-        max_completion_tokens: 8000, // Plenty for complete web apps
+        max_tokens: 4000, // Using max_tokens for legacy model
       };
       console.log('Request body:', JSON.stringify(requestBody, null, 2));
       
