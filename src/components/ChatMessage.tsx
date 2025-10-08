@@ -1,3 +1,7 @@
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
 interface ChatMessageProps {
   message: string;
   isUser: boolean;
@@ -29,16 +33,54 @@ const ChatMessage = ({ message, isUser }: ChatMessageProps) => {
               }
         }
       >
-        <p 
-          className={`text-sm leading-relaxed ${
-            isUser ? "text-white" : "text-white/90"
-          }`}
-          style={{
-            fontFamily: 'Inter, system-ui, sans-serif'
-          }}
-        >
-          {message}
-        </p>
+        {isUser ? (
+          <p 
+            className="text-sm leading-relaxed text-white"
+            style={{
+              fontFamily: 'Inter, system-ui, sans-serif'
+            }}
+          >
+            {message}
+          </p>
+        ) : (
+          <div 
+            className="text-sm leading-relaxed text-white/90 prose prose-invert max-w-none"
+            style={{
+              fontFamily: 'Inter, system-ui, sans-serif'
+            }}
+          >
+            <ReactMarkdown
+              components={{
+                code({ className, children, ...props }: any) {
+                  const match = /language-(\w+)/.exec(className || '');
+                  const isInline = !match;
+                  return !isInline ? (
+                    <SyntaxHighlighter
+                      style={vscDarkPlus as any}
+                      language={match[1]}
+                      PreTag="div"
+                      customStyle={{
+                        margin: '1em 0',
+                        borderRadius: '8px',
+                        fontSize: '0.875rem',
+                      } as any}
+                    >
+                      {String(children).replace(/\n$/, '')}
+                    </SyntaxHighlighter>
+                  ) : (
+                    <code 
+                      className="bg-white/10 px-1.5 py-0.5 rounded text-orange-400"
+                    >
+                      {children}
+                    </code>
+                  );
+                }
+              }}
+            >
+              {message}
+            </ReactMarkdown>
+          </div>
+        )}
       </div>
     </div>
   );

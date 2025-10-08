@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Message {
   id: string;
@@ -13,26 +15,40 @@ interface Message {
   timestamp: Date;
 }
 
-// Placeholder API integration
-async function sendMessageToModuleAPI(message: string): Promise<string> {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  
-  // Mock response
-  return `I received your message: "${message}". This is a placeholder response from Module AI. In production, this would connect to the actual AI backend.`;
+// Real API integration with Supabase edge function
+async function sendMessageToModuleAPI(message: string, supabaseClient: any, conversationId?: string): Promise<{ response: string; conversationId: string }> {
+  const { data, error } = await supabaseClient.functions.invoke('ask', {
+    body: {
+      user_message: message,
+      conversation_id: conversationId,
+      template_id: 'module_code_generator'
+    }
+  });
+
+  if (error) {
+    console.error('Error calling Module AI:', error);
+    throw new Error(error.message || 'Failed to get response from Module AI');
+  }
+
+  return {
+    response: data.assistant_message,
+    conversationId: data.conversation_id
+  };
 }
 
 const Demo = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      text: "Welcome to Module AI! I'm here to help you with vibe coding. What would you like to build today?",
+      text: "Welcome to Module AI! I'm your vibe coding assistant. I can generate complete web applications, portfolios, landing pages, and more. Just describe what you want to build, and I'll provide you with production-ready code. What would you like to create today?",
       isUser: false,
       timestamp: new Date(),
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const [conversationId, setConversationId] = useState<string | undefined>(undefined);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -44,6 +60,13 @@ const Demo = () => {
   }, [messages]);
 
   const handleSendMessage = async (messageText: string) => {
+    // Check authentication
+    if (!user) {
+      toast.error("Please sign in to use Module AI");
+      navigate("/auth");
+      return;
+    }
+
     // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -56,8 +79,17 @@ const Demo = () => {
     setIsLoading(true);
 
     try {
-      // Call API
-      const response = await sendMessageToModuleAPI(messageText);
+      // Call real API
+      const { response, conversationId: newConvId } = await sendMessageToModuleAPI(
+        messageText,
+        supabase,
+        conversationId
+      );
+
+      // Update conversation ID if it's a new conversation
+      if (!conversationId) {
+        setConversationId(newConvId);
+      }
 
       // Add AI response
       const aiMessage: Message = {
@@ -68,8 +100,9 @@ const Demo = () => {
       };
 
       setMessages((prev) => [...prev, aiMessage]);
-    } catch (error) {
-      toast.error("Failed to get response from Module AI. Please try again.");
+    } catch (error: any) {
+      const errorMessage = error?.message || "Failed to get response from Module AI";
+      toast.error(errorMessage);
       console.error("Error sending message:", error);
     } finally {
       setIsLoading(false);
