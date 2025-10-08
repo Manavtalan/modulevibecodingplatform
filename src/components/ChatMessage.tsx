@@ -20,8 +20,19 @@ const ChatMessage = ({ message, isUser }: ChatMessageProps) => {
     return matches.map(match => match[1].trim());
   };
 
+  // Check if message contains HTML code that can be previewed
+  const hasPreviewableHTML = (text: string) => {
+    const htmlBlockRegex = /```html\n([\s\S]*?)```/g;
+    const match = htmlBlockRegex.exec(text);
+    if (!match) return false;
+    const code = match[1];
+    // Check if it's a complete HTML document
+    return code.includes('<!DOCTYPE') || code.includes('<html') || code.includes('<body');
+  };
+
   const hasCodeBlocks = !isUser && /```(?:html|jsx|javascript|tsx|css)/.test(message);
   const codeBlocks = hasCodeBlocks ? extractCodeBlocks(message) : [];
+  const canPreview = !isUser && hasPreviewableHTML(message);
 
   const previewGeneratedCode = (code: string) => {
     setPreviewCode(code);
@@ -107,8 +118,8 @@ const ChatMessage = ({ message, isUser }: ChatMessageProps) => {
               </ReactMarkdown>
             </div>
 
-            {/* Preview Buttons */}
-            {hasCodeBlocks && codeBlocks.length > 0 && (
+            {/* Preview Buttons - Only show for complete HTML */}
+            {canPreview && codeBlocks.length > 0 && (
               <div className="flex gap-2 mt-4">
                 <Button
                   onClick={() => previewGeneratedCode(codeBlocks[0])}
