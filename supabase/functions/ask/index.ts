@@ -215,7 +215,7 @@ serve(async (req) => {
       const requestBody = {
         model: 'gpt-5-2025-08-07',
         messages: messages,
-        max_completion_tokens: 2048, // Increased for GPT-5's extended thinking
+        max_completion_tokens: 16000, // High limit for code generation + GPT-5 reasoning
       };
       console.log('Request body:', JSON.stringify(requestBody, null, 2));
       
