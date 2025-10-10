@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Logo from '@/components/Logo';
-import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus, Github } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const Auth: FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -51,6 +53,27 @@ const Auth: FC = () => {
         }
         await signUp(formData.email, formData.password);
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGitHubSignIn = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: window.location.origin
+        }
+      });
+      
+      if (error) {
+        toast.error(error.message);
+      }
+    } catch (error) {
+      console.error('GitHub sign-in error:', error);
+      toast.error('Failed to sign in with GitHub');
     } finally {
       setLoading(false);
     }
@@ -165,6 +188,28 @@ const Auth: FC = () => {
                 {isLogin ? 'Sign In' : 'Create Account'}
               </>
             )}
+          </Button>
+
+          {/* Divider */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+            </div>
+          </div>
+
+          {/* GitHub OAuth */}
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={handleGitHubSignIn}
+            disabled={loading}
+          >
+            <Github className="w-4 h-4 mr-2" />
+            GitHub
           </Button>
 
           <div className="text-center">

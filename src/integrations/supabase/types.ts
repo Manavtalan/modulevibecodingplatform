@@ -137,6 +137,57 @@ export type Database = {
           },
         ]
       }
+      chat_attachments: {
+        Row: {
+          conversation_id: string | null
+          created_at: string | null
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id: string
+          message_id: string | null
+          user_id: string
+        }
+        Insert: {
+          conversation_id?: string | null
+          created_at?: string | null
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id?: string
+          message_id?: string | null
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string | null
+          created_at?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          message_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_attachments_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_attachments_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       code_snippets: {
         Row: {
           code: string
@@ -298,6 +349,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      github_connections: {
+        Row: {
+          access_token: string | null
+          connected_at: string | null
+          github_user_id: string | null
+          github_username: string | null
+          id: string
+          is_active: boolean | null
+          last_synced: string | null
+          metadata: Json | null
+          repo_name: string | null
+          repo_url: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          connected_at?: string | null
+          github_user_id?: string | null
+          github_username?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_synced?: string | null
+          metadata?: Json | null
+          repo_name?: string | null
+          repo_url?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          connected_at?: string | null
+          github_user_id?: string | null
+          github_username?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_synced?: string | null
+          metadata?: Json | null
+          repo_name?: string | null
+          repo_url?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       messages: {
         Row: {

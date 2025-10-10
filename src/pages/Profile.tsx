@@ -5,8 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Mail, Calendar, Settings, Camera, Save } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { User, Mail, Calendar, Settings, Camera, Save, Github } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import GitHubConnections from '@/components/GitHubConnections';
 
 const Profile: FC = () => {
   const { toast } = useToast();
@@ -107,17 +109,17 @@ const Profile: FC = () => {
             </Card>
           </div>
 
-          {/* Profile Settings */}
+          {/* Profile Settings with Tabs */}
           <div className="md:col-span-2">
             <Card className="glass-card border-0">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle className="text-foreground flex items-center gap-2">
                     <Settings className="w-5 h-5" />
-                    Profile Settings
+                    Settings
                   </CardTitle>
                   <CardDescription>
-                    Manage your account information and preferences
+                    Manage your account and integrations
                   </CardDescription>
                 </div>
                 {!isEditing ? (
@@ -148,7 +150,21 @@ const Profile: FC = () => {
                   </div>
                 )}
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent>
+                <Tabs defaultValue="profile" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 mb-6">
+                    <TabsTrigger value="profile">
+                      <User className="w-4 h-4 mr-2" />
+                      Profile
+                    </TabsTrigger>
+                    <TabsTrigger value="github">
+                      <Github className="w-4 h-4 mr-2" />
+                      GitHub
+                    </TabsTrigger>
+                  </TabsList>
+
+                  {/* Profile Tab */}
+                  <TabsContent value="profile" className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="name" className="text-foreground font-medium">
@@ -232,6 +248,13 @@ const Profile: FC = () => {
                     </div>
                   </div>
                 </div>
+                  </TabsContent>
+
+                  {/* GitHub Tab */}
+                  <TabsContent value="github">
+                    <GitHubConnections />
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           </div>

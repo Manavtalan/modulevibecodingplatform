@@ -17,12 +17,18 @@ interface Message {
 }
 
 // Real API integration with Supabase edge function
-async function sendMessageToModuleAPI(message: string, supabaseClient: any, conversationId?: string): Promise<{ response: string; conversationId: string }> {
+async function sendMessageToModuleAPI(
+  message: string, 
+  supabaseClient: any, 
+  conversationId?: string,
+  uploadedFiles?: Array<{name: string; url: string}>
+): Promise<{ response: string; conversationId: string }> {
   const { data, error } = await supabaseClient.functions.invoke('ask', {
     body: {
       user_message: message,
       conversation_id: conversationId,
-      template_id: 'module_standalone_html' // Use standalone HTML for demo preview
+      template_id: 'module_standalone_html', // Use standalone HTML for demo preview
+      attachments: uploadedFiles
     }
   });
 
@@ -104,7 +110,7 @@ const Demo = () => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = async (messageText: string) => {
+  const handleSendMessage = async (messageText: string, attachmentFiles?: File[]) => {
     // Check authentication
     if (!user) {
       toast.error("Please sign in to use Module AI");
@@ -124,11 +130,31 @@ const Demo = () => {
     setIsLoading(true);
 
     try {
+      // Upload files if present
+      let uploadedFiles: Array<{name: string; url: string}> = [];
+      if (attachmentFiles && attachmentFiles.length > 0) {
+        for (const file of attachmentFiles) {
+          const filePath = `${user.id}/${Date.now()}-${file.name}`;
+          const { data, error } = await supabase.storage
+            .from('chat-uploads')
+            .upload(filePath, file);
+          
+          if (error) throw error;
+          
+          const { data: urlData } = supabase.storage
+            .from('chat-uploads')
+            .getPublicUrl(filePath);
+          
+          uploadedFiles.push({ name: file.name, url: urlData.publicUrl });
+        }
+      }
+
       // Call real API
       const { response, conversationId: newConvId } = await sendMessageToModuleAPI(
         messageText,
         supabase,
-        conversationId
+        conversationId,
+        uploadedFiles
       );
 
       // Update conversation ID if it's a new conversation
