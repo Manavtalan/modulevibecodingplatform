@@ -218,7 +218,7 @@ serve(async (req) => {
       const requestBody = {
         model: 'gpt-4o',
         messages: messages,
-        max_tokens: 128000,
+        max_tokens: 16000, // GPT-4o max is 16,384 tokens
         temperature: 0.7,
         stream: true, // Enable streaming
       };
