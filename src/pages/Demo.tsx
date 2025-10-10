@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
@@ -39,6 +39,7 @@ async function sendMessageToModuleAPI(message: string, supabaseClient: any, conv
 
 const Demo = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -51,6 +52,49 @@ const Demo = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | undefined>(undefined);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Load conversation from history if conversation ID is provided
+  useEffect(() => {
+    const loadConversation = async () => {
+      const locationState = location.state as { conversationId?: string };
+      const convId = locationState?.conversationId;
+      
+      if (convId && user) {
+        setConversationId(convId);
+        setIsLoading(true);
+        
+        try {
+          // Fetch messages for this conversation
+          const { data: messagesData, error } = await supabase
+            .from('messages')
+            .select('*')
+            .eq('conversation_id', convId)
+            .order('created_at', { ascending: true });
+
+          if (error) throw error;
+
+          if (messagesData && messagesData.length > 0) {
+            // Convert database messages to UI messages
+            const loadedMessages: Message[] = messagesData.map((msg) => ({
+              id: msg.id,
+              text: msg.content,
+              isUser: msg.role === 'user',
+              timestamp: new Date(msg.created_at),
+            }));
+            
+            setMessages(loadedMessages);
+          }
+        } catch (error) {
+          console.error('Error loading conversation:', error);
+          toast.error('Failed to load conversation');
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadConversation();
+  }, [location.state, user]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

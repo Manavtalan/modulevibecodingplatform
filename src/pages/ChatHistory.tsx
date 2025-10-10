@@ -98,7 +98,7 @@ const ChatHistory: FC = () => {
   };
 
   const handleViewConversation = (conversationId: string) => {
-    navigate('/', { state: { conversationId } });
+    navigate('/demo', { state: { conversationId } });
   };
 
   const filteredConversations = conversations.filter(conv =>
