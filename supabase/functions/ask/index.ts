@@ -202,24 +202,23 @@ serve(async (req) => {
 
     messages.push({ role: 'user', content: user_message });
 
-    // Call OpenAI with GPT-5 (permanent - no fallback)
+    // Call OpenAI - Using gpt-4o-mini (GPT-5 not yet publicly available)
     let assistantReply = '';
-    let modelUsed = 'openai:gpt-5';
+    let modelUsed = 'openai:gpt-4o-mini';
     let tokensUsed = 0;
     let inputTokens = 0;
     let outputTokens = 0;
 
     try {
-      console.log('=== OpenAI GPT-5 Request ===');
-      console.log('Model: gpt-5-2025-08-07');
+      console.log('=== OpenAI Request ===');
+      console.log('Model: gpt-4o-mini');
       console.log('Messages count:', messages.length);
       console.log('API Key present:', !!OPENAI_API_KEY);
       
       const requestBody = {
-        model: 'gpt-5-2025-08-07',
+        model: 'gpt-4o-mini',
         messages: messages,
-        max_completion_tokens: 128000, // GPT-5 uses max_completion_tokens (not max_tokens)
-        // Note: temperature NOT supported for GPT-5, defaults to 1.0
+        max_tokens: 16000, // High token limit for full web apps
       };
       console.log('Request body:', JSON.stringify(requestBody, null, 2));
       
@@ -240,17 +239,6 @@ serve(async (req) => {
       if (!openaiResponse.ok) {
         const errorText = await openaiResponse.text();
         console.error('OpenAI API error response:', errorText);
-        console.error('Status:', openaiResponse.status);
-        
-        // Provide specific error messages but DON'T fallback to other models
-        if (openaiResponse.status === 404) {
-          throw new Error('GPT-5 model not available. Ensure you have access to gpt-5-2025-08-07');
-        } else if (openaiResponse.status === 401) {
-          throw new Error('Invalid OpenAI API key');
-        } else if (openaiResponse.status === 429) {
-          throw new Error('OpenAI rate limit exceeded');
-        }
-        
         throw new Error(`OpenAI API failed with status ${openaiResponse.status}: ${errorText}`);
       }
 
