@@ -53,8 +53,8 @@ const Footer: FC = () => {
     <footer className="border-t border-border/50 bg-background/95 backdrop-blur-xl mt-auto mb-16 sm:mb-0">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-8 md:py-10 lg:py-12">
         
-        {/* Main Footer Content - Three Sections */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 md:gap-10 lg:gap-12 mb-6 sm:mb-8">
+        {/* Main Footer Content - Two Sections */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-12 mb-6 sm:mb-8">
           
           {/* Section 1: About Module */}
           <div className="space-y-2 sm:space-y-3 md:space-y-4 text-center sm:text-left">
@@ -69,11 +69,11 @@ const Footer: FC = () => {
           </div>
 
           {/* Section 2: Social Links */}
-          <div className="space-y-2 sm:space-y-3 md:space-y-4 text-center">
+          <div className="space-y-2 sm:space-y-3 md:space-y-4 text-center sm:text-right">
             <h3 className="text-xs sm:text-sm font-semibold text-foreground uppercase tracking-wider">
               Connect With Us
             </h3>
-            <div className="flex items-center justify-center gap-3 sm:gap-4">
+            <div className="flex items-center justify-center sm:justify-end gap-3 sm:gap-4">
               {socialLinks.map((link) => (
                 <a
                   key={link.name}
@@ -92,24 +92,6 @@ const Footer: FC = () => {
               Follow us for updates and insights
             </p>
           </div>
-
-          {/* Section 3: Legal */}
-          <div className="space-y-2 sm:space-y-3 md:space-y-4 text-center sm:text-right">
-            <h3 className="text-xs sm:text-sm font-semibold text-foreground uppercase tracking-wider">
-              Legal
-            </h3>
-            <nav className="flex flex-col gap-1.5 sm:gap-2">
-              {legalLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.href}
-                  className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors duration-300 hover:underline underline-offset-4"
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </nav>
-          </div>
         </div>
 
         {/* Separator Line */}
@@ -121,7 +103,7 @@ const Footer: FC = () => {
             © {new Date().getFullYear()} Module. All rights reserved.
           </p>
           <p className="text-[10px] sm:text-xs text-muted-foreground">
-            Made with ❤️ for developers worldwide
+            Made in India for Developers Worldwide
           </p>
         </div>
       </div>
