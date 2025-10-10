@@ -202,25 +202,24 @@ serve(async (req) => {
 
     messages.push({ role: 'user', content: user_message });
 
-    // Call OpenAI with GPT-5
+    // Call OpenAI
     let assistantReply = '';
-    let modelUsed = 'openai:gpt-5';
+    let modelUsed = 'openai:gpt-4o-mini';
     let tokensUsed = 0;
     let inputTokens = 0;
     let outputTokens = 0;
 
     try {
       console.log('=== OpenAI Request Debug ===');
-      console.log('Model:', 'gpt-5-2025-08-07');
+      console.log('Model:', 'gpt-4o-mini');
       console.log('Messages count:', messages.length);
       console.log('API Key present:', !!OPENAI_API_KEY);
       console.log('API Key prefix:', OPENAI_API_KEY?.substring(0, 10) + '...');
       
       const requestBody = {
-        model: 'gpt-5-2025-08-07', // GPT-5 flagship model with 400k context, 128k output
+        model: 'gpt-4o-mini', // Reliable model for code generation
         messages: messages,
-        max_completion_tokens: 128000, // Maximum output tokens for full web apps
-        // Note: temperature not supported for GPT-5
+        max_tokens: 8000, // Sufficient for web app generation
       };
       console.log('Request body:', JSON.stringify(requestBody, null, 2));
       
