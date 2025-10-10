@@ -276,6 +276,8 @@ When users ask you to build something, you MUST:
 
 Remember: Generate COMPLETE, STANDALONE HTML files that can be previewed immediately in the browser!`
   },
+
+  module_code_generator: {
     id: 'module_code_generator',
     name: 'Module - Full Stack Code Generator',
     prompt: `You are Module, an AI-powered full-stack development platform that generates complete, production-ready React applications with TypeScript, Tailwind CSS, and shadcn/ui components.
