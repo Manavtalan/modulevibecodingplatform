@@ -148,12 +148,12 @@ const Sidebar: FC<SidebarProps> = ({
       <div className="h-[72px] flex items-center border-b border-border px-4">
         {expanded ? (
           <div className="flex items-center gap-3 animate-fade-in-label">
-            <Logo size="sm" animated={false} />
+            <Logo size="sm" animated={true} />
             <span className="text-xl font-bold">Module</span>
           </div>
         ) : (
           <div className="mx-auto">
-            <Logo size="sm" animated={false} />
+            <Logo size="sm" animated={true} />
           </div>
         )}
       </div>

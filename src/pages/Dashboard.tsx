@@ -2,8 +2,7 @@ import { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Footer from '@/components/Footer';
-import Logo from '@/components/Logo';
-import { Rocket, Code2, Zap, Users, Sparkles, Layout, Globe } from 'lucide-react';
+import { Rocket, Code2, Zap, Sparkles, Globe } from 'lucide-react';
 
 const Dashboard: FC = () => {
   const navigate = useNavigate();
@@ -46,20 +45,6 @@ const Dashboard: FC = () => {
             </div>
           </div>
 
-          {/* Top Bar */}
-          <div className="relative z-10 flex items-center justify-between px-4 sm:px-6 md:px-8 py-4 sm:py-6">
-            <div className="flex items-center gap-2">
-              <Logo />
-            </div>
-            <div className="flex items-center gap-3 sm:gap-4 text-gray-400">
-              <button className="hover:text-white transition-colors p-2">
-                <Users className="w-5 h-5" />
-              </button>
-              <button className="hover:text-white transition-colors p-2">
-                <Code2 className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
 
           {/* Hero Section - Centered */}
           <div className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-4 sm:px-6 md:px-8">
