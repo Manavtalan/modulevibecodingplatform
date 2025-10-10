@@ -1,5 +1,5 @@
 import { FC, useState, useEffect, useRef } from 'react';
-import { MessageCircle, Clock, Info, DollarSign, Sparkles, User, ChevronDown, Settings, LogOut } from 'lucide-react';
+import { MessageCircle, History, Info, DollarSign, Sparkles, User, ChevronDown, Settings, LogOut } from 'lucide-react';
 import Logo from '@/components/Logo';
 import SidebarItem, { SidebarItemProps } from './SidebarItem';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,7 +26,7 @@ const Sidebar: FC<SidebarProps> = ({
   // Default navigation items
   const defaultItems: Omit<SidebarItemProps, 'expanded'>[] = [
     { id: 'new-chat', label: 'New Chat', icon: MessageCircle, href: '/' },
-    { id: 'history', label: 'Chats History', icon: Clock, href: '/history' },
+    { id: 'history', label: 'Chat History', icon: History, href: '/history' },
   ];
 
   const secondaryItems: Omit<SidebarItemProps, 'expanded'>[] = [
