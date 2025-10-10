@@ -202,24 +202,25 @@ serve(async (req) => {
 
     messages.push({ role: 'user', content: user_message });
 
-    // Call OpenAI GPT-5 Mini
+    // Call OpenAI GPT-4o with streaming
     let assistantReply = '';
-    let modelUsed = 'openai:gpt-5-mini';
+    let modelUsed = 'openai:gpt-4o';
     let tokensUsed = 0;
     let inputTokens = 0;
     let outputTokens = 0;
 
     try {
-      console.log('=== OpenAI GPT-5 Mini Request ===');
-      console.log('Model: gpt-5-mini-2025-08-07');
+      console.log('=== OpenAI GPT-4o Streaming Request ===');
+      console.log('Model: gpt-4o');
       console.log('Messages count:', messages.length);
       console.log('API Key present:', !!OPENAI_API_KEY);
       
       const requestBody = {
-        model: 'gpt-5-mini-2025-08-07',
+        model: 'gpt-4o',
         messages: messages,
-        max_completion_tokens: 128000, // GPT-5 mini uses max_completion_tokens (not max_tokens)
-        // Note: temperature NOT supported for GPT-5 models, defaults to 1.0
+        max_tokens: 128000,
+        temperature: 0.7,
+        stream: true, // Enable streaming
       };
       console.log('Request body:', JSON.stringify(requestBody, null, 2));
       
@@ -235,7 +236,6 @@ serve(async (req) => {
       console.log('=== OpenAI Response Debug ===');
       console.log('Status:', openaiResponse.status);
       console.log('Status Text:', openaiResponse.statusText);
-      console.log('Headers:', JSON.stringify(Object.fromEntries(openaiResponse.headers.entries())));
 
       if (!openaiResponse.ok) {
         const errorText = await openaiResponse.text();
@@ -243,56 +243,69 @@ serve(async (req) => {
         throw new Error(`OpenAI API failed with status ${openaiResponse.status}: ${errorText}`);
       }
 
-      const openaiData = await openaiResponse.json();
-      console.log('Full OpenAI response:', JSON.stringify(openaiData, null, 2));
-      
-      // Extract token usage from GPT-5 response
-      if (openaiData.usage) {
-        inputTokens = openaiData.usage.prompt_tokens || 0;
-        outputTokens = openaiData.usage.completion_tokens || 0;
-        tokensUsed = inputTokens + outputTokens;
-        console.log(`Token usage - Input: ${inputTokens}, Output: ${outputTokens}, Total: ${tokensUsed}`);
+      // Handle streaming response
+      if (!openaiResponse.body) {
+        throw new Error('No response body');
       }
-      
-      // Check response structure
-      if (!openaiData.choices) {
-        console.error('Missing choices in response');
-        throw new Error('Invalid response: no choices array');
+
+      const reader = openaiResponse.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      console.log('Starting to read streaming response...');
+
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) {
+          console.log('Stream complete');
+          break;
+        }
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        
+        // Keep the last incomplete line in buffer
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmedLine = line.trim();
+          
+          if (!trimmedLine || trimmedLine === 'data: [DONE]') {
+            continue;
+          }
+
+          if (trimmedLine.startsWith('data: ')) {
+            try {
+              const jsonStr = trimmedLine.slice(6);
+              const data = JSON.parse(jsonStr);
+              
+              // Extract content delta
+              const delta = data.choices?.[0]?.delta?.content;
+              if (delta) {
+                assistantReply += delta;
+              }
+
+              // Extract usage information (appears in the last chunk)
+              if (data.usage) {
+                inputTokens = data.usage.prompt_tokens || 0;
+                outputTokens = data.usage.completion_tokens || 0;
+                tokensUsed = inputTokens + outputTokens;
+                console.log(`Token usage - Input: ${inputTokens}, Output: ${outputTokens}, Total: ${tokensUsed}`);
+              }
+            } catch (e) {
+              console.error('Error parsing SSE line:', trimmedLine, e);
+            }
+          }
+        }
       }
-      
-      if (!openaiData.choices[0]) {
-        console.error('Empty choices array');
-        throw new Error('Invalid response: empty choices array');
-      }
-      
-      if (!openaiData.choices[0].message) {
-        console.error('Missing message in first choice');
-        throw new Error('Invalid response: no message in choice');
-      }
-      
-      assistantReply = openaiData.choices[0].message.content;
-      console.log('Extracted content type:', typeof assistantReply);
-      console.log('Extracted content value:', assistantReply);
-      console.log('Content is null?', assistantReply === null);
-      console.log('Content is undefined?', assistantReply === undefined);
-      
-      if (assistantReply === null || assistantReply === undefined) {
-        console.error('OpenAI returned null/undefined content');
-        console.error('Full choice object:', JSON.stringify(openaiData.choices[0]));
-        throw new Error('OpenAI returned null content');
-      }
-      
-      if (typeof assistantReply !== 'string') {
-        console.error('Content is not a string, converting...');
-        assistantReply = String(assistantReply);
-      }
+
+      console.log('✓ Successfully extracted reply, length:', assistantReply.length);
       
       if (!assistantReply.trim()) {
-        console.error('OpenAI returned empty or whitespace-only content');
+        console.error('OpenAI returned empty content');
         throw new Error('OpenAI returned empty content');
       }
-      
-      console.log('✓ Successfully extracted reply, length:', assistantReply.length);
     } catch (error) {
       console.error('=== OpenAI Call Failed ===');
       console.error('Error type:', error?.constructor?.name);
@@ -305,7 +318,7 @@ serve(async (req) => {
         errorMessage = 'Invalid OpenAI API key. Please check your API key configuration.';
       } else if (error?.message?.includes('429') || error?.message?.includes('rate limit')) {
         errorMessage = 'OpenAI rate limit exceeded. Please try again later.';
-      } else if (error?.message?.includes('Empty response') || error?.message?.includes('null content')) {
+      } else if (error?.message?.includes('Empty')) {
         errorMessage = 'OpenAI returned an empty response. This might indicate an API issue.';
       } else if (error?.message) {
         errorMessage = `OpenAI error: ${error.message}`;

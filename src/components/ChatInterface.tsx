@@ -135,9 +135,10 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
       setMessages(prev => [...prev, optimisticUserMessage]);
     }
 
-    // Add loading indicator for assistant
+    // Add streaming assistant message placeholder
+    const streamingAssistantId = `temp-assistant-${Date.now()}`;
     const optimisticAssistantMessage: Message = {
-      id: `temp-assistant-${Date.now()}`,
+      id: streamingAssistantId,
       role: 'assistant',
       content: '',
       isOptimistic: true,
@@ -147,6 +148,7 @@ const ChatInterface: FC<ChatInterfaceProps> = ({ conversationId, onConversationC
     setMessages(prev => [...prev, optimisticAssistantMessage]);
 
     try {
+      // Use regular invoke (edge function handles streaming internally)
       const { data, error } = await supabase.functions.invoke('ask', {
         body: { 
           user_message: messageText,
