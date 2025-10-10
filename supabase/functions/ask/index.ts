@@ -202,23 +202,24 @@ serve(async (req) => {
 
     messages.push({ role: 'user', content: user_message });
 
-    // Call OpenAI - Using gpt-4o-mini (GPT-5 not yet publicly available)
+    // Call OpenAI GPT-5 Mini
     let assistantReply = '';
-    let modelUsed = 'openai:gpt-4o-mini';
+    let modelUsed = 'openai:gpt-5-mini';
     let tokensUsed = 0;
     let inputTokens = 0;
     let outputTokens = 0;
 
     try {
-      console.log('=== OpenAI Request ===');
-      console.log('Model: gpt-4o-mini');
+      console.log('=== OpenAI GPT-5 Mini Request ===');
+      console.log('Model: gpt-5-mini-2025-08-07');
       console.log('Messages count:', messages.length);
       console.log('API Key present:', !!OPENAI_API_KEY);
       
       const requestBody = {
-        model: 'gpt-4o-mini',
+        model: 'gpt-5-mini-2025-08-07',
         messages: messages,
-        max_tokens: 16000, // High token limit for full web apps
+        max_completion_tokens: 128000, // GPT-5 mini uses max_completion_tokens (not max_tokens)
+        // Note: temperature NOT supported for GPT-5 models, defaults to 1.0
       };
       console.log('Request body:', JSON.stringify(requestBody, null, 2));
       
