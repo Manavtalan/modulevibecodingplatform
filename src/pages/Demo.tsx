@@ -22,7 +22,7 @@ async function sendMessageToModuleAPI(message: string, supabaseClient: any, conv
     body: {
       user_message: message,
       conversation_id: conversationId,
-      template_id: 'module_code_generator'
+      template_id: 'module_standalone_html' // Use standalone HTML for demo preview
     }
   });
 

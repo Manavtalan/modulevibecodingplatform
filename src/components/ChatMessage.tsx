@@ -30,9 +30,15 @@ const ChatMessage = ({ message, isUser }: ChatMessageProps) => {
     return code.includes('<!DOCTYPE') || code.includes('<html') || code.includes('<body');
   };
 
+  // Check if message contains React/TSX code
+  const hasReactCode = (text: string) => {
+    return /```(?:tsx|jsx)\n([\s\S]*?)```/.test(text);
+  };
+
   const hasCodeBlocks = !isUser && /```(?:html|jsx|javascript|tsx|css)/.test(message);
   const codeBlocks = hasCodeBlocks ? extractCodeBlocks(message) : [];
   const canPreview = !isUser && hasPreviewableHTML(message);
+  const hasReact = !isUser && hasReactCode(message);
 
   const previewGeneratedCode = (code: string) => {
     setPreviewCode(code);
@@ -118,28 +124,38 @@ const ChatMessage = ({ message, isUser }: ChatMessageProps) => {
               </ReactMarkdown>
             </div>
 
-            {/* Preview Buttons - Only show for complete HTML */}
-            {canPreview && codeBlocks.length > 0 && (
+            {/* Preview Buttons - Show for HTML or React code */}
+            {(canPreview || hasReact) && codeBlocks.length > 0 && (
               <div className="flex gap-2 mt-4">
-                <Button
-                  onClick={() => previewGeneratedCode(codeBlocks[0])}
-                  className="text-white font-medium"
-                  style={{
-                    background: 'linear-gradient(90deg, #FF7A18, #FFAE00)',
-                    borderRadius: '8px',
-                  }}
-                >
-                  <Eye className="w-4 h-4 mr-2" />
-                  Preview Web App
-                </Button>
-                <Button
-                  onClick={() => openInNewTab(codeBlocks[0])}
-                  variant="outline"
-                  className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10"
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Open in New Tab
-                </Button>
+                {canPreview ? (
+                  <>
+                    <Button
+                      onClick={() => previewGeneratedCode(codeBlocks[0])}
+                      className="text-white font-medium"
+                      style={{
+                        background: 'linear-gradient(90deg, #FF7A18, #FFAE00)',
+                        borderRadius: '8px',
+                      }}
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      Preview Web App
+                    </Button>
+                    <Button
+                      onClick={() => openInNewTab(codeBlocks[0])}
+                      variant="outline"
+                      className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Open in New Tab
+                    </Button>
+                  </>
+                ) : hasReact ? (
+                  <div className="px-4 py-2 rounded-lg bg-orange-500/10 border border-orange-500/20">
+                    <p className="text-sm text-orange-400">
+                      💡 React component code generated! Copy the components above and add them to your project.
+                    </p>
+                  </div>
+                ) : null}
               </div>
             )}
 
