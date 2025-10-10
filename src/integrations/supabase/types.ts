@@ -453,9 +453,12 @@ export type Database = {
           id: string
           is_active: boolean | null
           last_request_reset: string | null
+          last_token_reset: string | null
           monthly_ai_requests: number | null
           role: Database["public"]["Enums"]["user_role"]
           subscription_tier: string | null
+          token_quota: number | null
+          tokens_used: number | null
           total_ai_requests: number | null
           updated_at: string | null
           username: string | null
@@ -468,9 +471,12 @@ export type Database = {
           id: string
           is_active?: boolean | null
           last_request_reset?: string | null
+          last_token_reset?: string | null
           monthly_ai_requests?: number | null
           role?: Database["public"]["Enums"]["user_role"]
           subscription_tier?: string | null
+          token_quota?: number | null
+          tokens_used?: number | null
           total_ai_requests?: number | null
           updated_at?: string | null
           username?: string | null
@@ -483,9 +489,12 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           last_request_reset?: string | null
+          last_token_reset?: string | null
           monthly_ai_requests?: number | null
           role?: Database["public"]["Enums"]["user_role"]
           subscription_tier?: string | null
+          token_quota?: number | null
+          tokens_used?: number | null
           total_ai_requests?: number | null
           updated_at?: string | null
           username?: string | null
@@ -645,6 +654,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_and_deduct_tokens: {
+        Args: { _tokens_to_use: number; _user_id: string }
+        Returns: Json
+      }
+      get_token_usage: {
+        Args: { _user_id: string }
+        Returns: Json
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["user_role"]

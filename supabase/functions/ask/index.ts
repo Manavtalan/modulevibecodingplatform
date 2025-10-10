@@ -151,25 +151,26 @@ serve(async (req) => {
       conversationId = newConv.id;
     }
 
-    // Rate limit check: count requests today per user (not per conversation)
-    const today = new Date().toISOString().split('T')[0];
-    const { count, error: countError } = await supabase
-      .from('requests_log')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .gte('created_at', `${today}T00:00:00Z`)
-      .lte('created_at', `${today}T23:59:59Z`);
+    // Check token quota before processing
+    const { data: tokenCheck, error: tokenCheckError } = await supabase
+      .rpc('get_token_usage', { _user_id: user.id });
 
-    if (countError) {
-      console.error('Rate limit check failed:', countError);
-    } else if (count !== null && count >= 10) {
-      return new Response(
-        JSON.stringify({ 
-          code: 'RATE_LIMIT', 
-          message: 'Daily free credits exhausted. Upgrade to premium to continue.' 
-        }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (tokenCheckError) {
+      console.error('Token check failed:', tokenCheckError);
+    } else if (tokenCheck) {
+      const { remaining, percentage } = tokenCheck;
+      console.log(`User ${user.id} token usage: ${percentage}% (${remaining} remaining)`);
+      
+      if (remaining <= 0) {
+        return new Response(
+          JSON.stringify({ 
+            code: 'TOKEN_LIMIT_EXCEEDED', 
+            message: '🚫 Token limit reached. Upgrade your plan to continue building.',
+            token_usage: tokenCheck
+          }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     // Fetch last 10 messages for context
@@ -201,21 +202,25 @@ serve(async (req) => {
 
     messages.push({ role: 'user', content: user_message });
 
-    // Call OpenAI
+    // Call OpenAI with GPT-5
     let assistantReply = '';
-    let modelUsed = 'openai:gpt-4o-mini';
+    let modelUsed = 'openai:gpt-5';
+    let tokensUsed = 0;
+    let inputTokens = 0;
+    let outputTokens = 0;
 
     try {
       console.log('=== OpenAI Request Debug ===');
-      console.log('Model:', 'gpt-4o-mini');
+      console.log('Model:', 'gpt-5-2025-08-07');
       console.log('Messages count:', messages.length);
       console.log('API Key present:', !!OPENAI_API_KEY);
       console.log('API Key prefix:', OPENAI_API_KEY?.substring(0, 10) + '...');
       
       const requestBody = {
-        model: 'gpt-4o-mini', // Legacy model - no reasoning tokens, better for code generation
+        model: 'gpt-5-2025-08-07', // GPT-5 flagship model with 400k context, 128k output
         messages: messages,
-        max_tokens: 4000, // Using max_tokens for legacy model
+        max_completion_tokens: 128000, // Maximum output tokens for full web apps
+        // Note: temperature not supported for GPT-5
       };
       console.log('Request body:', JSON.stringify(requestBody, null, 2));
       
@@ -241,6 +246,14 @@ serve(async (req) => {
 
       const openaiData = await openaiResponse.json();
       console.log('Full OpenAI response:', JSON.stringify(openaiData, null, 2));
+      
+      // Extract token usage from GPT-5 response
+      if (openaiData.usage) {
+        inputTokens = openaiData.usage.prompt_tokens || 0;
+        outputTokens = openaiData.usage.completion_tokens || 0;
+        tokensUsed = inputTokens + outputTokens;
+        console.log(`Token usage - Input: ${inputTokens}, Output: ${outputTokens}, Total: ${tokensUsed}`);
+      }
       
       // Check response structure
       if (!openaiData.choices) {
@@ -309,8 +322,18 @@ serve(async (req) => {
       );
     }
 
+    // Deduct tokens from user quota
+    const { data: tokenDeduction, error: tokenError } = await supabase
+      .rpc('check_and_deduct_tokens', { 
+        _user_id: user.id,
+        _tokens_to_use: tokensUsed 
+      });
+
+    if (tokenError) {
+      console.error('Token deduction failed:', tokenError);
+    }
+
     // Insert user message
-    const userTokenEst = Math.ceil(user_message.length / 4);
     const { error: userMsgError } = await supabase
       .from('messages')
       .insert({
@@ -318,7 +341,7 @@ serve(async (req) => {
         role: 'user',
         content: user_message,
         model_used: 'client',
-        token_est: userTokenEst
+        token_est: inputTokens
       });
 
     if (userMsgError) {
@@ -326,7 +349,6 @@ serve(async (req) => {
     }
 
     // Insert assistant message
-    const assistantTokenEst = Math.ceil(assistantReply.length / 4);
     const { data: assistantMsg, error: assistantMsgError } = await supabase
       .from('messages')
       .insert({
@@ -334,7 +356,7 @@ serve(async (req) => {
         role: 'assistant',
         content: assistantReply,
         model_used: modelUsed,
-        token_est: assistantTokenEst
+        token_est: outputTokens
       })
       .select()
       .single();
@@ -353,27 +375,32 @@ serve(async (req) => {
       .update({ last_active: new Date().toISOString() })
       .eq('id', conversationId);
 
-    // Log request with estimated tokens
-    const totalTokens = userTokenEst + assistantTokenEst;
+    // Log request with actual tokens
     const { error: logError } = await supabase
       .from('requests_log')
       .insert({
         user_id: user.id,
         model: modelUsed,
-        tokens_est: totalTokens
+        tokens_est: tokensUsed
       });
 
     if (logError) {
       console.error('Failed to log request:', logError);
     }
 
-    // Return success response
+    // Get updated token usage for response
+    const { data: updatedTokenUsage } = await supabase
+      .rpc('get_token_usage', { _user_id: user.id });
+
+    // Return success response with token usage
     return new Response(
       JSON.stringify({
         conversation_id: conversationId,
         assistant_message: assistantReply,
         message_id: assistantMsg.id,
-        model_used: modelUsed
+        model_used: modelUsed,
+        tokens_used: tokensUsed,
+        token_usage: updatedTokenUsage || null
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

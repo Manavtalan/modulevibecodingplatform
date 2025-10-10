@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
+import { TokenUsageDisplay } from "@/components/TokenUsageDisplay";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -101,8 +102,15 @@ const Demo = () => {
 
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error: any) {
-      const errorMessage = error?.message || "Failed to get response from Module AI";
-      toast.error(errorMessage);
+      // Handle specific error codes
+      if (error?.message?.includes('TOKEN_LIMIT_EXCEEDED')) {
+        toast.error('🚫 Token limit reached. Upgrade your plan to continue building.');
+      } else if (error?.message?.includes('RATE_LIMIT')) {
+        toast.error('⚠️ You\'ve reached your usage limit. Please try again later.');
+      } else {
+        const errorMessage = error?.message || "Failed to get response from Module AI";
+        toast.error(errorMessage);
+      }
       console.error("Error sending message:", error);
     } finally {
       setIsLoading(false);
@@ -121,8 +129,11 @@ const Demo = () => {
         fontFamily: 'Inter, system-ui, sans-serif'
       }}
     >
+      {/* Token Usage Display */}
+      {user && <TokenUsageDisplay />}
+      
       {/* Header */}
-      <header 
+      <header
         className="flex items-center gap-4 p-4 border-b"
         style={{
           borderColor: 'rgba(255, 255, 255, 0.05)',
