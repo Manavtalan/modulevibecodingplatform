@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.cashfree-webhook]
 verify_jwt = false
+
+[functions.generate-code]
+verify_jwt = true

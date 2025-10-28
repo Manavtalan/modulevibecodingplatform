@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Logo from '@/components/Logo';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, Sparkles, LogOut, Settings, Github } from 'lucide-react';
+import { User, Sparkles, LogOut, Settings, Github, Code2 } from 'lucide-react';
 
 const Navigation: FC = () => {
   const location = useLocation();
@@ -50,6 +50,17 @@ const Navigation: FC = () => {
             >
               <Sparkles className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
               <span className="hidden md:inline">Prompts</span>
+            </Link>
+          )}
+
+          {/* Code Generator Link */}
+          {location.pathname !== '/auth' && (
+            <Link 
+              to="/code-generator"
+              className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors flex items-center gap-1 sm:gap-2 group px-2 sm:px-0"
+            >
+              <Code2 className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
+              <span className="hidden md:inline">Code Gen</span>
             </Link>
           )}
 
