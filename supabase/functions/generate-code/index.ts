@@ -119,83 +119,253 @@ RULES:
       case 'html':
         systemPrompt = `${baseFormat}
 
-ARCHITECTURE:
-- Separate HTML, CSS, JavaScript files
-- Semantic HTML5 (header, main, section, footer, nav)
-- Modern CSS (Flexbox/Grid)
-- Functional JavaScript
+CRITICAL RULE: ALWAYS generate separate files. NEVER use inline styles or inline scripts.
 
-REQUIREMENTS:
-- Responsive 320px-1536px
-- Semantic headings (h1→h6)
-- Alt text on images
+REQUIRED FILE STRUCTURE:
+[PLAN]
+{"files":[
+  {"path":"index.html","description":"Main HTML structure with linked external CSS/JS"},
+  {"path":"styles.css","description":"All styling rules"},
+  {"path":"script.js","description":"All JavaScript functionality"}
+]}
+[/PLAN]
+
+EXAMPLE OUTPUT:
+[FILE:index.html]
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Website Title</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <nav><!-- Navigation --></nav>
+  </header>
+  <main>
+    <section><!-- Content --></section>
+  </main>
+  <footer><!-- Footer --></footer>
+  <script src="script.js"></script>
+</body>
+</html>
+[/FILE]
+
+[FILE:styles.css]
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+}
+
+/* Responsive styles for 320px-1536px */
+[/FILE]
+
+[FILE:script.js]
+// DOM manipulation and event listeners
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('Page loaded');
+});
+[/FILE]
+
+MANDATORY REQUIREMENTS:
+- HTML: Structure ONLY, link external CSS and JS files
+- CSS: ALL styles in separate .css file (NO inline styles, NO <style> tags)
+- JS: ALL scripts in separate .js file (NO inline scripts, NO <script> tags with code)
+- Semantic HTML5 elements (header, main, section, footer, nav, article)
+- Responsive design 320px-1536px using CSS media queries
+- Accessible (alt text, semantic headings h1→h6, proper ARIA)
 - Color contrast ≥4.5:1
-- No placeholder content
-- Files ≤200 lines each`;
+- Each file ≤200 lines
+- NO placeholder content (use realistic text)`;
         break;
       case 'react':
         systemPrompt = `${baseFormat}
 
-ARCHITECTURE (Vite + React + TS + Tailwind):
-- App entry: src/App.tsx (compose sections)
-- Sections: src/components/sections/* (Navbar, Hero, Features, etc.)
-- UI kit: Button, Card, Input, Badge from @/components/ui/*
-- Styles: src/styles/tokens.css, src/styles/globals.css
-- Use Tailwind utilities + design tokens
-- NO new dependencies
+MANDATORY ARCHITECTURE (Vite + React + TypeScript + Tailwind):
 
-COMPONENT RULES:
-- ≤120 lines each, split if larger
-- TypeScript interfaces for props
-- Props for text/colors/images
-- Meaningful copy (not Lorem Ipsum)
+FILE STRUCTURE (REQUIRED):
+[PLAN]
+{"files":[
+  {"path":"src/App.tsx","description":"Main app entry - composes all sections"},
+  {"path":"src/components/sections/Navbar.tsx","description":"Navigation bar component"},
+  {"path":"src/components/sections/Hero.tsx","description":"Hero/banner section"},
+  {"path":"src/components/sections/Features.tsx","description":"Features grid section"},
+  {"path":"src/components/sections/Footer.tsx","description":"Footer section"},
+  {"path":"src/styles/tokens.css","description":"Design system tokens (colors, spacing)"},
+  {"path":"src/styles/globals.css","description":"Global styles and resets"}
+]}
+[/PLAN]
 
-ACCESSIBILITY:
-- Single h1, correct heading order
-- Form labels/aria attributes
-- Descriptive alt text
-- focus-visible:ring-2
-- Contrast ≥4.5:1
+EXAMPLE COMPONENT STRUCTURE:
+[FILE:src/App.tsx]
+import Navbar from '@/components/sections/Navbar';
+import Hero from '@/components/sections/Hero';
+import Features from '@/components/sections/Features';
+import Footer from '@/components/sections/Footer';
 
-RESPONSIVENESS:
-- 320px-1536px mobile-first
-- Use sm: md: lg: xl: 2xl: breakpoints
-- No horizontal scroll
-- Stack mobile, grid/flex desktop`;
+function App() {
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <Hero />
+      <Features />
+      <Footer />
+    </div>
+  );
+}
+
+export default App;
+[/FILE]
+
+[FILE:src/components/sections/Hero.tsx]
+import { Button } from '@/components/ui/button';
+
+export default function Hero() {
+  return (
+    <section className="container mx-auto px-4 py-20">
+      <h1 className="text-4xl font-bold">Hero Title</h1>
+      <Button variant="default">Get Started</Button>
+    </section>
+  );
+}
+[/FILE]
+
+COMPONENT RULES (CRITICAL):
+- ONE component per file
+- Files ≤120 lines each (split if larger)
+- TypeScript interfaces for all props
+- Use existing UI components: Button, Card, Input, Badge from @/components/ui/*
+- Tailwind utilities ONLY (no custom CSS unless in tokens.css)
+- NO new npm dependencies
+- Props for customizable text/colors/images
+- Meaningful content (NO Lorem Ipsum)
+
+ACCESSIBILITY (MANDATORY):
+- Single h1 per page, correct heading hierarchy
+- Form labels and ARIA attributes
+- Descriptive alt text for all images
+- focus-visible:ring-2 for interactive elements
+- Color contrast ≥4.5:1
+
+RESPONSIVENESS (REQUIRED):
+- Mobile-first design 320px-1536px
+- Use Tailwind breakpoints: sm: md: lg: xl: 2xl:
+- No horizontal scroll at any breakpoint
+- Stack columns on mobile, grid/flex on desktop
+
+DESIGN SYSTEM:
+- Use CSS variables from tokens.css (--primary, --background, etc.)
+- Consistent spacing scale
+- Theme-aware colors (support light/dark mode)`;
         break;
       case 'vue':
         systemPrompt = `${baseFormat}
 
-ARCHITECTURE (Vue 3 + Vite + TS):
-- App entry: src/App.vue
-- Components: src/components/*
-- Composition API with script setup
-- Scoped styles
+MANDATORY ARCHITECTURE (Vue 3 + Vite + TypeScript):
+
+FILE STRUCTURE (REQUIRED):
+[PLAN]
+{"files":[
+  {"path":"src/App.vue","description":"Main app entry with router-view"},
+  {"path":"src/components/Navbar.vue","description":"Navigation component"},
+  {"path":"src/components/Hero.vue","description":"Hero section"},
+  {"path":"src/components/Features.vue","description":"Features section"},
+  {"path":"src/components/Footer.vue","description":"Footer component"}
+]}
+[/PLAN]
+
+EXAMPLE COMPONENT:
+[FILE:src/App.vue]
+<script setup lang="ts">
+import Navbar from './components/Navbar.vue';
+import Hero from './components/Hero.vue';
+</script>
+
+<template>
+  <div class="app">
+    <Navbar />
+    <Hero />
+  </div>
+</template>
+
+<style scoped>
+.app {
+  min-height: 100vh;
+}
+</style>
+[/FILE]
 
 REQUIREMENTS:
-- Components ≤120 lines
+- Composition API with <script setup lang="ts">
+- Components ≤120 lines each
+- Scoped styles in each component
+- Props with TypeScript types
 - Responsive 320px-1536px
-- Semantic headings
-- Alt text, aria labels
-- Contrast ≥4.5:1`;
+- Semantic HTML headings
+- Alt text and ARIA labels
+- Color contrast ≥4.5:1`;
         break;
       default:
         systemPrompt = `${baseFormat}
 
 RULES:
-- Separate focused files
+- Generate multiple focused files
 - Clean ${codeType} code
-- Files ≤200 lines
-- Modern best practices`;
+- Each file ≤200 lines
+- Modern best practices
+- Proper file organization`;
     }
 
     if (framework) {
       systemPrompt += `\n\nUse ${framework} framework/library for this implementation.`;
     }
 
+    // Model-specific prompt adjustments
+    if (model === 'gemini-flash' && codeType === 'html') {
+      systemPrompt += `\n\n⚠️ CRITICAL REMINDER: You MUST output separate files. Verify before completing:\n✓ index.html (NO <style> tags, NO inline <script> code)\n✓ styles.css file exists\n✓ script.js file exists`;
+    }
+
+    // Auto-enhance user prompt to enforce multi-file generation
+    let enhancedPrompt = prompt;
+
+    if (codeType === 'html') {
+      enhancedPrompt = `${prompt}
+
+IMPORTANT REQUIREMENTS:
+- Generate this as SEPARATE files (index.html, styles.css, script.js)
+- index.html must ONLY contain structure and link external CSS/JS files
+- ALL styling goes in styles.css (NO inline styles, NO <style> tags)
+- ALL JavaScript goes in script.js (NO inline scripts, NO <script> tags with code)
+
+Do NOT create a single HTML file with embedded styles or scripts.`;
+    } else if (codeType === 'react') {
+      enhancedPrompt = `${prompt}
+
+REQUIREMENTS:
+- Generate multiple component files (NOT a single App.tsx with everything)
+- Split into focused sections: Navbar, Hero, Features, Footer, etc.
+- Each component in its own file under src/components/sections/
+- Use existing UI components from @/components/ui/*`;
+    } else if (codeType === 'vue') {
+      enhancedPrompt = `${prompt}
+
+REQUIREMENTS:
+- Generate multiple .vue component files
+- Split into logical components (Navbar, Hero, Features, Footer)
+- Each component ≤120 lines`;
+    }
+
     const messages = [
       { role: 'system', content: systemPrompt },
-      { role: 'user', content: prompt }
+      { role: 'user', content: enhancedPrompt }
     ];
 
     // Configure provider based on selected model
