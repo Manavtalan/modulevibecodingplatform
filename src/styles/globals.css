@@ -1,0 +1,15 @@
+@tailwind base; @tailwind components; @tailwind utilities;
+
+@layer base {
+  html, body, #root { height: 100%; background: hsl(var(--bg)); color: hsl(var(--fg)); }
+  * { border-color: hsl(var(--muted)); }
+}
+
+@layer components {
+  .container-page { @apply mx-auto max-w-6xl px-4 sm:px-6 lg:px-8; }
+  .card { @apply bg-white/5 backdrop-blur rounded-2xl p-6 border border-white/10 shadow; }
+  .btn { @apply inline-flex items-center gap-2 rounded-xl px-4 py-2 font-medium transition; }
+  .btn-primary { @apply btn text-white; background: hsl(var(--brand)); }
+  .btn-ghost { @apply btn bg-transparent hover:bg-white/10; }
+  .input { @apply w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2 outline-none focus:ring-2; }
+}
