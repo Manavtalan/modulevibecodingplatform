@@ -35,8 +35,8 @@ const App = () => (
             <Route path="/pricing" element={<Subscription />} />
             <Route path="/about" element={<About />} />
             <Route path="/history" element={<ChatHistory />} />
-            <Route path="/demo" element={<Demo />} />
-            <Route path="/code-generator" element={<CodeGenerator />} />
+            <Route path="/demo" element={<ModuleStudio />} />
+            <Route path="/code-generator" element={<ModuleStudio />} />
             <Route path="/studio" element={<ModuleStudio />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
