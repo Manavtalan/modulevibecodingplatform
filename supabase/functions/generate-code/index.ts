@@ -78,126 +78,96 @@ serve(async (req) => {
     let systemPrompt = '';
     switch (codeType) {
       case 'html':
-        systemPrompt = `GENERATION CONTRACT:
-Return a JSON object with a "files" array only. Each item = { "path": string, "content": string }.
+        systemPrompt = `You are an API that returns ONLY valid JSON. No explanations. No markdown. No text before or after the JSON.
 
-ARCHITECTURE RULES:
-- Create index.html, styles.css, and script.js as separate files
-- Use modern CSS (Flexbox/Grid) in separate CSS file
-- Include proper semantic HTML5 elements (header, main, section, footer, nav)
-- Add functional JavaScript in separate JS file
+RESPONSE FORMAT (CRITICAL):
+{"files":[{"path":"index.html","content":"..."},{"path":"styles.css","content":"..."},{"path":"script.js","content":"..."}]}
 
-ACCESSIBILITY:
-- Semantic headings (h1 → h6 in correct order)
-- Form labels with proper for attributes
-- Alt text on all images
-- Visible focus states
-- Color contrast ≥ 4.5:1
+Your response MUST start with { and end with }
 
-RESPONSIVENESS:
-- Works 320px → 1536px
-- No horizontal scroll
-- Avoid fixed widths
-- Use responsive units (rem, %, vw)
+ARCHITECTURE:
+- Separate HTML, CSS, JavaScript files
+- Semantic HTML5 (header, main, section, footer, nav)
+- Modern CSS (Flexbox/Grid)
+- Functional JavaScript
 
-CLEAN CODE:
-- No duplication
-- Each file ≤ 200 lines
-- Split if larger
-- NO placeholder content - make it fully functional
-
-Output JSON only (no commentary, no markdown blocks).`;
+REQUIREMENTS:
+- Responsive 320px-1536px
+- Semantic headings (h1→h6)
+- Alt text on images
+- Color contrast ≥4.5:1
+- No placeholder content
+- Files ≤200 lines each`;
         break;
       case 'react':
-        systemPrompt = `You are Module's React/Vite UI Builder.
+        systemPrompt = `You are an API that returns ONLY valid JSON. No explanations. No markdown. No text before or after the JSON.
 
-GENERATION CONTRACT:
-Return only a JSON object with "files" array. Each item = { "path": string, "content": string }.
-The output must compile in a fresh Vite + React + TS + Tailwind project.
+RESPONSE FORMAT (CRITICAL):
+{"files":[{"path":"src/App.tsx","content":"..."},{"path":"src/components/sections/Hero.tsx","content":"..."}]}
 
-ARCHITECTURE RULES:
-- App entry: src/App.tsx (compose and render sections here)
-- Sections: src/components/sections/* (small, reusable React components - Navbar, Hero, Features, etc.)
-- Pages (if any): src/pages/*
-- Styles: src/styles/tokens.css & src/styles/globals.css (update if needed for theme)
-- Use React + TypeScript with functional components
-- Use Tailwind utilities + existing design system tokens
-- Use UI kit components: Button, Card, Input, Badge, etc. (import from @/components/ui/*)
-- DO NOT add new libraries or dependencies
+Your response MUST start with { and end with }
 
-COMPONENT DESIGN:
-- Keep components small and readable (≤ 120 lines each)
-- Use props for configurable text/colors/images/variants
-- Provide meaningful placeholder copy (not Lorem Ipsum)
-- Make sections composable and reusable
+ARCHITECTURE (Vite + React + TS + Tailwind):
+- App entry: src/App.tsx (compose sections)
+- Sections: src/components/sections/* (Navbar, Hero, Features, etc.)
+- UI kit: Button, Card, Input, Badge from @/components/ui/*
+- Styles: src/styles/tokens.css, src/styles/globals.css
+- Use Tailwind utilities + design tokens
+- NO new dependencies
+
+COMPONENT RULES:
+- ≤120 lines each, split if larger
+- TypeScript interfaces for props
+- Props for text/colors/images
+- Meaningful copy (not Lorem Ipsum)
 
 ACCESSIBILITY:
-- Semantic headings (h1 → h6 in correct order, single h1 per page)
-- Form labels with proper for/aria attributes
-- Alt text on ALL images (descriptive, not generic)
-- Visible focus states (focus-visible:ring-2 focus-visible:ring-primary)
-- Color contrast ≥ 4.5:1 (use semantic tokens)
+- Single h1, correct heading order
+- Form labels/aria attributes
+- Descriptive alt text
+- focus-visible:ring-2
+- Contrast ≥4.5:1
 
 RESPONSIVENESS:
-- Works 320px → 1536px (mobile-first design)
-- No horizontal scroll at any breakpoint
-- Avoid fixed widths (use max-w-* utilities)
-- Use responsive breakpoints: sm: md: lg: xl: 2xl:
-- Stack on mobile, grid/flex on desktop
-
-CLEAN CODE:
-- No code duplication
-- Functional components with TypeScript interfaces for props
-- Proper prop types and defaults
-- NO placeholder content - make it fully functional
-- Split large components into smaller ones
-
-If you cannot satisfy this contract, return nothing.
-Output ONLY the JSON object with files array (no commentary, no markdown blocks, no extra text).`;
+- 320px-1536px mobile-first
+- Use sm: md: lg: xl: 2xl: breakpoints
+- No horizontal scroll
+- Stack mobile, grid/flex desktop`;
         break;
       case 'vue':
-        systemPrompt = `GENERATION CONTRACT:
-Return a JSON object with a "files" array only. Each item = { "path": string, "content": string }.
-The output must work in a Vue 3 + Vite + TS project.
+        systemPrompt = `You are an API that returns ONLY valid JSON. No explanations. No markdown. No text before or after the JSON.
 
-ARCHITECTURE RULES:
+RESPONSE FORMAT (CRITICAL):
+{"files":[{"path":"src/App.vue","content":"..."},{"path":"src/components/Header.vue","content":"..."}]}
+
+Your response MUST start with { and end with }
+
+ARCHITECTURE (Vue 3 + Vite + TS):
 - App entry: src/App.vue
-- Components: src/components/* (small, reusable)
-- Use Composition API with script setup
-- Use scoped styles
+- Components: src/components/*
+- Composition API with script setup
+- Scoped styles
 
-ACCESSIBILITY:
-- Semantic headings (h1 → h6 in correct order)
-- Form labels/aria attributes
-- Alt text on all images
-- Visible focus states
-- Color contrast ≥ 4.5:1
-
-RESPONSIVENESS:
-- Works 320px → 1536px
-- No horizontal scroll
-- Use responsive CSS
-
-CLEAN CODE:
-- Components ≤ 120 lines
-- No duplication
-- NO placeholder content
-
-Output JSON only (no commentary, no markdown blocks).`;
+REQUIREMENTS:
+- Components ≤120 lines
+- Responsive 320px-1536px
+- Semantic headings
+- Alt text, aria labels
+- Contrast ≥4.5:1`;
         break;
       default:
-        systemPrompt = `GENERATION CONTRACT:
-Return a JSON object with a "files" array only. Each item = { "path": string, "content": string }.
+        systemPrompt = `You are an API that returns ONLY valid JSON. No explanations. No markdown. No text before or after the JSON.
+
+RESPONSE FORMAT (CRITICAL):
+{"files":[{"path":"main.${codeType}","content":"..."},{"path":"utils.${codeType}","content":"..."}]}
+
+Your response MUST start with { and end with }
 
 RULES:
-- Create separate, focused files
-- Write clean, maintainable ${codeType} code
-- Include helpful comments
-- Follow modern best practices
-- Files ≤ 200 lines each
-- NO placeholder content
-
-Output JSON only (no commentary, no markdown blocks).`;
+- Separate focused files
+- Clean ${codeType} code
+- Files ≤200 lines
+- Modern best practices`;
     }
 
     if (framework) {
@@ -206,20 +176,19 @@ Output JSON only (no commentary, no markdown blocks).`;
 
     const messages = [
       { role: 'system', content: systemPrompt },
-      { role: 'user', content: prompt }
+      { role: 'user', content: `${prompt}\n\nIMPORTANT: Your response must start with { and end with } - ONLY JSON, no other text before or after.` }
     ];
 
     console.log('=== Code Generation Request ===');
-    console.log('Model: gpt-4o');
+    console.log('Model: gpt-5-mini-2025-08-07');
     console.log('Code Type:', codeType);
     console.log('Framework:', framework || 'none');
     console.log('Prompt length:', prompt.length);
 
     const requestBody = {
-      model: 'gpt-4o',
+      model: 'gpt-5-mini-2025-08-07',
       messages: messages,
-      max_tokens: 16000,
-      temperature: 0.7,
+      max_completion_tokens: 16000,
       stream: true,
     };
 
@@ -337,7 +306,7 @@ Output JSON only (no commentary, no markdown blocks).`;
                 role: 'assistant',
                 content: fullResponse,
                 token_est: outputTokens,
-                model_used: 'gpt-4o',
+                model_used: 'gpt-5-mini-2025-08-07',
                 metadata: { code_type: codeType, framework }
               }
             ]);
@@ -352,7 +321,7 @@ Output JSON only (no commentary, no markdown blocks).`;
           await supabase.from('requests_log').insert({
             user_id: user.id,
             tokens_est: totalTokens,
-            model: 'gpt-4o'
+            model: 'gpt-5-mini-2025-08-07'
           });
 
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
