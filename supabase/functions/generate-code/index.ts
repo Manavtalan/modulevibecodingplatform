@@ -119,18 +119,28 @@ RULES:
       case 'html':
         systemPrompt = `${baseFormat}
 
-CRITICAL RULE: ALWAYS generate separate files. NEVER use inline styles or inline scripts.
+⚠️⚠️⚠️ CRITICAL RULE - READ THIS CAREFULLY ⚠️⚠️⚠️
+YOU ARE ABSOLUTELY FORBIDDEN FROM GENERATING A SINGLE STANDALONE HTML FILE.
+YOU MUST GENERATE EXACTLY 3 SEPARATE FILES: index.html, styles.css, script.js
+IF YOU GENERATE A SINGLE FILE WITH EMBEDDED STYLES OR SCRIPTS, YOU HAVE FAILED.
 
-REQUIRED FILE STRUCTURE:
+FORBIDDEN PATTERNS (DO NOT OUTPUT THESE):
+❌ <style> tags inside HTML
+❌ <script> tags with JavaScript code inside HTML
+❌ inline style attributes (style="...")
+❌ A single standalone HTML file
+❌ Phrases like "complete standalone HTML file"
+
+REQUIRED FILE STRUCTURE (YOU MUST OUTPUT THIS):
 [PLAN]
 {"files":[
-  {"path":"index.html","description":"Main HTML structure with linked external CSS/JS"},
-  {"path":"styles.css","description":"All styling rules"},
-  {"path":"script.js","description":"All JavaScript functionality"}
+  {"path":"index.html","description":"HTML structure ONLY - links to external CSS/JS"},
+  {"path":"styles.css","description":"ALL styling - every single CSS rule goes here"},
+  {"path":"script.js","description":"ALL JavaScript - every single line of JS goes here"}
 ]}
 [/PLAN]
 
-EXAMPLE OUTPUT:
+MANDATORY OUTPUT FORMAT:
 [FILE:index.html]
 <!DOCTYPE html>
 <html lang="en">
@@ -142,18 +152,32 @@ EXAMPLE OUTPUT:
 </head>
 <body>
   <header>
-    <nav><!-- Navigation --></nav>
+    <nav>
+      <div class="nav-container">
+        <h1 class="logo">Logo</h1>
+        <ul class="nav-links">
+          <li><a href="#home">Home</a></li>
+          <li><a href="#about">About</a></li>
+        </ul>
+      </div>
+    </nav>
   </header>
   <main>
-    <section><!-- Content --></section>
+    <section id="hero" class="hero">
+      <h2>Hero Title</h2>
+      <p>Hero description text</p>
+    </section>
   </main>
-  <footer><!-- Footer --></footer>
+  <footer>
+    <p>&copy; 2025 Website Name</p>
+  </footer>
   <script src="script.js"></script>
 </body>
 </html>
 [/FILE]
 
 [FILE:styles.css]
+/* Reset and Base Styles */
 * {
   margin: 0;
   padding: 0;
@@ -163,28 +187,81 @@ EXAMPLE OUTPUT:
 body {
   font-family: system-ui, -apple-system, sans-serif;
   line-height: 1.6;
+  color: #333;
 }
 
-/* Responsive styles for 320px-1536px */
+/* Navigation Styles */
+nav {
+  background: #2c3e50;
+  padding: 1rem 0;
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Hero Styles */
+.hero {
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .nav-container {
+    flex-direction: column;
+  }
+}
 [/FILE]
 
 [FILE:script.js]
-// DOM manipulation and event listeners
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('Page loaded');
+// Wait for DOM to load
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('Website loaded');
+  
+  // Mobile menu toggle
+  const menuToggle = document.querySelector('.menu-toggle');
+  if (menuToggle) {
+    menuToggle.addEventListener('click', function() {
+      const navLinks = document.querySelector('.nav-links');
+      navLinks.classList.toggle('active');
+    });
+  }
+  
+  // Smooth scrolling for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
 });
 [/FILE]
 
-MANDATORY REQUIREMENTS:
-- HTML: Structure ONLY, link external CSS and JS files
-- CSS: ALL styles in separate .css file (NO inline styles, NO <style> tags)
-- JS: ALL scripts in separate .js file (NO inline scripts, NO <script> tags with code)
-- Semantic HTML5 elements (header, main, section, footer, nav, article)
-- Responsive design 320px-1536px using CSS media queries
-- Accessible (alt text, semantic headings h1→h6, proper ARIA)
-- Color contrast ≥4.5:1
-- Each file ≤200 lines
-- NO placeholder content (use realistic text)`;
+VERIFICATION CHECKLIST (CHECK BEFORE COMPLETING):
+✓ Generated 3 files: index.html, styles.css, script.js
+✓ index.html has <link rel="stylesheet" href="styles.css">
+✓ index.html has <script src="script.js"></script>
+✓ index.html has NO <style> tags
+✓ index.html has NO <script> tags with code inside
+✓ styles.css exists and contains all CSS
+✓ script.js exists and contains all JavaScript
+✓ Semantic HTML5 (header, main, section, footer, nav)
+✓ Responsive 320px-1536px
+✓ Accessible (alt text, headings, ARIA)
+✓ Color contrast ≥4.5:1`;
         break;
       case 'react':
         systemPrompt = `${baseFormat}
@@ -339,13 +416,29 @@ RULES:
     if (codeType === 'html') {
       enhancedPrompt = `${prompt}
 
-IMPORTANT REQUIREMENTS:
-- Generate this as SEPARATE files (index.html, styles.css, script.js)
-- index.html must ONLY contain structure and link external CSS/JS files
-- ALL styling goes in styles.css (NO inline styles, NO <style> tags)
-- ALL JavaScript goes in script.js (NO inline scripts, NO <script> tags with code)
+🚨 CRITICAL INSTRUCTIONS - YOU MUST FOLLOW THESE 🚨
 
-Do NOT create a single HTML file with embedded styles or scripts.`;
+DO NOT generate a "standalone HTML file" - that is FORBIDDEN.
+DO NOT include ANY styling in the HTML file - NO <style> tags, NO inline styles.
+DO NOT include ANY JavaScript in the HTML file - NO <script> tags with code.
+
+YOU MUST generate EXACTLY 3 SEPARATE FILES:
+
+1. index.html - ONLY HTML structure + links to external files
+   - Must include: <link rel="stylesheet" href="styles.css">
+   - Must include: <script src="script.js"></script>
+   - NO <style> tags
+   - NO <script> tags with code inside
+
+2. styles.css - ALL styling rules go here
+   - Every CSS rule must be in this file
+   - NO styles in the HTML file
+
+3. script.js - ALL JavaScript code goes here
+   - Every line of JavaScript must be in this file
+   - NO scripts in the HTML file
+
+If you generate a single standalone HTML file, you have completely failed the task.`;
     } else if (codeType === 'react') {
       enhancedPrompt = `${prompt}
 

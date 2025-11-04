@@ -51,6 +51,43 @@ export default function CodeGenerator() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const validateGeneratedFiles = (files: CodeFile[], currentCodeType: string): boolean => {
+    if (currentCodeType === 'html') {
+      // Check for single HTML file issue
+      const htmlFiles = files.filter(f => f.path.endsWith('.html'));
+      const cssFiles = files.filter(f => f.path.endsWith('.css'));
+      const jsFiles = files.filter(f => f.path.endsWith('.js'));
+      
+      if (files.length === 1 && htmlFiles.length === 1) {
+        const htmlContent = htmlFiles[0].content;
+        const hasInlineStyles = htmlContent.includes('<style>') || /<\w+[^>]+style=["']/.test(htmlContent);
+        const hasInlineScripts = htmlContent.includes('<script>') && !htmlContent.match(/<script[^>]+src=["']/);
+        
+        if (hasInlineStyles || hasInlineScripts) {
+          toast.error('❌ Generation failed: Received single HTML file with embedded styles/scripts instead of separate files', {
+            duration: 8000,
+            description: 'Expected: index.html, styles.css, script.js. Please try again or switch to Claude model for better results.'
+          });
+          return false;
+        }
+      }
+      
+      // Warn if missing expected files
+      if (htmlFiles.length > 0 && cssFiles.length === 0) {
+        toast.warning('⚠️ No CSS file generated. Styles may be missing.', { duration: 5000 });
+      }
+      if (htmlFiles.length > 0 && jsFiles.length === 0) {
+        toast.warning('⚠️ No JavaScript file generated. Interactivity may be missing.', { duration: 5000 });
+      }
+    }
+    
+    if (currentCodeType === 'react' && files.length < 3) {
+      toast.warning('⚠️ Generated fewer files than expected for a React project', { duration: 5000 });
+    }
+    
+    return true;
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [generatedCodes, generationState]);
@@ -228,11 +265,20 @@ export default function CodeGenerator() {
                 // Final check
                 const files = parseProgressiveStream(fullContent);
                 if (files && files.length > 0) {
-                  setGeneratedCodes(prev => {
-                    const exists = prev.some(p => p.files.length === files.length);
-                    return exists ? prev : [...prev, { files, timestamp: new Date() }];
-                  });
-                  toast.success(`Generated ${files.length} file(s) successfully!`);
+                  // Validate files before accepting them
+                  if (validateGeneratedFiles(files, codeType)) {
+                    setGeneratedCodes(prev => {
+                      const exists = prev.some(p => p.files.length === files.length);
+                      return exists ? prev : [...prev, { files, timestamp: new Date() }];
+                    });
+                    toast.success(`Generated ${files.length} file(s) successfully!`);
+                  } else {
+                    setGenerationState(prev => prev ? {
+                      ...prev,
+                      phase: 'error',
+                      errorMessage: 'Generated code did not meet quality requirements',
+                    } : null);
+                  }
                 }
               }
             } catch (error) {
