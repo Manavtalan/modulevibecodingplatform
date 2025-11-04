@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,13 @@ export function CodeOutputTabs({ files }: CodeOutputTabsProps) {
   const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview');
   const [selectedFile, setSelectedFile] = useState<string>(files[0]?.path || '');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Auto-select first file when files change
+  useEffect(() => {
+    if (files.length > 0 && !files.find(f => f.path === selectedFile)) {
+      setSelectedFile(files[0].path);
+    }
+  }, [files, selectedFile]);
 
   const filteredFiles = files.filter(file =>
     file.path.toLowerCase().includes(searchQuery.toLowerCase())

@@ -12,6 +12,15 @@ interface GenerateCodeRequest {
   codeType?: 'html' | 'react' | 'vue' | 'javascript' | 'typescript' | 'css';
   framework?: string;
   conversation_id?: string;
+  model?: 'claude-sonnet-4-5' | 'gpt-5-mini' | 'gemini-flash';
+}
+
+interface ProviderConfig {
+  apiKey: string;
+  model: string;
+  endpoint: string;
+  buildRequest: (messages: any[]) => any;
+  parseStreamChunk: (line: string) => string | null;
 }
 
 serve(async (req) => {
@@ -20,11 +29,13 @@ serve(async (req) => {
   }
 
   try {
+    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
 
-    if (!LOVABLE_API_KEY || !SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
       throw new Error('Missing required environment variables');
     }
 
@@ -49,7 +60,7 @@ serve(async (req) => {
       });
     }
 
-    const { prompt, codeType = 'html', framework, conversation_id } = await req.json() as GenerateCodeRequest;
+    const { prompt, codeType = 'html', framework, conversation_id, model = 'gemini-flash' } = await req.json() as GenerateCodeRequest;
 
     if (!prompt || prompt.trim().length === 0) {
       return new Response(JSON.stringify({ error: 'Prompt is required' }), {
@@ -74,16 +85,39 @@ serve(async (req) => {
       });
     }
 
-    // Build system prompt based on code type
+    // Build system prompt with progressive generation markers
     let systemPrompt = '';
+    const baseFormat = `You are a code generation API that outputs structured progress markers.
+
+OUTPUT FORMAT (CRITICAL):
+1. First, output a plan:
+[PLAN]
+{"files":[{"path":"src/App.tsx","description":"Main app entry point"},{"path":"src/components/Hero.tsx","description":"Hero section"}]}
+[/PLAN]
+
+2. Then generate each file with markers:
+[FILE:src/App.tsx]
+... complete file content here ...
+[/FILE]
+
+[FILE:src/components/Hero.tsx]
+... complete file content here ...
+[/FILE]
+
+3. Finally, output completion:
+[COMPLETE]
+{"filesGenerated":2,"success":true}
+[/COMPLETE]
+
+RULES:
+- Output markers immediately as you generate
+- Keep file content between [FILE:path] and [/FILE] markers
+- Files must be complete and valid code
+- No text outside markers`;
+
     switch (codeType) {
       case 'html':
-        systemPrompt = `You are an API that returns ONLY valid JSON. No explanations. No markdown. No text before or after the JSON.
-
-RESPONSE FORMAT (CRITICAL):
-{"files":[{"path":"index.html","content":"..."},{"path":"styles.css","content":"..."},{"path":"script.js","content":"..."}]}
-
-Your response MUST start with { and end with }
+        systemPrompt = `${baseFormat}
 
 ARCHITECTURE:
 - Separate HTML, CSS, JavaScript files
@@ -100,12 +134,7 @@ REQUIREMENTS:
 - Files ≤200 lines each`;
         break;
       case 'react':
-        systemPrompt = `You are an API that returns ONLY valid JSON. No explanations. No markdown. No text before or after the JSON.
-
-RESPONSE FORMAT (CRITICAL):
-{"files":[{"path":"src/App.tsx","content":"..."},{"path":"src/components/sections/Hero.tsx","content":"..."}]}
-
-Your response MUST start with { and end with }
+        systemPrompt = `${baseFormat}
 
 ARCHITECTURE (Vite + React + TS + Tailwind):
 - App entry: src/App.tsx (compose sections)
@@ -135,12 +164,7 @@ RESPONSIVENESS:
 - Stack mobile, grid/flex desktop`;
         break;
       case 'vue':
-        systemPrompt = `You are an API that returns ONLY valid JSON. No explanations. No markdown. No text before or after the JSON.
-
-RESPONSE FORMAT (CRITICAL):
-{"files":[{"path":"src/App.vue","content":"..."},{"path":"src/components/Header.vue","content":"..."}]}
-
-Your response MUST start with { and end with }
+        systemPrompt = `${baseFormat}
 
 ARCHITECTURE (Vue 3 + Vite + TS):
 - App entry: src/App.vue
@@ -156,12 +180,7 @@ REQUIREMENTS:
 - Contrast ≥4.5:1`;
         break;
       default:
-        systemPrompt = `You are an API that returns ONLY valid JSON. No explanations. No markdown. No text before or after the JSON.
-
-RESPONSE FORMAT (CRITICAL):
-{"files":[{"path":"main.${codeType}","content":"..."},{"path":"utils.${codeType}","content":"..."}]}
-
-Your response MUST start with { and end with }
+        systemPrompt = `${baseFormat}
 
 RULES:
 - Separate focused files
@@ -176,27 +195,114 @@ RULES:
 
     const messages = [
       { role: 'system', content: systemPrompt },
-      { role: 'user', content: `${prompt}\n\nIMPORTANT: Your response must start with { and end with } - ONLY JSON, no other text before or after.` }
+      { role: 'user', content: prompt }
     ];
 
+    // Configure provider based on selected model
+    let provider: ProviderConfig;
+    let modelUsed: string;
+
+    if (model === 'claude-sonnet-4-5' && ANTHROPIC_API_KEY) {
+      modelUsed = 'claude-sonnet-4-5';
+      provider = {
+        apiKey: ANTHROPIC_API_KEY,
+        model: 'claude-sonnet-4-5',
+        endpoint: 'https://api.anthropic.com/v1/messages',
+        buildRequest: (msgs) => ({
+          model: 'claude-sonnet-4-5',
+          max_tokens: 8000,
+          messages: msgs.filter(m => m.role !== 'system'),
+          system: systemPrompt,
+          stream: true,
+        }),
+        parseStreamChunk: (line: string) => {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') return null;
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+                return parsed.delta.text;
+              }
+            } catch {}
+          }
+          return null;
+        },
+      };
+    } else if (model === 'gpt-5-mini' && OPENAI_API_KEY) {
+      modelUsed = 'gpt-5-mini-2025-08-07';
+      provider = {
+        apiKey: OPENAI_API_KEY,
+        model: 'gpt-5-mini-2025-08-07',
+        endpoint: 'https://api.openai.com/v1/chat/completions',
+        buildRequest: (msgs) => ({
+          model: 'gpt-5-mini-2025-08-07',
+          messages: msgs,
+          max_completion_tokens: 8000,
+          stream: true,
+        }),
+        parseStreamChunk: (line: string) => {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') return null;
+            try {
+              const parsed = JSON.parse(data);
+              return parsed.choices?.[0]?.delta?.content || null;
+            } catch {}
+          }
+          return null;
+        },
+      };
+    } else {
+      // Default to Gemini via Lovable AI
+      if (!LOVABLE_API_KEY) {
+        throw new Error('No API key available for selected model');
+      }
+      modelUsed = 'google/gemini-2.5-flash';
+      provider = {
+        apiKey: LOVABLE_API_KEY,
+        model: 'google/gemini-2.5-flash',
+        endpoint: 'https://ai.gateway.lovable.dev/v1/chat/completions',
+        buildRequest: (msgs) => ({
+          model: 'google/gemini-2.5-flash',
+          messages: msgs,
+          stream: true,
+        }),
+        parseStreamChunk: (line: string) => {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') return null;
+            try {
+              const parsed = JSON.parse(data);
+              return parsed.choices?.[0]?.delta?.content || null;
+            } catch {}
+          }
+          return null;
+        },
+      };
+    }
+
     console.log('=== Code Generation Request ===');
-    console.log('Model: google/gemini-2.5-flash');
+    console.log('Model:', modelUsed);
     console.log('Code Type:', codeType);
     console.log('Framework:', framework || 'none');
     console.log('Prompt length:', prompt.length);
 
-    const requestBody = {
-      model: 'google/gemini-2.5-flash',
-      messages: messages,
-      stream: true,
+    const requestBody = provider.buildRequest(messages);
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
     };
 
-    const openaiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    if (model === 'claude-sonnet-4-5') {
+      headers['x-api-key'] = provider.apiKey;
+      headers['anthropic-version'] = '2023-06-01';
+    } else {
+      headers['Authorization'] = `Bearer ${provider.apiKey}`;
+    }
+
+    const openaiResponse = await fetch(provider.endpoint, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(requestBody),
     });
 
@@ -254,26 +360,10 @@ RULES:
             const lines = chunk.split('\n').filter(line => line.trim() !== '');
 
             for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                const data = line.slice(6);
-                if (data === '[DONE]') continue;
-
-                try {
-                  const parsed = JSON.parse(data);
-                  const content = parsed.choices?.[0]?.delta?.content;
-                  
-                  if (content) {
-                    fullResponse += content;
-                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content })}\n\n`));
-                  }
-
-                  if (parsed.usage) {
-                    inputTokens = parsed.usage.prompt_tokens || 0;
-                    outputTokens = parsed.usage.completion_tokens || 0;
-                  }
-                } catch (parseError) {
-                  console.error('Error parsing SSE data:', parseError);
-                }
+              const content = provider.parseStreamChunk(line);
+              if (content) {
+                fullResponse += content;
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content })}\n\n`));
               }
             }
           }
@@ -324,7 +414,7 @@ RULES:
                 role: 'assistant',
                 content: fullResponse,
                 token_est: outputTokens,
-                model_used: 'google/gemini-2.5-flash',
+                model_used: modelUsed,
                 metadata: { code_type: codeType, framework }
               }
             ]);
@@ -339,7 +429,7 @@ RULES:
           await supabase.from('requests_log').insert({
             user_id: user.id,
             tokens_est: totalTokens,
-            model: 'google/gemini-2.5-flash'
+            model: modelUsed
           });
 
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 

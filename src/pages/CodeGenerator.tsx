@@ -6,13 +6,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { CodePreview } from '@/components/CodePreview';
 import { TokenUsageDisplay } from '@/components/TokenUsageDisplay';
 import { TemplateGallery } from '@/components/sections/TemplateGallery';
 import { CodeOutputTabs } from '@/components/CodeOutputTabs';
+import { ModelSelector } from '@/components/ModelSelector';
+import { GenerationProgress, FilePlan } from '@/components/GenerationProgress';
 import { Loader2, Sparkles, Code2, Layout } from 'lucide-react';
 import { toast } from 'sonner';
-import ReactMarkdown from 'react-markdown';
 
 interface CodeFile {
   path: string;
@@ -24,15 +24,27 @@ interface GeneratedCode {
   timestamp: Date;
 }
 
+interface GenerationState {
+  phase: 'planning' | 'generating' | 'complete' | 'error';
+  currentFile: string | null;
+  filesComplete: string[];
+  filesFailed: string[];
+  filesTotal: number;
+  filesPlan: FilePlan[];
+  errorMessage?: string;
+}
+
 export default function CodeGenerator() {
   const { user } = useAuth();
   const [prompt, setPrompt] = useState('');
   const [codeType, setCodeType] = useState<'html' | 'react' | 'vue' | 'javascript' | 'typescript' | 'css'>('html');
   const [framework, setFramework] = useState('');
+  const [model, setModel] = useState<'claude-sonnet-4-5' | 'gpt-5-mini' | 'gemini-flash'>('gemini-flash');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedCodes, setGeneratedCodes] = useState<GeneratedCode[]>([]);
-  const [streamingContent, setStreamingContent] = useState('');
   const [showTemplates, setShowTemplates] = useState(true);
+  const [generationState, setGenerationState] = useState<GenerationState | null>(null);
+  const [currentFiles, setCurrentFiles] = useState<CodeFile[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -41,45 +53,83 @@ export default function CodeGenerator() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [generatedCodes, streamingContent]);
+  }, [generatedCodes, generationState]);
 
-  const parseFilesFromResponse = (content: string): CodeFile[] | null => {
-    console.log('=== Parsing Response ===');
-    console.log('Content length:', content.length);
-    console.log('First 200 chars:', content.slice(0, 200));
-    
-    try {
-      // Clean content - remove markdown code blocks if present
-      let cleanContent = content.trim();
+  const parseProgressiveStream = (content: string) => {
+    // Parse [PLAN] section
+    const planMatch = content.match(/\[PLAN\](.*?)\[\/PLAN\]/s);
+    if (planMatch) {
+      try {
+        const planData = JSON.parse(planMatch[1].trim());
+        if (planData.files && Array.isArray(planData.files)) {
+          setGenerationState(prev => ({
+            phase: 'generating',
+            currentFile: null,
+            filesComplete: prev?.filesComplete || [],
+            filesFailed: prev?.filesFailed || [],
+            filesTotal: planData.files.length,
+            filesPlan: planData.files,
+          }));
+        }
+      } catch (e) {
+        console.error('Failed to parse plan:', e);
+      }
+    }
+
+    // Parse [FILE:path] sections
+    const fileMatches = content.matchAll(/\[FILE:(.*?)\](.*?)(?:\[\/FILE\]|$)/gs);
+    const parsedFiles: CodeFile[] = [];
+    const completedPaths: string[] = [];
+
+    for (const match of fileMatches) {
+      const path = match[1].trim();
+      const fileContent = match[2].trim();
       
-      // Remove markdown JSON blocks
-      cleanContent = cleanContent.replace(/```json\n?/g, '').replace(/```\n?$/g, '');
-      
-      // Try to find JSON object
-      const jsonStart = cleanContent.indexOf('{');
-      const jsonEnd = cleanContent.lastIndexOf('}');
-      
-      if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
-        const jsonStr = cleanContent.slice(jsonStart, jsonEnd + 1);
-        console.log('Extracted JSON string length:', jsonStr.length);
+      if (fileContent) {
+        parsedFiles.push({ path, content: fileContent });
         
-        const parsed = JSON.parse(jsonStr);
-        if (parsed.files && Array.isArray(parsed.files)) {
-          console.log('✓ Successfully parsed', parsed.files.length, 'files');
-          return parsed.files;
+        // Check if file is complete (has closing tag)
+        if (content.includes(`[/FILE]`) && content.indexOf(`[FILE:${path}]`) < content.indexOf(`[/FILE]`)) {
+          completedPaths.push(path);
         }
       }
-    } catch (error) {
-      console.error('JSON parse error:', error);
-      console.log('Falling back to single file');
     }
-    
-    // Fallback: treat as single file
-    console.log('Creating single file fallback');
-    return [{
-      path: `generated.${codeType}`,
-      content: content.trim()
-    }];
+
+    // Update current files for live preview
+    if (parsedFiles.length > 0) {
+      setCurrentFiles(parsedFiles);
+      
+      // Update which file is currently being generated
+      const lastFile = parsedFiles[parsedFiles.length - 1];
+      if (lastFile && !completedPaths.includes(lastFile.path)) {
+        setGenerationState(prev => prev ? {
+          ...prev,
+          currentFile: lastFile.path,
+          filesComplete: completedPaths,
+        } : null);
+      } else if (completedPaths.length > 0) {
+        setGenerationState(prev => prev ? {
+          ...prev,
+          currentFile: null,
+          filesComplete: completedPaths,
+        } : null);
+      }
+    }
+
+    // Check for completion
+    if (content.includes('[COMPLETE]')) {
+      if (parsedFiles.length > 0) {
+        setGenerationState(prev => prev ? {
+          ...prev,
+          phase: 'complete',
+          currentFile: null,
+          filesComplete: parsedFiles.map(f => f.path),
+        } : null);
+        return parsedFiles;
+      }
+    }
+
+    return null;
   };
 
   const handleTemplateSelect = (templatePrompt: string) => {
@@ -100,8 +150,16 @@ export default function CodeGenerator() {
     }
 
     setIsGenerating(true);
-    setStreamingContent('');
     setShowTemplates(false);
+    setCurrentFiles([]);
+    setGenerationState({
+      phase: 'planning',
+      currentFile: null,
+      filesComplete: [],
+      filesFailed: [],
+      filesTotal: 0,
+      filesPlan: [],
+    });
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -122,6 +180,7 @@ export default function CodeGenerator() {
             prompt,
             codeType,
             framework: framework || undefined,
+            model,
           }),
         }
       );
@@ -154,17 +213,25 @@ export default function CodeGenerator() {
               
               if (parsed.content) {
                 fullContent += parsed.content;
-                setStreamingContent(fullContent);
-              }
-              
-              if (parsed.done) {
-                const files = parseFilesFromResponse(fullContent);
+                const files = parseProgressiveStream(fullContent);
                 if (files) {
                   setGeneratedCodes(prev => [...prev, {
                     files,
                     timestamp: new Date()
                   }]);
-                  setStreamingContent('');
+                  setCurrentFiles([]);
+                  toast.success(`Generated ${files.length} file(s) successfully!`);
+                }
+              }
+              
+              if (parsed.done) {
+                // Final check
+                const files = parseProgressiveStream(fullContent);
+                if (files && files.length > 0) {
+                  setGeneratedCodes(prev => {
+                    const exists = prev.some(p => p.files.length === files.length);
+                    return exists ? prev : [...prev, { files, timestamp: new Date() }];
+                  });
                   toast.success(`Generated ${files.length} file(s) successfully!`);
                 }
               }
@@ -176,7 +243,13 @@ export default function CodeGenerator() {
       }
     } catch (error) {
       console.error('Error generating code:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to generate code');
+      const errorMsg = error instanceof Error ? error.message : 'Failed to generate code';
+      toast.error(errorMsg);
+      setGenerationState(prev => prev ? {
+        ...prev,
+        phase: 'error',
+        errorMessage: errorMsg,
+      } : null);
     } finally {
       setIsGenerating(false);
     }
@@ -220,10 +293,10 @@ export default function CodeGenerator() {
         {/* Input Section */}
         <Card className="p-6 mb-8">
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="codeType">Code Type</Label>
-                <Select value={codeType} onValueChange={(v: any) => setCodeType(v)}>
+                <Select value={codeType} onValueChange={(v: any) => setCodeType(v)} disabled={isGenerating}>
                   <SelectTrigger id="codeType">
                     <SelectValue />
                   </SelectTrigger>
@@ -240,7 +313,7 @@ export default function CodeGenerator() {
 
               <div className="space-y-2">
                 <Label htmlFor="framework">Framework (Optional)</Label>
-                <Select value={framework} onValueChange={setFramework}>
+                <Select value={framework} onValueChange={setFramework} disabled={isGenerating}>
                   <SelectTrigger id="framework">
                     <SelectValue placeholder="None" />
                   </SelectTrigger>
@@ -253,6 +326,12 @@ export default function CodeGenerator() {
                   </SelectContent>
                 </Select>
               </div>
+
+              <ModelSelector
+                value={model}
+                onChange={(v: any) => setModel(v)}
+                disabled={isGenerating}
+              />
             </div>
 
             <div className="space-y-2">
@@ -302,6 +381,25 @@ export default function CodeGenerator() {
           </div>
         </Card>
 
+        {/* Generation Progress */}
+        {generationState && generationState.phase !== 'complete' && (
+          <div className="mb-8 animate-in fade-in-50">
+            <GenerationProgress {...generationState} />
+          </div>
+        )}
+
+        {/* Live Preview During Generation */}
+        {currentFiles.length > 0 && (
+          <div className="mb-8 animate-in fade-in-50">
+            <div className="mb-3">
+              <span className="text-sm text-muted-foreground">
+                Live preview • {currentFiles.length} file(s) in progress
+              </span>
+            </div>
+            <CodeOutputTabs files={currentFiles} />
+          </div>
+        )}
+
         {/* Generated Code Section */}
         <div className="space-y-6">
           {generatedCodes.map((item, index) => (
@@ -314,19 +412,6 @@ export default function CodeGenerator() {
               <CodeOutputTabs files={item.files} />
             </div>
           ))}
-
-          {/* Streaming Content */}
-          {streamingContent && (
-            <Card className="p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                <span className="text-sm font-medium">Generating...</span>
-              </div>
-              <div className="prose prose-sm max-w-none dark:prose-invert">
-                <ReactMarkdown>{streamingContent}</ReactMarkdown>
-              </div>
-            </Card>
-          )}
         </div>
 
         <div ref={messagesEndRef} />
