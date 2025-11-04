@@ -13,9 +13,13 @@ import { Loader2, Sparkles, Code2, Layout } from 'lucide-react';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 
+interface CodeFile {
+  path: string;
+  content: string;
+}
+
 interface GeneratedCode {
-  code: string;
-  language: string;
+  files: CodeFile[];
   timestamp: Date;
 }
 
@@ -38,26 +42,27 @@ export default function CodeGenerator() {
     scrollToBottom();
   }, [generatedCodes, streamingContent]);
 
-  const extractCodeFromMarkdown = (content: string): { code: string; language: string } | null => {
-    const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/;
-    const match = content.match(codeBlockRegex);
-    
-    if (match) {
-      return {
-        language: match[1] || codeType,
-        code: match[2].trim()
-      };
+  const parseFilesFromResponse = (content: string): CodeFile[] | null => {
+    try {
+      // Try to parse as JSON first
+      const cleanContent = content.trim();
+      const jsonMatch = cleanContent.match(/\{[\s\S]*"files"[\s\S]*\}/);
+      
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (parsed.files && Array.isArray(parsed.files)) {
+          return parsed.files;
+        }
+      }
+    } catch (error) {
+      console.error('Failed to parse files JSON:', error);
     }
     
-    // If no code block found but content looks like code, return as-is
-    if (content.includes('<!DOCTYPE') || content.includes('<html') || content.includes('function') || content.includes('const ')) {
-      return {
-        language: codeType,
-        code: content.trim()
-      };
-    }
-    
-    return null;
+    // Fallback: treat as single file
+    return [{
+      path: `generated.${codeType}`,
+      content: content.trim()
+    }];
   };
 
   const handleTemplateSelect = (templatePrompt: string) => {
@@ -136,24 +141,15 @@ export default function CodeGenerator() {
               }
               
               if (parsed.done) {
-                // Extract code from the full content
-                const extracted = extractCodeFromMarkdown(fullContent);
-                if (extracted) {
+                const files = parseFilesFromResponse(fullContent);
+                if (files) {
                   setGeneratedCodes(prev => [...prev, {
-                    code: extracted.code,
-                    language: extracted.language,
+                    files,
                     timestamp: new Date()
                   }]);
-                } else {
-                  // If no code block found, treat entire content as code
-                  setGeneratedCodes(prev => [...prev, {
-                    code: fullContent,
-                    language: codeType,
-                    timestamp: new Date()
-                  }]);
+                  setStreamingContent('');
+                  toast.success(`Generated ${files.length} file(s) successfully!`);
                 }
-                setStreamingContent('');
-                toast.success('Code generated successfully!');
               }
             } catch (error) {
               console.error('Error parsing SSE data:', error);
@@ -293,14 +289,24 @@ export default function CodeGenerator() {
         <div className="space-y-6">
           {generatedCodes.map((item, index) => (
             <div key={index} className="animate-in fade-in-50 slide-in-from-bottom-4">
-              <div className="mb-2 text-sm text-muted-foreground">
-                Generated at {item.timestamp.toLocaleTimeString()}
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  Generated at {item.timestamp.toLocaleTimeString()} • {item.files.length} file(s)
+                </span>
               </div>
-              <CodePreview
-                code={item.code}
-                language={item.language}
-                filename={`generated-${index + 1}.${item.language}`}
-              />
+              <div className="space-y-4">
+                {item.files.map((file, fileIndex) => {
+                  const extension = file.path.split('.').pop() || codeType;
+                  return (
+                    <CodePreview
+                      key={fileIndex}
+                      code={file.content}
+                      language={extension}
+                      filename={file.path}
+                    />
+                  );
+                })}
+              </div>
             </div>
           ))}
 

@@ -78,60 +78,90 @@ serve(async (req) => {
     let systemPrompt = '';
     switch (codeType) {
       case 'html':
-        systemPrompt = `You are an expert web developer. Generate complete, production-ready HTML code with inline CSS and JavaScript.
-        
+        systemPrompt = `You are an expert web developer. Generate a complete, production-ready website with multiple files.
+
+CRITICAL: Return a JSON object with this EXACT structure:
+{
+  "files": [
+    {"path": "index.html", "content": "..."},
+    {"path": "styles.css", "content": "..."},
+    {"path": "script.js", "content": "..."}
+  ]
+}
+
 Rules:
-- Always include DOCTYPE, html, head, and body tags
+- Create separate HTML, CSS, and JavaScript files
+- Use modern CSS (Flexbox/Grid) in separate CSS file
 - Make it responsive and mobile-friendly
-- Use modern CSS (Flexbox/Grid)
-- Include proper meta tags
-- Add inline JavaScript if needed
-- Use semantic HTML5 elements
+- Include proper semantic HTML5 elements
+- Add functional JavaScript in separate JS file
 - Make it visually appealing with good design
-- Include comments for complex sections
 - NO placeholder content - make it fully functional
 
-Return ONLY the complete HTML code, no explanations.`;
+Return ONLY the JSON object with the files array, no markdown, no explanations.`;
         break;
       case 'react':
-        systemPrompt = `You are an expert React developer. Generate complete, production-ready React components using modern best practices.
+        systemPrompt = `You are an expert React developer. Generate a complete, production-ready React application with multiple component files.
+
+CRITICAL: Return a JSON object with this EXACT structure:
+{
+  "files": [
+    {"path": "src/App.tsx", "content": "..."},
+    {"path": "src/components/Header.tsx", "content": "..."},
+    {"path": "src/components/Footer.tsx", "content": "..."}
+  ]
+}
 
 Rules:
-- Use functional components with hooks
-- Include proper TypeScript types if applicable
+- Create separate component files (max 120 lines each)
+- Use functional components with TypeScript
 - Use Tailwind CSS for styling
 - Make it responsive and accessible
-- Include proper prop validation
-- Add JSDoc comments for complex logic
+- Include proper prop types
 - Follow React best practices
 - NO placeholder content - make it fully functional
 
-Return ONLY the React component code, no explanations.`;
+Return ONLY the JSON object with the files array, no markdown, no explanations.`;
         break;
       case 'vue':
-        systemPrompt = `You are an expert Vue.js developer. Generate complete, production-ready Vue 3 components using Composition API.
+        systemPrompt = `You are an expert Vue.js developer. Generate a complete, production-ready Vue 3 application with multiple component files.
+
+CRITICAL: Return a JSON object with this EXACT structure:
+{
+  "files": [
+    {"path": "src/App.vue", "content": "..."},
+    {"path": "src/components/Header.vue", "content": "..."}
+  ]
+}
 
 Rules:
-- Use script setup syntax
-- Include proper TypeScript types
+- Create separate component files using Composition API
+- Use script setup syntax with TypeScript
 - Make it responsive with scoped styles
-- Use Vue 3 Composition API
 - Add proper v-model bindings where needed
 - NO placeholder content - make it fully functional
 
-Return ONLY the Vue component code, no explanations.`;
+Return ONLY the JSON object with the files array, no markdown, no explanations.`;
         break;
       default:
-        systemPrompt = `You are an expert software developer. Generate clean, production-ready ${codeType} code following best practices.
-        
+        systemPrompt = `You are an expert software developer. Generate clean, production-ready ${codeType} code with proper file structure.
+
+CRITICAL: Return a JSON object with this EXACT structure:
+{
+  "files": [
+    {"path": "main.${codeType}", "content": "..."},
+    {"path": "utils.${codeType}", "content": "..."}
+  ]
+}
+
 Rules:
+- Create separate, focused files
 - Write clean, maintainable code
 - Include helpful comments
 - Follow modern best practices
-- Make it fully functional
-- NO placeholder content
+- NO placeholder content - make it fully functional
 
-Return ONLY the code, no explanations.`;
+Return ONLY the JSON object with the files array, no markdown, no explanations.`;
     }
 
     if (framework) {
