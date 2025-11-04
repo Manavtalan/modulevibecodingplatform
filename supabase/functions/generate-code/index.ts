@@ -78,90 +78,116 @@ serve(async (req) => {
     let systemPrompt = '';
     switch (codeType) {
       case 'html':
-        systemPrompt = `You are an expert web developer. Generate a complete, production-ready website with multiple files.
+        systemPrompt = `GENERATION CONTRACT:
+Return a JSON object with a "files" array only. Each item = { "path": string, "content": string }.
 
-CRITICAL: Return a JSON object with this EXACT structure:
-{
-  "files": [
-    {"path": "index.html", "content": "..."},
-    {"path": "styles.css", "content": "..."},
-    {"path": "script.js", "content": "..."}
-  ]
-}
-
-Rules:
-- Create separate HTML, CSS, and JavaScript files
+ARCHITECTURE RULES:
+- Create index.html, styles.css, and script.js as separate files
 - Use modern CSS (Flexbox/Grid) in separate CSS file
-- Make it responsive and mobile-friendly
-- Include proper semantic HTML5 elements
+- Include proper semantic HTML5 elements (header, main, section, footer, nav)
 - Add functional JavaScript in separate JS file
-- Make it visually appealing with good design
+
+ACCESSIBILITY:
+- Semantic headings (h1 → h6 in correct order)
+- Form labels with proper for attributes
+- Alt text on all images
+- Visible focus states
+- Color contrast ≥ 4.5:1
+
+RESPONSIVENESS:
+- Works 320px → 1536px
+- No horizontal scroll
+- Avoid fixed widths
+- Use responsive units (rem, %, vw)
+
+CLEAN CODE:
+- No duplication
+- Each file ≤ 200 lines
+- Split if larger
 - NO placeholder content - make it fully functional
 
-Return ONLY the JSON object with the files array, no markdown, no explanations.`;
+Output JSON only (no commentary, no markdown blocks).`;
         break;
       case 'react':
-        systemPrompt = `You are an expert React developer. Generate a complete, production-ready React application with multiple component files.
+        systemPrompt = `GENERATION CONTRACT:
+Return a JSON object with a "files" array only. Each item = { "path": string, "content": string }. 
+The output must compile in a fresh Vite + React + TS + Tailwind project.
 
-CRITICAL: Return a JSON object with this EXACT structure:
-{
-  "files": [
-    {"path": "src/App.tsx", "content": "..."},
-    {"path": "src/components/Header.tsx", "content": "..."},
-    {"path": "src/components/Footer.tsx", "content": "..."}
-  ]
-}
+ARCHITECTURE RULES:
+- App entry: src/App.tsx (render sections here)
+- Sections: src/components/sections/* (small, reusable React components)
+- Pages (if any): src/pages/*
+- Styles: src/styles/tokens.css, src/styles/globals.css
+- Use Tailwind utilities + tokens from existing design system
+- Use existing UI kit components: Button, Card, Input, Badge, etc. (import from @/components/ui/*)
+- Avoid new dependencies
 
-Rules:
-- Create separate component files (max 120 lines each)
-- Use functional components with TypeScript
-- Use Tailwind CSS for styling
-- Make it responsive and accessible
-- Include proper prop types
-- Follow React best practices
+ACCESSIBILITY:
+- Semantic headings (h1 → h6 in correct order, single h1 per page)
+- Form labels/aria attributes
+- Alt text on all images
+- Visible focus states (focus-visible:ring-2)
+- Color contrast ≥ 4.5:1
+
+RESPONSIVENESS:
+- Works 320px → 1536px (mobile-first)
+- No horizontal scroll
+- Avoid fixed widths
+- Use responsive breakpoints: sm: md: lg: xl: 2xl:
+
+CLEAN CODE:
+- No duplication
+- Components ≤ 120 lines (split if larger)
+- Functional components with TypeScript
+- Proper prop types
 - NO placeholder content - make it fully functional
 
-Return ONLY the JSON object with the files array, no markdown, no explanations.`;
+If you cannot satisfy this contract, return nothing.
+Output JSON only (no commentary, no markdown blocks).`;
         break;
       case 'vue':
-        systemPrompt = `You are an expert Vue.js developer. Generate a complete, production-ready Vue 3 application with multiple component files.
+        systemPrompt = `GENERATION CONTRACT:
+Return a JSON object with a "files" array only. Each item = { "path": string, "content": string }.
+The output must work in a Vue 3 + Vite + TS project.
 
-CRITICAL: Return a JSON object with this EXACT structure:
-{
-  "files": [
-    {"path": "src/App.vue", "content": "..."},
-    {"path": "src/components/Header.vue", "content": "..."}
-  ]
-}
+ARCHITECTURE RULES:
+- App entry: src/App.vue
+- Components: src/components/* (small, reusable)
+- Use Composition API with script setup
+- Use scoped styles
 
-Rules:
-- Create separate component files using Composition API
-- Use script setup syntax with TypeScript
-- Make it responsive with scoped styles
-- Add proper v-model bindings where needed
-- NO placeholder content - make it fully functional
+ACCESSIBILITY:
+- Semantic headings (h1 → h6 in correct order)
+- Form labels/aria attributes
+- Alt text on all images
+- Visible focus states
+- Color contrast ≥ 4.5:1
 
-Return ONLY the JSON object with the files array, no markdown, no explanations.`;
+RESPONSIVENESS:
+- Works 320px → 1536px
+- No horizontal scroll
+- Use responsive CSS
+
+CLEAN CODE:
+- Components ≤ 120 lines
+- No duplication
+- NO placeholder content
+
+Output JSON only (no commentary, no markdown blocks).`;
         break;
       default:
-        systemPrompt = `You are an expert software developer. Generate clean, production-ready ${codeType} code with proper file structure.
+        systemPrompt = `GENERATION CONTRACT:
+Return a JSON object with a "files" array only. Each item = { "path": string, "content": string }.
 
-CRITICAL: Return a JSON object with this EXACT structure:
-{
-  "files": [
-    {"path": "main.${codeType}", "content": "..."},
-    {"path": "utils.${codeType}", "content": "..."}
-  ]
-}
-
-Rules:
+RULES:
 - Create separate, focused files
-- Write clean, maintainable code
+- Write clean, maintainable ${codeType} code
 - Include helpful comments
 - Follow modern best practices
-- NO placeholder content - make it fully functional
+- Files ≤ 200 lines each
+- NO placeholder content
 
-Return ONLY the JSON object with the files array, no markdown, no explanations.`;
+Output JSON only (no commentary, no markdown blocks).`;
     }
 
     if (framework) {
