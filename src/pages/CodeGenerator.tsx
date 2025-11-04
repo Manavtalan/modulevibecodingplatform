@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { CodePreview } from '@/components/CodePreview';
 import { TokenUsageDisplay } from '@/components/TokenUsageDisplay';
 import { TemplateGallery } from '@/components/sections/TemplateGallery';
+import { CodeOutputTabs } from '@/components/CodeOutputTabs';
 import { Loader2, Sparkles, Code2, Layout } from 'lucide-react';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
@@ -310,19 +311,7 @@ export default function CodeGenerator() {
                   Generated at {item.timestamp.toLocaleTimeString()} • {item.files.length} file(s)
                 </span>
               </div>
-              <div className="space-y-4">
-                {item.files.map((file, fileIndex) => {
-                  const extension = file.path.split('.').pop() || codeType;
-                  return (
-                    <CodePreview
-                      key={fileIndex}
-                      code={file.content}
-                      language={extension}
-                      filename={file.path}
-                    />
-                  );
-                })}
-              </div>
+              <CodeOutputTabs files={item.files} />
             </div>
           ))}
 
