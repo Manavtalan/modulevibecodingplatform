@@ -43,22 +43,38 @@ export default function CodeGenerator() {
   }, [generatedCodes, streamingContent]);
 
   const parseFilesFromResponse = (content: string): CodeFile[] | null => {
+    console.log('=== Parsing Response ===');
+    console.log('Content length:', content.length);
+    console.log('First 200 chars:', content.slice(0, 200));
+    
     try {
-      // Try to parse as JSON first
-      const cleanContent = content.trim();
-      const jsonMatch = cleanContent.match(/\{[\s\S]*"files"[\s\S]*\}/);
+      // Clean content - remove markdown code blocks if present
+      let cleanContent = content.trim();
       
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
+      // Remove markdown JSON blocks
+      cleanContent = cleanContent.replace(/```json\n?/g, '').replace(/```\n?$/g, '');
+      
+      // Try to find JSON object
+      const jsonStart = cleanContent.indexOf('{');
+      const jsonEnd = cleanContent.lastIndexOf('}');
+      
+      if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+        const jsonStr = cleanContent.slice(jsonStart, jsonEnd + 1);
+        console.log('Extracted JSON string length:', jsonStr.length);
+        
+        const parsed = JSON.parse(jsonStr);
         if (parsed.files && Array.isArray(parsed.files)) {
+          console.log('✓ Successfully parsed', parsed.files.length, 'files');
           return parsed.files;
         }
       }
     } catch (error) {
-      console.error('Failed to parse files JSON:', error);
+      console.error('JSON parse error:', error);
+      console.log('Falling back to single file');
     }
     
     // Fallback: treat as single file
+    console.log('Creating single file fallback');
     return [{
       path: `generated.${codeType}`,
       content: content.trim()
