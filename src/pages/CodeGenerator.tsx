@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { CodePreview } from '@/components/CodePreview';
 import { TokenUsageDisplay } from '@/components/TokenUsageDisplay';
-import { Loader2, Sparkles, Code2 } from 'lucide-react';
+import { TemplateGallery } from '@/components/sections/TemplateGallery';
+import { Loader2, Sparkles, Code2, Layout } from 'lucide-react';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 
@@ -26,6 +27,7 @@ export default function CodeGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedCodes, setGeneratedCodes] = useState<GeneratedCode[]>([]);
   const [streamingContent, setStreamingContent] = useState('');
+  const [showTemplates, setShowTemplates] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -58,6 +60,12 @@ export default function CodeGenerator() {
     return null;
   };
 
+  const handleTemplateSelect = (templatePrompt: string) => {
+    setPrompt(templatePrompt);
+    setShowTemplates(false);
+    toast.success('Template selected! Customize the prompt and generate.');
+  };
+
   const handleGenerate = async () => {
     if (!user) {
       toast.error('Please sign in to generate code');
@@ -71,6 +79,7 @@ export default function CodeGenerator() {
 
     setIsGenerating(true);
     setStreamingContent('');
+    setShowTemplates(false);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -176,6 +185,25 @@ export default function CodeGenerator() {
 
         {user && <TokenUsageDisplay />}
 
+        {/* Template Gallery */}
+        {showTemplates && (
+          <div className="mb-8">
+            <TemplateGallery onSelectTemplate={handleTemplateSelect} />
+            
+            <div className="relative my-12">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-background text-muted-foreground glass-card">
+                  <Layout className="inline w-4 h-4 mr-2" />
+                  Or create from scratch
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Input Section */}
         <Card className="p-6 mb-8">
           <div className="space-y-4">
@@ -226,24 +254,38 @@ export default function CodeGenerator() {
               />
             </div>
 
-            <Button
-              onClick={handleGenerate}
-              disabled={isGenerating || !prompt.trim()}
-              className="w-full"
-              size="lg"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Generating Code...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="mr-2 h-5 w-5" />
-                  Generate Code
-                </>
+            <div className="flex gap-3">
+              <Button
+                onClick={handleGenerate}
+                disabled={isGenerating || !prompt.trim()}
+                className="flex-1"
+                size="lg"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Generating Code...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="mr-2 h-5 w-5" />
+                    Generate Code
+                  </>
+                )}
+              </Button>
+              
+              {!showTemplates && (
+                <Button
+                  onClick={() => setShowTemplates(true)}
+                  variant="outline"
+                  size="lg"
+                  type="button"
+                >
+                  <Layout className="mr-2 h-5 w-5" />
+                  Templates
+                </Button>
               )}
-            </Button>
+            </div>
           </div>
         </Card>
 
