@@ -75,77 +75,113 @@ const validateDesignQuality = (content: string): { valid: boolean; suggestions: 
   };
 };
 
-// Design token usage validation function
+// Design token usage validation function - ENHANCED
 const validateDesignTokenUsage = (fullResponse: string): { valid: boolean; issues: string[] } => {
   const issues: string[] = [];
   
-  // Check if design-tokens.css exists
+  // Check if design-tokens.css exists AND has actual token definitions
   const hasDesignTokens = fullResponse.includes('design-tokens.css') || fullResponse.includes('tokens.css');
   
   if (!hasDesignTokens) {
-    issues.push('Missing design-tokens.css file - design system tokens are required');
+    issues.push('CRITICAL: Missing design-tokens.css file - design system tokens are required');
+  } else {
+    // Check if tokens file has actual content
+    const tokensSection = fullResponse.split('[FILE:src/styles/design-tokens.css]')[1]?.split('[/FILE]')[0] || '';
+    const hasColorTokens = tokensSection.includes('--primary-') && tokensSection.includes('--accent-');
+    const hasSpacingTokens = tokensSection.includes('--space-');
+    const hasTypographyTokens = tokensSection.includes('--text-') || tokensSection.includes('--font-');
+    
+    if (!hasColorTokens) issues.push('CRITICAL: design-tokens.css missing color palette (--primary-*, --accent-*)');
+    if (!hasSpacingTokens) issues.push('CRITICAL: design-tokens.css missing spacing scale (--space-*)');
+    if (!hasTypographyTokens) issues.push('CRITICAL: design-tokens.css missing typography tokens (--text-*, --font-*)');
   }
   
-  // Check if tailwind.config.js exists
+  // Check if tailwind.config.js exists AND maps to design tokens
   const hasTailwindConfig = fullResponse.includes('tailwind.config.js');
   
   if (!hasTailwindConfig) {
-    issues.push('Missing tailwind.config.js - Tailwind configuration mapped to design tokens is required');
+    issues.push('CRITICAL: Missing tailwind.config.js - Tailwind configuration mapped to design tokens is required');
+  } else {
+    // Check if config actually maps to tokens
+    const configSection = fullResponse.split('[FILE:tailwind.config.js]')[1]?.split('[/FILE]')[0] || '';
+    const mapsToTokens = configSection.includes("'var(--") && configSection.includes('colors:');
+    if (!mapsToTokens) {
+      issues.push('WARNING: tailwind.config.js does not properly map colors to design tokens');
+    }
   }
   
-  // Check if utils.ts exists
+  // Check if utils.ts exists with cn() function
   const hasUtils = fullResponse.includes('src/lib/utils.ts') || fullResponse.includes('lib/utils.ts');
   
   if (!hasUtils) {
-    issues.push('Missing src/lib/utils.ts - design system utilities are required');
+    issues.push('CRITICAL: Missing src/lib/utils.ts - design system utilities are required');
+  } else {
+    // Verify it has cn() function
+    const utilsSection = fullResponse.split('[FILE:src/lib/utils.ts]')[1]?.split('[/FILE]')[0] || '';
+    if (!utilsSection.includes('export function cn(')) {
+      issues.push('WARNING: src/lib/utils.ts missing cn() utility function');
+    }
   }
   
-  // Check for hardcoded hex colors (excluding comments and design token definitions)
-  const hexColorMatches = fullResponse.match(/#[0-9a-fA-F]{3,6}/g);
-  if (hexColorMatches && hexColorMatches.length > 20) {
-    // Allow some hex colors in design-tokens.css, but flag excessive use elsewhere
-    const tokensSection = fullResponse.split('[FILE:src/styles/design-tokens.css]')[1]?.split('[/FILE]')[0] || '';
-    const nonTokenContent = fullResponse.replace(tokensSection, '');
-    const nonTokenHex = nonTokenContent.match(/#[0-9a-fA-F]{3,6}/g);
-    
-    if (nonTokenHex && nonTokenHex.length > 5) {
-      issues.push('Hardcoded hex colors found in components - use design tokens like var(--primary-500)');
+  // Check for hardcoded Tailwind color utilities in components (STRICTER CHECK)
+  const componentSections = fullResponse.split('[FILE:src/components/').slice(1);
+  if (componentSections.length > 0) {
+    for (const section of componentSections) {
+      const componentCode = section.split('[/FILE]')[0];
+      
+      // Check for purple-*, blue-*, pink-*, indigo-*, slate-*, gray-* etc
+      const badColorPatterns = [
+        /\b(bg|text|border|from|via|to|ring|outline)-(purple|blue|pink|indigo|slate|gray|red|green|yellow|amber|orange|teal|cyan|emerald|lime|fuchsia|violet|rose)-\d{2,3}\b/g,
+        /\btext-white\b/g,
+        /\bbg-white\b/g,
+        /\btext-black\b/g,
+        /\bbg-black\b/g
+      ];
+      
+      for (const pattern of badColorPatterns) {
+        const matches = componentCode.match(pattern);
+        if (matches && matches.length > 2) { // Allow a few for very specific cases
+          issues.push(`CRITICAL: Component has hardcoded Tailwind colors (${matches[0]}) - use bg-[var(--primary-500)] syntax instead`);
+          break;
+        }
+      }
     }
+  }
+  
+  // Check for hardcoded hex colors (excluding design-tokens.css file)
+  const tokensSection = fullResponse.split('[FILE:src/styles/design-tokens.css]')[1]?.split('[/FILE]')[0] || '';
+  const nonTokenContent = fullResponse.replace(tokensSection, '');
+  const hexColorMatches = nonTokenContent.match(/#[0-9a-fA-F]{3,6}/g);
+  
+  if (hexColorMatches && hexColorMatches.length > 5) {
+    issues.push('WARNING: Hardcoded hex colors found outside design tokens - use var(--primary-500) instead');
   }
   
   // Check for hardcoded rgb/rgba colors in components
-  if (fullResponse.match(/rgb\s*\(/gi) || fullResponse.match(/rgba\s*\(/gi)) {
-    const componentSection = fullResponse.split('[FILE:src/components/')[1];
-    if (componentSection && (componentSection.includes('rgb(') || componentSection.includes('rgba('))) {
-      issues.push('Hardcoded rgb/rgba colors found in components - use design tokens instead');
+  if (componentSections.length > 0) {
+    for (const section of componentSections) {
+      const componentCode = section.split('[/FILE]')[0];
+      if (componentCode.match(/rgb\s*\(/gi) || componentCode.match(/rgba\s*\(/gi)) {
+        issues.push('WARNING: Hardcoded rgb/rgba colors found in components - use design tokens instead');
+        break;
+      }
     }
   }
   
-  // Check for hardcoded pixel spacing (allow 1px and 2px for borders)
-  const pxMatches = fullResponse.match(/\d+px/g);
-  if (pxMatches) {
-    const largePxValues = pxMatches.filter(match => {
-      const num = parseInt(match);
-      return num > 2 && num < 1000; // Ignore very large values (likely widths/heights)
-    });
-    
-    if (largePxValues.length > 10) {
-      issues.push('Hardcoded pixel spacing found - use design token spacing like var(--space-4)');
-    }
-  }
-  
-  // Check if components use design tokens
+  // Check if components actually USE design tokens
   const hasComponentFiles = fullResponse.includes('[FILE:src/components/');
   const usesDesignTokens = fullResponse.includes('var(--') && fullResponse.match(/var\(--\w+/g);
   
   if (hasComponentFiles && !usesDesignTokens) {
-    issues.push('Components should use design tokens with var(--token-name) syntax');
+    issues.push('CRITICAL: Components do not use design tokens - ALL styling must use var(--token-name) syntax');
   }
   
-  // Check for Tailwind hardcoded values instead of token references
-  const hasTailwindColors = fullResponse.match(/bg-(blue|red|green|purple|pink|yellow|indigo|gray)-\d{3}/g);
-  if (hasTailwindColors && hasTailwindColors.length > 3) {
-    issues.push('Use design token classes like bg-[var(--primary-500)] instead of Tailwind color utilities');
+  // Check if globals.css imports design tokens
+  if (fullResponse.includes('[FILE:src/styles/globals.css]')) {
+    const globalsSection = fullResponse.split('[FILE:src/styles/globals.css]')[1]?.split('[/FILE]')[0] || '';
+    if (!globalsSection.includes("@import './design-tokens.css'")) {
+      issues.push('WARNING: globals.css does not import design-tokens.css');
+    }
   }
   
   return {
@@ -920,6 +956,12 @@ MANDATORY design-tokens.css STRUCTURE:
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   
+  /* === GRADIENTS === */
+  --gradient-primary: linear-gradient(135deg, var(--primary-500), var(--primary-700));
+  --gradient-accent: linear-gradient(135deg, var(--accent-500), var(--accent-700));
+  --gradient-hero: linear-gradient(135deg, var(--primary-600), var(--primary-800), var(--accent-600));
+  --gradient-surface: linear-gradient(180deg, var(--surface), var(--surface-secondary));
+  
   /* === Z-INDEX SCALE === */
   --z-0: 0;
   --z-10: 10;
@@ -1663,42 +1705,130 @@ MODERN UI PATTERNS TO IMPLEMENT:
    - Rounded (rounded-lg)
    - Font weight (font-semibold)
 
-EXAMPLE MODERN COMPONENT:
+🚨 MANDATORY FILES CHECKLIST - VERIFY BEFORE COMPLETING:
+✓ src/styles/design-tokens.css MUST exist with complete color palette
+✓ src/styles/globals.css MUST exist with @import './design-tokens.css'
+✓ tailwind.config.js MUST exist with token mappings
+✓ src/lib/utils.ts MUST exist with cn() function and token utilities
+✓ ALL components MUST use var(--token-name) or bg-[var(--token-name)] syntax
+✓ ZERO hardcoded Tailwind colors (no purple-600, blue-500, text-white, etc.)
+✓ ZERO hardcoded spacing (no p-4, m-8 - use p-[var(--space-4)] instead)
+
+EXAMPLE MODERN COMPONENT WITH PROPER DESIGN TOKENS:
 [FILE:src/components/sections/Hero.tsx]
-import { Button } from '@/components/ui/button';
+import Button from '@/components/ui/Button';
 import { ArrowRight, Sparkles } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function Hero() {
   return (
-    <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 text-white relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-white/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl" />
+    <section 
+      className="min-h-screen flex items-center justify-center relative overflow-hidden"
+      style={{
+        background: 'linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 50%, var(--accent-600) 100%)'
+      }}
+    >
+      {/* Background decorative elements using design tokens */}
+      <div 
+        className="absolute blur-3xl rounded-full"
+        style={{
+          top: 'var(--space-20)',
+          left: 'var(--space-10)',
+          width: '18rem',
+          height: '18rem',
+          backgroundColor: 'var(--primary-300)',
+          opacity: 0.2
+        }}
+      />
+      <div 
+        className="absolute blur-3xl rounded-full"
+        style={{
+          bottom: 'var(--space-20)',
+          right: 'var(--space-10)',
+          width: '24rem',
+          height: '24rem',
+          backgroundColor: 'var(--accent-400)',
+          opacity: 0.15
+        }}
+      />
       
-      <div className="container mx-auto px-4 text-center relative z-10">
-        <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-8 border border-white/30">
-          <Sparkles className="w-4 h-4" />
-          <span className="text-sm font-medium">New Feature Available</span>
+      <div 
+        className="container mx-auto text-center relative z-10"
+        style={{
+          paddingLeft: 'var(--space-4)',
+          paddingRight: 'var(--space-4)'
+        }}
+      >
+        <div 
+          className="inline-flex items-center backdrop-blur-sm rounded-full border"
+          style={{
+            gap: 'var(--space-2)',
+            backgroundColor: 'rgba(255, 255, 255, 0.15)',
+            paddingLeft: 'var(--space-4)',
+            paddingRight: 'var(--space-4)',
+            paddingTop: 'var(--space-2)',
+            paddingBottom: 'var(--space-2)',
+            marginBottom: 'var(--space-8)',
+            borderColor: 'rgba(255, 255, 255, 0.25)'
+          }}
+        >
+          <Sparkles className="w-4 h-4" style={{ color: 'var(--text-inverse)' }} />
+          <span 
+            style={{
+              fontSize: 'var(--text-sm)',
+              fontWeight: 'var(--font-medium)',
+              color: 'var(--text-inverse)'
+            }}
+          >
+            New Feature Available
+          </span>
         </div>
         
-        <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+        <h1 
+          className="font-bold leading-tight"
+          style={{
+            fontSize: 'clamp(var(--text-3xl), 5vw, var(--text-6xl))',
+            marginBottom: 'var(--space-6)',
+            color: 'var(--text-inverse)'
+          }}
+        >
           Build Amazing
-          <span className="block bg-gradient-to-r from-pink-300 to-purple-300 bg-clip-text text-transparent">
+          <span 
+            className="block bg-clip-text"
+            style={{
+              backgroundImage: 'linear-gradient(to right, var(--accent-300), var(--primary-300))',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}
+          >
             Web Experiences
           </span>
         </h1>
         
-        <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed">
+        <p 
+          className="max-w-3xl mx-auto"
+          style={{
+            fontSize: 'clamp(var(--text-lg), 2vw, var(--text-2xl))',
+            color: 'var(--text-inverse)',
+            opacity: 0.9,
+            marginBottom: 'var(--space-12)',
+            lineHeight: 'var(--leading-relaxed)'
+          }}
+        >
           Create stunning, modern websites with our powerful platform. 
           No coding required, just your creativity.
         </p>
         
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 font-semibold px-8 py-6 text-lg rounded-xl shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1">
+        <div 
+          className="flex flex-col sm:flex-row justify-center"
+          style={{ gap: 'var(--space-4)' }}
+        >
+          <Button variant="primary" size="large">
             Get Started
             <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
-          <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10 font-semibold px-8 py-6 text-lg rounded-xl backdrop-blur-sm">
+          <Button variant="outline" size="large">
             Learn More
           </Button>
         </div>
@@ -1769,18 +1899,24 @@ MANDATORY FILE STRUCTURE:
 ]}
 [/PLAN]
 
-DESIGN REQUIREMENTS (CRITICAL - SAME AS REACT):
-✅ Use Tailwind's extended color palette (blue-500, purple-600, indigo-500, slate-800)
+DESIGN REQUIREMENTS (CRITICAL):
+❌ NEVER use hardcoded Tailwind colors (no purple-600, blue-500, text-white, bg-white)
+❌ NEVER use hardcoded spacing (no p-4, m-8)
+❌ NEVER use hardcoded shadows or borders
+
+✅ ALWAYS use design token approach with Vue
+✅ Use CSS custom properties: style="background: var(--primary-500)"
+✅ Use Tailwind with tokens: class="bg-[var(--primary-500)]"
 ✅ Add smooth transitions (transition-all duration-300 ease-in-out)
-✅ Include hover effects (hover:scale-105, hover:shadow-xl, hover:-translate-y-1)
-✅ Use gradient backgrounds (bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700)
-✅ Add glassmorphism effects (backdrop-blur-lg bg-white/10 border border-white/20)
-✅ Proper spacing with Tailwind scale (space-y-8, gap-6, p-8, px-4)
-✅ Typography hierarchy (text-5xl font-bold, text-lg text-gray-600, leading-tight)
-✅ Add icons using a CDN or iconify
-✅ Dark mode support with proper color schemes
+✅ Include hover effects (hover:scale-105, hover:shadow-xl)
+✅ Use gradient backgrounds with tokens: linear-gradient(var(--primary-600), var(--accent-600))
+✅ Add glassmorphism effects
+✅ Proper spacing with design tokens
+✅ Typography hierarchy using token variables
+✅ Add icons using iconify or CDN
+✅ Dark mode support with token variants
 ✅ Responsive design with mobile-first approach
-✅ Accessibility features (aria-labels, focus states, focus-visible:ring-2)
+✅ Accessibility features (aria-labels, focus states)
 
 MANDATORY design-tokens.css (SAME AS REACT):
 [FILE:src/styles/design-tokens.css]
@@ -1876,7 +2012,7 @@ MODERN UI PATTERNS (SAME AS REACT):
    - Rounded (rounded-lg)
    - Font weight (font-semibold)
 
-EXAMPLE MODERN VUE COMPONENT:
+EXAMPLE MODERN VUE COMPONENT WITH DESIGN TOKENS:
 [FILE:src/components/sections/TheHero.vue]
 <script setup lang="ts">
 import { ref } from 'vue';
@@ -1886,47 +2022,106 @@ const showModal = ref(false);
 </script>
 
 <template>
-  <section class="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 text-white relative overflow-hidden">
-    <!-- Background decorative elements -->
-    <div class="absolute top-20 left-10 w-72 h-72 bg-white/10 rounded-full blur-3xl" />
-    <div class="absolute bottom-20 right-10 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl" />
+  <section 
+    class="min-h-screen flex items-center justify-center relative overflow-hidden"
+    :style="{
+      background: 'linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 50%, var(--accent-600) 100%)'
+    }"
+  >
+    <!-- Background decorative elements using design tokens -->
+    <div 
+      class="absolute blur-3xl rounded-full"
+      :style="{
+        top: 'var(--space-20)',
+        left: 'var(--space-10)',
+        width: '18rem',
+        height: '18rem',
+        backgroundColor: 'var(--primary-300)',
+        opacity: 0.2
+      }"
+    />
+    <div 
+      class="absolute blur-3xl rounded-full"
+      :style="{
+        bottom: 'var(--space-20)',
+        right: 'var(--space-10)',
+        width: '24rem',
+        height: '24rem',
+        backgroundColor: 'var(--accent-400)',
+        opacity: 0.15
+      }"
+    />
     
-    <div class="container mx-auto px-4 text-center relative z-10">
-      <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-8 border border-white/30">
+    <div 
+      class="container mx-auto text-center relative z-10"
+      :style="{
+        paddingLeft: 'var(--space-4)',
+        paddingRight: 'var(--space-4)'
+      }"
+    >
+      <div 
+        class="inline-flex items-center backdrop-blur-sm rounded-full border"
+        :style="{
+          gap: 'var(--space-2)',
+          backgroundColor: 'rgba(255, 255, 255, 0.15)',
+          padding: 'var(--space-2) var(--space-4)',
+          marginBottom: 'var(--space-8)',
+          borderColor: 'rgba(255, 255, 255, 0.25)',
+          color: 'var(--text-inverse)'
+        }"
+      >
         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
         </svg>
-        <span class="text-sm font-medium">New Feature Available</span>
+        <span :style="{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }">
+          New Feature Available
+        </span>
       </div>
       
-      <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+      <h1 
+        class="font-bold leading-tight"
+        :style="{
+          fontSize: 'clamp(var(--text-3xl), 5vw, var(--text-6xl))',
+          marginBottom: 'var(--space-6)',
+          color: 'var(--text-inverse)'
+        }"
+      >
         Build Amazing
-        <span class="block bg-gradient-to-r from-pink-300 to-purple-300 bg-clip-text text-transparent">
+        <span 
+          class="block"
+          :style="{
+            backgroundImage: 'linear-gradient(to right, var(--accent-300), var(--primary-300))',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
+          }"
+        >
           Web Experiences
         </span>
       </h1>
       
-      <p class="text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed">
+      <p 
+        class="max-w-3xl mx-auto"
+        :style="{
+          fontSize: 'clamp(var(--text-lg), 2vw, var(--text-2xl))',
+          color: 'var(--text-inverse)',
+          opacity: 0.9,
+          marginBottom: 'var(--space-12)',
+          lineHeight: 'var(--leading-relaxed)'
+        }"
+      >
         Create stunning, modern websites with our powerful platform. 
         No coding required, just your creativity.
       </p>
       
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <BaseButton 
-          variant="primary" 
-          size="lg"
-          class="bg-white text-purple-600 hover:bg-gray-100 font-semibold px-8 py-6 text-lg rounded-xl shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1"
-        >
+        <BaseButton variant="primary" size="lg">
           Get Started
           <svg class="ml-2 w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
           </svg>
         </BaseButton>
-        <BaseButton 
-          variant="outline"
-          size="lg"
-          class="border-2 border-white text-white hover:bg-white/10 font-semibold px-8 py-6 text-lg rounded-xl backdrop-blur-sm"
-        >
+        <BaseButton variant="outline" size="lg">
           Learn More
         </BaseButton>
       </div>
@@ -1935,7 +2130,7 @@ const showModal = ref(false);
 </template>
 
 <style scoped>
-/* Use scoped styles sparingly - prefer Tailwind utilities */
+/* Use scoped styles sparingly - prefer design tokens */
 </style>
 [/FILE]
 
@@ -2022,7 +2217,15 @@ If you generate a single standalone HTML file, you have completely failed the ta
     } else if (codeType === 'react') {
       enhancedPrompt = `${prompt}
 
-REQUIREMENTS:
+🚨 CRITICAL DESIGN SYSTEM REQUIREMENTS 🚨
+
+MANDATORY FILES (MUST GENERATE ALL):
+1. src/styles/design-tokens.css - Complete design system with colors, spacing, typography, shadows
+2. src/styles/globals.css - Must import design-tokens.css: @import './design-tokens.css';
+3. tailwind.config.js - Must map all design tokens to Tailwind utilities
+4. src/lib/utils.ts - Must have cn() function and token utilities
+
+COMPONENT REQUIREMENTS:
 - Generate multiple component files (NOT a single App.tsx with everything)
 - Split into focused sections: Navbar, Hero, Features, Footer, etc.
 - Each component in its own file under src/components/sections/
@@ -2030,10 +2233,18 @@ REQUIREMENTS:
     } else if (codeType === 'vue') {
       enhancedPrompt = `${prompt}
 
-REQUIREMENTS:
+🚨 CRITICAL DESIGN SYSTEM REQUIREMENTS 🚨
+
+MANDATORY FILES (MUST GENERATE ALL):
+1. src/styles/design-tokens.css - Complete design system with colors, spacing, typography, shadows
+2. src/styles/globals.css - Must import design-tokens.css: @import './design-tokens.css';
+
+COMPONENT REQUIREMENTS:
 - Generate multiple .vue component files
 - Split into logical components (Navbar, Hero, Features, Footer)
-- Each component ≤120 lines`;
+- Each component ≤120 lines
+- ALL components MUST use design tokens via Vue :style bindings or class="bg-[var(--primary-500)]"
+- ZERO hardcoded Tailwind colors (no purple-600, blue-500, text-white)`;
     }
 
     const messages = [
