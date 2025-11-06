@@ -1058,6 +1058,183 @@ input, textarea, select, button {
 }
 [/FILE]
 
+COMPONENT TOKEN USAGE EXAMPLES (MANDATORY):
+
+Example 1: Button Component with Design Tokens
+[FILE:src/components/ui/Button.tsx]
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  size?: 'small' | 'medium' | 'large';
+  children: React.ReactNode;
+}
+
+export default function Button({ 
+  variant = 'primary', 
+  size = 'medium', 
+  children, 
+  className = '',
+  ...props 
+}: ButtonProps) {
+  const baseStyles = `
+    inline-flex items-center justify-center
+    font-medium rounded-[var(--radius-lg)]
+    transition-all duration-[var(--duration-200)]
+    focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] focus:ring-offset-2
+    disabled:opacity-50 disabled:cursor-not-allowed
+  `;
+  
+  const variants = {
+    primary: `
+      bg-[var(--primary-500)] text-[var(--text-inverse)]
+      hover:bg-[var(--primary-600)]
+      shadow-[var(--shadow-md)] hover:shadow-[var(--shadow-lg)]
+    `,
+    secondary: `
+      bg-[var(--surface)] text-[var(--text-primary)]
+      border border-[var(--border)]
+      hover:bg-[var(--surface-secondary)]
+    `,
+    outline: `
+      border-2 border-[var(--primary-500)] text-[var(--primary-500)]
+      hover:bg-[var(--primary-50)]
+    `,
+    ghost: `
+      text-[var(--text-primary)]
+      hover:bg-[var(--surface-secondary)]
+    `
+  };
+  
+  const sizes = {
+    small: 'px-[var(--space-3)] py-[var(--space-1-5)] text-[var(--text-sm)]',
+    medium: 'px-[var(--space-4)] py-[var(--space-2)] text-[var(--text-base)]',
+    large: 'px-[var(--space-6)] py-[var(--space-3)] text-[var(--text-lg)]'
+  };
+  
+  return (
+    <button
+      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
+[/FILE]
+
+Example 2: Card Component with Design Tokens
+[FILE:src/components/ui/Card.tsx]
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
+  hover?: boolean;
+}
+
+export default function Card({ 
+  children, 
+  hover = true,
+  className = '', 
+  ...props 
+}: CardProps) {
+  return (
+    <div
+      className={`
+        bg-[var(--surface)]
+        border border-[var(--border)]
+        rounded-[var(--radius-xl)]
+        shadow-[var(--shadow-md)]
+        p-[var(--space-6)]
+        ${hover ? 'hover:shadow-[var(--shadow-lg)] hover:-translate-y-1 transition-all duration-[var(--duration-300)]' : ''}
+        ${className}
+      `}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
+[/FILE]
+
+Example 3: Section Component with Design Tokens
+[FILE:src/components/sections/Hero.tsx]
+import Button from '@/components/ui/Button';
+import { ArrowRight } from 'lucide-react';
+
+export default function Hero() {
+  return (
+    <section 
+      className="min-h-screen flex items-center justify-center relative overflow-hidden"
+      style={{
+        background: 'linear-gradient(135deg, var(--primary-600), var(--primary-800), var(--accent-600))'
+      }}
+    >
+      {/* Background decoration using tokens */}
+      <div 
+        className="absolute top-20 left-10 w-72 h-72 rounded-full blur-3xl"
+        style={{
+          background: 'var(--primary-300)',
+          opacity: 0.2
+        }}
+      />
+      
+      <div className="container mx-auto px-[var(--space-4)] text-center relative z-10">
+        <h1 
+          className="font-bold mb-[var(--space-6)] leading-tight"
+          style={{
+            fontSize: 'clamp(var(--text-3xl), 5vw, var(--text-6xl))',
+            color: 'var(--text-inverse)'
+          }}
+        >
+          Build Amazing Web Experiences
+        </h1>
+        
+        <p 
+          className="mb-[var(--space-12)] max-w-3xl mx-auto"
+          style={{
+            fontSize: 'var(--text-xl)',
+            color: 'var(--text-inverse)',
+            opacity: 0.9,
+            lineHeight: 'var(--leading-relaxed)'
+          }}
+        >
+          Create stunning, modern websites with our powerful platform.
+        </p>
+        
+        <div className="flex flex-col sm:flex-row gap-[var(--space-4)] justify-center">
+          <Button variant="primary" size="large">
+            Get Started
+            <ArrowRight className="ml-2 w-5 h-5" />
+          </Button>
+          <Button variant="outline" size="large">
+            Learn More
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+}
+[/FILE]
+
+CRITICAL RULES FOR COMPONENT GENERATION (MANDATORY):
+❌ NEVER use hardcoded colors like #ffffff, rgb(255,255,255), or blue-500
+❌ NEVER use hardcoded spacing like margin: 20px or padding: 16px or p-4
+❌ NEVER use hardcoded font sizes like text-2xl or font-size: 24px
+❌ NEVER use hardcoded shadows like shadow-lg or box-shadow: 0 10px 15px
+❌ NEVER use hardcoded border radius like rounded-xl or border-radius: 12px
+
+✅ ALWAYS use design tokens with bg-[var(--primary-500)] syntax
+✅ ALWAYS use design tokens with style={{backgroundColor: 'var(--primary-500)'}} for inline styles
+✅ ALWAYS use semantic token names (--text-primary not --neutral-900)
+✅ ALWAYS include hover and focus states using token variants (--primary-600 for hover)
+✅ ALWAYS use spacing scale tokens (--space-4, --space-6, etc)
+✅ ALWAYS use typography tokens (--text-xl, --font-semibold, --leading-tight)
+✅ ALWAYS use shadow tokens (--shadow-md, --shadow-lg)
+✅ ALWAYS use radius tokens (--radius-lg, --radius-xl)
+✅ ALWAYS use animation tokens (--duration-300, --ease-in-out)
+
+TOKEN REFERENCE PATTERNS:
+- Tailwind classes: bg-[var(--primary-500)] text-[var(--text-primary)]
+- Inline styles: style={{color: 'var(--text-primary)', padding: 'var(--space-4)'}}
+- Pseudo-classes: hover:bg-[var(--primary-600)] focus:ring-[var(--border-focus)]
+
 COMPONENT ARCHITECTURE REQUIREMENTS:
 - Each component must be under 120 lines (split into smaller components if needed)
 - Use TypeScript interfaces for all props
