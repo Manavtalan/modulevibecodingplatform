@@ -86,6 +86,20 @@ const validateDesignTokenUsage = (fullResponse: string): { valid: boolean; issue
     issues.push('Missing design-tokens.css file - design system tokens are required');
   }
   
+  // Check if tailwind.config.js exists
+  const hasTailwindConfig = fullResponse.includes('tailwind.config.js');
+  
+  if (!hasTailwindConfig) {
+    issues.push('Missing tailwind.config.js - Tailwind configuration mapped to design tokens is required');
+  }
+  
+  // Check if utils.ts exists
+  const hasUtils = fullResponse.includes('src/lib/utils.ts') || fullResponse.includes('lib/utils.ts');
+  
+  if (!hasUtils) {
+    issues.push('Missing src/lib/utils.ts - design system utilities are required');
+  }
+  
   // Check for hardcoded hex colors (excluding comments and design token definitions)
   const hexColorMatches = fullResponse.match(/#[0-9a-fA-F]{3,6}/g);
   if (hexColorMatches && hexColorMatches.length > 20) {
@@ -1309,6 +1323,149 @@ TAILWIND + DESIGN TOKENS BENEFITS:
 ✅ All values stay synced through design-tokens.css
 ✅ Easy theme updates by changing CSS variables only
 ✅ Consistent spacing, colors, typography across entire app
+
+MANDATORY src/lib/utils.ts CONTENT:
+[FILE:src/lib/utils.ts]
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+// Utility for merging Tailwind classes with proper precedence
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+// Design token utilities - provides easy access to design system tokens
+export const tokens = {
+  colors: {
+    primary: 'var(--primary-500)',
+    primaryHover: 'var(--primary-600)',
+    primaryLight: 'var(--primary-100)',
+    accent: 'var(--accent-500)',
+    accentHover: 'var(--accent-600)',
+    background: 'var(--background)',
+    surface: 'var(--surface)',
+    surfaceSecondary: 'var(--surface-secondary)',
+    textPrimary: 'var(--text-primary)',
+    textSecondary: 'var(--text-secondary)',
+    textTertiary: 'var(--text-tertiary)',
+    textInverse: 'var(--text-inverse)',
+    border: 'var(--border)',
+    borderFocus: 'var(--border-focus)',
+    success: 'var(--success)',
+    warning: 'var(--warning)',
+    error: 'var(--error)',
+    info: 'var(--info)',
+  },
+  spacing: {
+    xs: 'var(--space-2)',
+    sm: 'var(--space-4)',
+    md: 'var(--space-6)',
+    lg: 'var(--space-8)',
+    xl: 'var(--space-12)',
+    '2xl': 'var(--space-16)',
+  },
+  typography: {
+    headingXl: 'var(--text-5xl)',
+    headingLg: 'var(--text-4xl)',
+    headingMd: 'var(--text-3xl)',
+    headingSm: 'var(--text-2xl)',
+    bodyLg: 'var(--text-lg)',
+    body: 'var(--text-base)',
+    bodySm: 'var(--text-sm)',
+    bodyXs: 'var(--text-xs)',
+    fontBold: 'var(--font-bold)',
+    fontSemibold: 'var(--font-semibold)',
+    fontMedium: 'var(--font-medium)',
+    fontNormal: 'var(--font-normal)',
+  },
+  shadows: {
+    xs: 'var(--shadow-xs)',
+    sm: 'var(--shadow-sm)',
+    md: 'var(--shadow-md)',
+    lg: 'var(--shadow-lg)',
+    xl: 'var(--shadow-xl)',
+    card: 'var(--shadow-lg)',
+    button: 'var(--shadow-md)',
+    overlay: 'var(--shadow-xl)',
+  },
+  radius: {
+    sm: 'var(--radius-sm)',
+    md: 'var(--radius-md)',
+    lg: 'var(--radius-lg)',
+    xl: 'var(--radius-xl)',
+    '2xl': 'var(--radius-2xl)',
+    button: 'var(--radius-lg)',
+    card: 'var(--radius-xl)',
+    input: 'var(--radius-md)',
+  },
+  duration: {
+    fast: 'var(--duration-150)',
+    normal: 'var(--duration-300)',
+    slow: 'var(--duration-500)',
+  },
+};
+
+// Component variant utilities - reusable component styles
+export const buttonVariants = {
+  primary: 'bg-[var(--primary-500)] text-[var(--text-inverse)] hover:bg-[var(--primary-600)] shadow-[var(--shadow-md)] hover:shadow-[var(--shadow-lg)]',
+  secondary: 'bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] hover:bg-[var(--surface-secondary)]',
+  accent: 'bg-[var(--accent-500)] text-[var(--text-inverse)] hover:bg-[var(--accent-600)] shadow-[var(--shadow-md)]',
+  outline: 'border-2 border-[var(--primary-500)] text-[var(--primary-500)] hover:bg-[var(--primary-50)]',
+  ghost: 'text-[var(--text-primary)] hover:bg-[var(--surface-secondary)]',
+  danger: 'bg-[var(--error)] text-[var(--text-inverse)] hover:opacity-90',
+};
+
+export const buttonSizes = {
+  sm: 'px-[var(--space-3)] py-[var(--space-1-5)] text-[var(--text-sm)]',
+  md: 'px-[var(--space-4)] py-[var(--space-2)] text-[var(--text-base)]',
+  lg: 'px-[var(--space-6)] py-[var(--space-3)] text-[var(--text-lg)]',
+};
+
+export const cardVariants = {
+  default: 'bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-xl)] shadow-[var(--shadow-lg)] p-[var(--space-6)]',
+  elevated: 'bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-xl)] shadow-[var(--shadow-xl)] p-[var(--space-6)]',
+  flat: 'bg-[var(--surface-secondary)] rounded-[var(--radius-lg)] p-[var(--space-6)]',
+  outline: 'border-2 border-[var(--border)] rounded-[var(--radius-xl)] p-[var(--space-6)]',
+};
+
+export const inputVariants = {
+  default: 'border border-[var(--border)] rounded-[var(--radius-md)] px-[var(--space-3)] py-[var(--space-2)] focus:border-[var(--border-focus)] focus:ring-2 focus:ring-[var(--border-focus)] focus:ring-opacity-50',
+  error: 'border-2 border-[var(--error)] rounded-[var(--radius-md)] px-[var(--space-3)] py-[var(--space-2)] focus:ring-2 focus:ring-[var(--error)] focus:ring-opacity-50',
+};
+
+// Animation utilities
+export const animations = {
+  fadeIn: 'animate-[fadeIn_0.3s_ease-in-out]',
+  slideUp: 'animate-[slideUp_0.3s_ease-out]',
+  scaleIn: 'animate-[scaleIn_0.2s_ease-out]',
+};
+
+// Layout utilities
+export const layouts = {
+  container: 'max-w-7xl mx-auto px-[var(--space-4)] sm:px-[var(--space-6)] lg:px-[var(--space-8)]',
+  section: 'py-[var(--space-16)] sm:py-[var(--space-20)]',
+  grid: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[var(--space-6)]',
+};
+
+// Typography utilities
+export const typography = {
+  h1: 'text-[var(--text-5xl)] font-[var(--font-bold)] leading-tight tracking-tight text-[var(--text-primary)]',
+  h2: 'text-[var(--text-4xl)] font-[var(--font-bold)] leading-tight tracking-tight text-[var(--text-primary)]',
+  h3: 'text-[var(--text-3xl)] font-[var(--font-semibold)] leading-snug text-[var(--text-primary)]',
+  h4: 'text-[var(--text-2xl)] font-[var(--font-semibold)] leading-snug text-[var(--text-primary)]',
+  bodyLarge: 'text-[var(--text-lg)] leading-relaxed text-[var(--text-primary)]',
+  body: 'text-[var(--text-base)] leading-normal text-[var(--text-primary)]',
+  bodySmall: 'text-[var(--text-sm)] leading-normal text-[var(--text-secondary)]',
+  caption: 'text-[var(--text-xs)] leading-normal text-[var(--text-tertiary)]',
+};
+[/FILE]
+
+DESIGN SYSTEM UTILITIES USAGE:
+✅ Use cn() to merge classes: className={cn('base-class', condition && 'conditional-class', className)}
+✅ Use tokens object for inline styles: style={{color: tokens.colors.primary}}
+✅ Use variant utilities: className={buttonVariants.primary + ' ' + buttonSizes.lg}
+✅ Use typography utilities: className={typography.h1}
+✅ Use layout utilities: className={layouts.container}
 
 COMPONENT TOKEN USAGE EXAMPLES (MANDATORY):
 
