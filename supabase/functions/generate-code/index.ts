@@ -711,6 +711,7 @@ MANDATORY FILE STRUCTURE:
   {"path":"src/components/ui/Card.tsx","description":"Reusable card component"},
   {"path":"src/styles/design-tokens.css","description":"MANDATORY - Complete design system variables"},
   {"path":"src/styles/globals.css","description":"Global styles importing design tokens"},
+  {"path":"tailwind.config.js","description":"Tailwind configuration mapped to design tokens"},
   {"path":"src/lib/utils.ts","description":"Utility functions including design helpers"}
 ]}
 [/PLAN]
@@ -1122,6 +1123,192 @@ input, textarea, select, button {
   border-width: 0;
 }
 [/FILE]
+
+MANDATORY tailwind.config.js CONTENT:
+[FILE:tailwind.config.js]
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: 'var(--primary-50)',
+          100: 'var(--primary-100)',
+          200: 'var(--primary-200)',
+          300: 'var(--primary-300)',
+          400: 'var(--primary-400)',
+          500: 'var(--primary-500)',
+          600: 'var(--primary-600)',
+          700: 'var(--primary-700)',
+          800: 'var(--primary-800)',
+          900: 'var(--primary-900)',
+        },
+        accent: {
+          50: 'var(--accent-50)',
+          100: 'var(--accent-100)',
+          200: 'var(--accent-200)',
+          300: 'var(--accent-300)',
+          400: 'var(--accent-400)',
+          500: 'var(--accent-500)',
+          600: 'var(--accent-600)',
+          700: 'var(--accent-700)',
+          800: 'var(--accent-800)',
+          900: 'var(--accent-900)',
+        },
+        neutral: {
+          50: 'var(--neutral-50)',
+          100: 'var(--neutral-100)',
+          200: 'var(--neutral-200)',
+          300: 'var(--neutral-300)',
+          400: 'var(--neutral-400)',
+          500: 'var(--neutral-500)',
+          600: 'var(--neutral-600)',
+          700: 'var(--neutral-700)',
+          800: 'var(--neutral-800)',
+          900: 'var(--neutral-900)',
+        },
+        surface: 'var(--surface)',
+        background: 'var(--background)',
+        border: 'var(--border)',
+      },
+      spacing: {
+        '0': 'var(--space-0)',
+        'px': 'var(--space-px)',
+        '0.5': 'var(--space-0-5)',
+        '1': 'var(--space-1)',
+        '1.5': 'var(--space-1-5)',
+        '2': 'var(--space-2)',
+        '2.5': 'var(--space-2-5)',
+        '3': 'var(--space-3)',
+        '3.5': 'var(--space-3-5)',
+        '4': 'var(--space-4)',
+        '5': 'var(--space-5)',
+        '6': 'var(--space-6)',
+        '7': 'var(--space-7)',
+        '8': 'var(--space-8)',
+        '9': 'var(--space-9)',
+        '10': 'var(--space-10)',
+        '11': 'var(--space-11)',
+        '12': 'var(--space-12)',
+        '14': 'var(--space-14)',
+        '16': 'var(--space-16)',
+        '20': 'var(--space-20)',
+        '24': 'var(--space-24)',
+        '32': 'var(--space-32)',
+      },
+      fontFamily: {
+        sans: 'var(--font-sans)',
+        serif: 'var(--font-serif)',
+        mono: 'var(--font-mono)',
+      },
+      fontSize: {
+        xs: 'var(--text-xs)',
+        sm: 'var(--text-sm)',
+        base: 'var(--text-base)',
+        lg: 'var(--text-lg)',
+        xl: 'var(--text-xl)',
+        '2xl': 'var(--text-2xl)',
+        '3xl': 'var(--text-3xl)',
+        '4xl': 'var(--text-4xl)',
+        '5xl': 'var(--text-5xl)',
+        '6xl': 'var(--text-6xl)',
+      },
+      fontWeight: {
+        thin: 'var(--font-thin)',
+        light: 'var(--font-light)',
+        normal: 'var(--font-normal)',
+        medium: 'var(--font-medium)',
+        semibold: 'var(--font-semibold)',
+        bold: 'var(--font-bold)',
+        extrabold: 'var(--font-extrabold)',
+        black: 'var(--font-black)',
+      },
+      lineHeight: {
+        none: 'var(--leading-none)',
+        tight: 'var(--leading-tight)',
+        snug: 'var(--leading-snug)',
+        normal: 'var(--leading-normal)',
+        relaxed: 'var(--leading-relaxed)',
+        loose: 'var(--leading-loose)',
+      },
+      letterSpacing: {
+        tighter: 'var(--tracking-tighter)',
+        tight: 'var(--tracking-tight)',
+        normal: 'var(--tracking-normal)',
+        wide: 'var(--tracking-wide)',
+        wider: 'var(--tracking-wider)',
+        widest: 'var(--tracking-widest)',
+      },
+      boxShadow: {
+        xs: 'var(--shadow-xs)',
+        sm: 'var(--shadow-sm)',
+        md: 'var(--shadow-md)',
+        lg: 'var(--shadow-lg)',
+        xl: 'var(--shadow-xl)',
+        '2xl': 'var(--shadow-2xl)',
+        inner: 'var(--shadow-inner)',
+      },
+      borderRadius: {
+        none: 'var(--radius-none)',
+        sm: 'var(--radius-sm)',
+        md: 'var(--radius-md)',
+        lg: 'var(--radius-lg)',
+        xl: 'var(--radius-xl)',
+        '2xl': 'var(--radius-2xl)',
+        '3xl': 'var(--radius-3xl)',
+        full: 'var(--radius-full)',
+      },
+      borderWidth: {
+        0: 'var(--border-0)',
+        DEFAULT: 'var(--border)',
+        2: 'var(--border-2)',
+        4: 'var(--border-4)',
+        8: 'var(--border-8)',
+      },
+      transitionDuration: {
+        75: 'var(--duration-75)',
+        100: 'var(--duration-100)',
+        150: 'var(--duration-150)',
+        200: 'var(--duration-200)',
+        300: 'var(--duration-300)',
+        500: 'var(--duration-500)',
+        700: 'var(--duration-700)',
+        1000: 'var(--duration-1000)',
+      },
+      transitionTimingFunction: {
+        linear: 'var(--ease-linear)',
+        in: 'var(--ease-in)',
+        out: 'var(--ease-out)',
+        'in-out': 'var(--ease-in-out)',
+      },
+      zIndex: {
+        0: 'var(--z-0)',
+        10: 'var(--z-10)',
+        20: 'var(--z-20)',
+        30: 'var(--z-30)',
+        40: 'var(--z-40)',
+        50: 'var(--z-50)',
+        modal: 'var(--z-modal)',
+        overlay: 'var(--z-overlay)',
+        dropdown: 'var(--z-dropdown)',
+        tooltip: 'var(--z-tooltip)',
+      },
+    },
+  },
+  plugins: [],
+}
+[/FILE]
+
+TAILWIND + DESIGN TOKENS BENEFITS:
+✅ Use Tailwind utilities: bg-primary-500, text-neutral-900, p-4, rounded-lg
+✅ Use direct tokens: bg-[var(--primary-500)], text-[var(--text-primary)]
+✅ All values stay synced through design-tokens.css
+✅ Easy theme updates by changing CSS variables only
+✅ Consistent spacing, colors, typography across entire app
 
 COMPONENT TOKEN USAGE EXAMPLES (MANDATORY):
 
