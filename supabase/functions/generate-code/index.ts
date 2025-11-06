@@ -890,6 +890,174 @@ COMPONENT TOKEN USAGE REQUIREMENTS (CRITICAL):
 ✅ Reference tokens using var() function: color: var(--text-primary);
 ✅ Use Tailwind utilities that map to design tokens when possible
 
+MANDATORY globals.css CONTENT:
+[FILE:src/styles/globals.css]
+@import './design-tokens.css';
+
+/* Reset and Base Styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--font-sans);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+  background-color: var(--background);
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  min-height: 100vh;
+  font-size: var(--text-base);
+  font-weight: var(--font-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Focus Management for Accessibility */
+*:focus {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Button Reset */
+button {
+  font-family: inherit;
+  font-size: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: inherit;
+}
+
+/* Link Reset */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Image Reset */
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* Form Elements */
+input, textarea, select, button {
+  font: inherit;
+  color: inherit;
+}
+
+/* Typography Utilities */
+.heading-1 { 
+  font-size: var(--text-5xl); 
+  font-weight: var(--font-bold); 
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+
+.heading-2 { 
+  font-size: var(--text-4xl); 
+  font-weight: var(--font-bold); 
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+
+.heading-3 { 
+  font-size: var(--text-3xl); 
+  font-weight: var(--font-semibold); 
+  line-height: var(--leading-snug);
+}
+
+.heading-4 { 
+  font-size: var(--text-2xl); 
+  font-weight: var(--font-semibold); 
+  line-height: var(--leading-snug);
+}
+
+.body-large { 
+  font-size: var(--text-lg); 
+  line-height: var(--leading-relaxed);
+  color: var(--text-primary);
+}
+
+.body-base { 
+  font-size: var(--text-base); 
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+}
+
+.body-small { 
+  font-size: var(--text-sm); 
+  line-height: var(--leading-normal);
+  color: var(--text-secondary);
+}
+
+/* Spacing Utilities */
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
+}
+
+.section {
+  padding-top: var(--space-16);
+  padding-bottom: var(--space-16);
+}
+
+/* Animation Utilities */
+.transition-smooth {
+  transition-duration: var(--duration-300);
+  transition-timing-function: var(--ease-in-out);
+}
+
+.transition-fast {
+  transition-duration: var(--duration-150);
+  transition-timing-function: var(--ease-out);
+}
+
+/* Card Utilities */
+.card {
+  background-color: var(--surface);
+  border: var(--border) solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-6);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+  transition: all var(--duration-300) var(--ease-out);
+}
+
+/* Screen Reader Only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+[/FILE]
+
 COMPONENT ARCHITECTURE REQUIREMENTS:
 - Each component must be under 120 lines (split into smaller components if needed)
 - Use TypeScript interfaces for all props
