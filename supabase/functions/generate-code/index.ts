@@ -1321,6 +1321,16 @@ REQUIREMENTS:
 
           const totalTokens = inputTokens + outputTokens;
 
+          // Run design quality validation
+          const qualityCheck = validateDesignQuality(fullResponse);
+          
+          // Log quality check results for monitoring
+          if (!qualityCheck.valid) {
+            console.log('⚠️ Design Quality Suggestions:', qualityCheck.suggestions);
+          } else {
+            console.log('✅ Design quality validation passed');
+          }
+
           // Deduct tokens
           await supabase.rpc('check_and_deduct_tokens', {
             _user_id: user.id,
@@ -1378,7 +1388,11 @@ REQUIREMENTS:
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
             done: true, 
             conversation_id: conversationId,
-            tokens: { input: inputTokens, output: outputTokens, total: totalTokens }
+            tokens: { input: inputTokens, output: outputTokens, total: totalTokens },
+            quality_check: {
+              valid: qualityCheck.valid,
+              suggestions: qualityCheck.suggestions
+            }
           })}\n\n`));
 
           controller.close();

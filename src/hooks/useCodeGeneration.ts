@@ -12,6 +12,11 @@ interface GenerateCodeParams {
 
 type GenerationPhase = 'idle' | 'planning' | 'generating' | 'complete' | 'error';
 
+interface QualityCheck {
+  valid: boolean;
+  suggestions: string[];
+}
+
 export const useCodeGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationPhase, setGenerationPhase] = useState<GenerationPhase>('idle');
@@ -19,6 +24,7 @@ export const useCodeGeneration = () => {
   const [generatedFiles, setGeneratedFiles] = useState<CodeFile[]>([]);
   const [filePlan, setFilePlan] = useState<FilePlan[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [qualityCheck, setQualityCheck] = useState<QualityCheck | null>(null);
 
   const parseSSEStream = async (reader: ReadableStreamDefaultReader<Uint8Array>) => {
     const decoder = new TextDecoder();
@@ -47,6 +53,28 @@ export const useCodeGeneration = () => {
             setGenerationPhase('complete');
             setCurrentFile(null);
             continue;
+          }
+
+          // Try to parse as JSON for completion with metadata
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.done === true) {
+              if (currentFilePath && currentFileContent) {
+                setGeneratedFiles(prev => [...prev, { path: currentFilePath, content: currentFileContent }]);
+              }
+              
+              // Handle quality check if present
+              if (parsed.quality_check) {
+                setQualityCheck(parsed.quality_check);
+                console.log('Quality check:', parsed.quality_check);
+              }
+              
+              setGenerationPhase('complete');
+              setCurrentFile(null);
+              continue;
+            }
+          } catch {
+            // Not JSON, continue processing as content
           }
 
           // Parse [PLAN] marker
@@ -179,6 +207,7 @@ export const useCodeGeneration = () => {
     setGeneratedFiles([]);
     setFilePlan([]);
     setError(null);
+    setQualityCheck(null);
   };
 
   return {
@@ -188,6 +217,7 @@ export const useCodeGeneration = () => {
     generatedFiles,
     filePlan,
     error,
+    qualityCheck,
     generateCode,
     resetGeneration
   };

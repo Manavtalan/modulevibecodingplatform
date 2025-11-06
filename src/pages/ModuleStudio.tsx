@@ -42,6 +42,7 @@ const ModuleStudio = () => {
     generatedFiles,
     filePlan,
     error: generationError,
+    qualityCheck,
     generateCode,
     resetGeneration
   } = useCodeGeneration();
@@ -97,6 +98,18 @@ const ModuleStudio = () => {
       }
     }
   }, [currentFile]);
+
+  // Display quality check suggestions when generation completes
+  useEffect(() => {
+    if (generationPhase === 'complete' && qualityCheck) {
+      if (!qualityCheck.valid && qualityCheck.suggestions.length > 0) {
+        const suggestionsText = `⚠️ Design Quality Suggestions:\n${qualityCheck.suggestions.map(s => `• ${s}`).join('\n')}\n\nConsider regenerating with these improvements for a more modern, professional result.`;
+        addStatusMessage(suggestionsText, "status");
+      } else {
+        addStatusMessage("✨ Code quality check passed! All modern design patterns detected.", "status");
+      }
+    }
+  }, [generationPhase, qualityCheck]);
 
   const addStatusMessage = (text: string, type: 'status' | 'error') => {
     setMessages(prev => {
