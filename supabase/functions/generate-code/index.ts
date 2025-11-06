@@ -60,7 +60,7 @@ serve(async (req) => {
       });
     }
 
-    const { prompt, codeType = 'html', framework, conversation_id, model = 'gemini-flash' } = await req.json() as GenerateCodeRequest;
+    const { prompt, codeType = 'html', framework, conversation_id, model = 'claude-sonnet-4-5' } = await req.json() as GenerateCodeRequest;
 
     if (!prompt || prompt.trim().length === 0) {
       return new Response(JSON.stringify({ error: 'Prompt is required' }), {

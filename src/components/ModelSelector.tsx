@@ -12,20 +12,23 @@ interface ModelSelectorProps {
 const models = [
   {
     value: 'claude-sonnet-4-5',
-    label: 'Claude Sonnet 4.5',
-    description: 'Best quality and reasoning. Ideal for complex projects.',
+    label: 'Claude Sonnet 4.5 ⭐',
+    badge: 'Primary',
+    description: '🏆 Best quality. Superior reasoning and multi-file generation. 8K tokens output.',
   },
   {
     value: 'gpt-5-mini',
     label: 'GPT-5 Mini',
-    description: 'Fast and balanced. Great for most use cases.',
+    badge: 'Secondary',
+    description: '⚡ Fast and reliable. Balanced performance. 8K tokens output.',
   },
   {
     value: 'gemini-flash',
-    label: 'Gemini Flash',
-    description: 'Fastest generation. Good for quick iterations.',
+    label: 'Gemini Flash ⚠️',
+    badge: 'Fallback',
+    description: '🚀 Fastest but may generate single files. Use for simple projects only.',
   },
-];
+] as const;
 
 export function ModelSelector({ value, onChange, disabled }: ModelSelectorProps) {
   const selectedModel = models.find(m => m.value === value);
@@ -56,7 +59,18 @@ export function ModelSelector({ value, onChange, disabled }: ModelSelectorProps)
           {models.map((model) => (
             <SelectItem key={model.value} value={model.value}>
               <div className="flex flex-col items-start">
-                <span className="font-medium">{model.label}</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{model.label}</span>
+                  {model.badge && (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+                      model.badge === 'Primary' ? 'bg-primary/20 text-primary' :
+                      model.badge === 'Secondary' ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400' :
+                      'bg-muted text-muted-foreground'
+                    }`}>
+                      {model.badge}
+                    </span>
+                  )}
+                </div>
                 <span className="text-xs text-muted-foreground">{model.description}</span>
               </div>
             </SelectItem>

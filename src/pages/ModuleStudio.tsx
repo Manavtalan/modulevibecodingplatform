@@ -32,7 +32,7 @@ const ModuleStudio = () => {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(location.state?.conversationId || null);
-  const [selectedModel, setSelectedModel] = useState("gemini-flash");
+  const [selectedModel, setSelectedModel] = useState("claude-sonnet-4-5");
   const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview');
 
   const {
