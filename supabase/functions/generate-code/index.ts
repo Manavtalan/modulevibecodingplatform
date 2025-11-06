@@ -23,6 +23,58 @@ interface ProviderConfig {
   parseStreamChunk: (line: string) => string | null;
 }
 
+// Design quality validation function
+const validateDesignQuality = (content: string): { valid: boolean; suggestions: string[] } => {
+  const suggestions: string[] = [];
+  
+  // Check for modern CSS patterns
+  if (!content.includes('grid') && !content.includes('flexbox') && !content.includes('flex')) {
+    suggestions.push('Add CSS Grid or Flexbox layouts for modern responsive design');
+  }
+  
+  if (!content.includes('transition') && !content.includes('animation')) {
+    suggestions.push('Add smooth transitions and animations for better UX');
+  }
+  
+  if (!content.includes('gradient') && !content.includes('linear-gradient') && !content.includes('bg-gradient')) {
+    suggestions.push('Use modern gradients for visual depth');
+  }
+  
+  if (!content.includes('hover:') && !content.includes(':hover')) {
+    suggestions.push('Add hover effects for interactive elements');
+  }
+  
+  // Check for responsive design
+  if (!content.includes('responsive') && !content.includes('@media') && !content.includes('sm:') && !content.includes('md:')) {
+    suggestions.push('Implement responsive design with breakpoints');
+  }
+  
+  // Check for modern typography
+  if (!content.includes('font-') && !content.includes('text-') && !content.includes('font-family')) {
+    suggestions.push('Use proper typography hierarchy (headings, body text)');
+  }
+  
+  // Check for spacing
+  if (!content.includes('padding') && !content.includes('margin') && !content.includes('gap') && !content.includes('space-')) {
+    suggestions.push('Add consistent spacing using a spacing scale');
+  }
+  
+  // Check for shadows (depth)
+  if (!content.includes('shadow') && !content.includes('box-shadow')) {
+    suggestions.push('Add subtle shadows for depth and hierarchy');
+  }
+  
+  // Check for border radius (modern look)
+  if (!content.includes('rounded') && !content.includes('border-radius')) {
+    suggestions.push('Use rounded corners for modern aesthetic');
+  }
+  
+  return {
+    valid: suggestions.length === 0,
+    suggestions
+  };
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
