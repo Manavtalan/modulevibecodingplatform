@@ -619,7 +619,10 @@ VERIFICATION CHECKLIST (CHECK BEFORE COMPLETING):
       case 'react':
         systemPrompt = `${baseFormat}
 
-MANDATORY: CREATE PROFESSIONAL, MODERN, POLISHED UI
+MANDATORY: CREATE PROFESSIONAL REACT APPLICATION WITH DESIGN SYSTEM
+
+CRITICAL REQUIREMENT: ALWAYS generate src/styles/design-tokens.css file
+This file MUST contain CSS custom properties for the entire design system.
 
 ARCHITECTURE (Vite + React + TypeScript + Tailwind + shadcn/ui):
 
@@ -634,14 +637,16 @@ CRITICAL RULES:
 MANDATORY FILE STRUCTURE:
 [PLAN]
 {"files":[
-  {"path":"src/App.tsx","description":"Main composition with clean layout"},
+  {"path":"src/App.tsx","description":"Main composition with routing"},
   {"path":"src/components/layout/Navbar.tsx","description":"Modern navigation with mobile menu"},
-  {"path":"src/components/sections/Hero.tsx","description":"Stunning hero section with gradient and CTA"},
-  {"path":"src/components/sections/Features.tsx","description":"Feature showcase grid with icons"},
-  {"path":"src/components/sections/Testimonials.tsx","description":"Customer testimonials section"},
-  {"path":"src/components/sections/Footer.tsx","description":"Footer with links and branding"},
-  {"path":"src/styles/design-tokens.css","description":"Design system CSS variables"},
-  {"path":"src/styles/globals.css","description":"Global styles and resets"}
+  {"path":"src/components/sections/Hero.tsx","description":"Stunning hero section with CTA"},
+  {"path":"src/components/sections/Features.tsx","description":"Feature showcase grid"},
+  {"path":"src/components/sections/Footer.tsx","description":"Footer component"},
+  {"path":"src/components/ui/Button.tsx","description":"Reusable button component"},
+  {"path":"src/components/ui/Card.tsx","description":"Reusable card component"},
+  {"path":"src/styles/design-tokens.css","description":"MANDATORY - Complete design system variables"},
+  {"path":"src/styles/globals.css","description":"Global styles importing design tokens"},
+  {"path":"src/lib/utils.ts","description":"Utility functions including design helpers"}
 ]}
 [/PLAN]
 
@@ -663,60 +668,227 @@ DESIGN REQUIREMENTS (CRITICAL):
 MANDATORY design-tokens.css STRUCTURE:
 [FILE:src/styles/design-tokens.css]
 :root {
-  /* Modern Color System - Purple/Blue Theme */
-  --primary: 262.1 83.3% 57.8%;
-  --primary-hover: 262.1 83.3% 47.8%;
-  --primary-foreground: 210 40% 98%;
-  --accent: 340 82% 52%;
-  --accent-hover: 340 82% 42%;
-  --accent-foreground: 210 40% 98%;
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --surface: 0 0% 100%;
-  --surface-hover: 240 4.8% 95.9%;
-  --muted: 240 4.8% 95.9%;
-  --muted-foreground: 240 3.8% 46.1%;
-  --border: 240 5.9% 90%;
-  --input: 240 5.9% 90%;
-  --ring: 262.1 83.3% 57.8%;
+  /* === COLORS - Modern Purple/Blue Professional Theme === */
+  /* Primary Colors */
+  --primary-50: #ede9fe;
+  --primary-100: #ddd6fe;
+  --primary-200: #c4b5fd;
+  --primary-300: #a78bfa;
+  --primary-400: #8b5cf6;
+  --primary-500: #6366f1;
+  --primary-600: #4f46e5;
+  --primary-700: #4338ca;
+  --primary-800: #3730a3;
+  --primary-900: #312e81;
   
-  /* Spacing Scale */
-  --space-xs: 0.5rem;
-  --space-sm: 1rem;
-  --space-md: 1.5rem;
-  --space-lg: 2rem;
-  --space-xl: 3rem;
-  --space-2xl: 4rem;
+  /* Accent Colors */
+  --accent-50: #fdf2f8;
+  --accent-100: #fce7f3;
+  --accent-200: #fbcfe8;
+  --accent-300: #f9a8d4;
+  --accent-400: #f472b6;
+  --accent-500: #ec4899;
+  --accent-600: #db2777;
+  --accent-700: #be185d;
+  --accent-800: #9d174d;
+  --accent-900: #831843;
   
-  /* Typography */
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  /* Neutral Colors */
+  --neutral-50: #f8fafc;
+  --neutral-100: #f1f5f9;
+  --neutral-200: #e2e8f0;
+  --neutral-300: #cbd5e1;
+  --neutral-400: #94a3b8;
+  --neutral-500: #64748b;
+  --neutral-600: #475569;
+  --neutral-700: #334155;
+  --neutral-800: #1e293b;
+  --neutral-900: #0f172a;
   
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  /* Semantic Colors */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
   
-  /* Border Radius */
-  --radius: 0.5rem;
+  /* Surface Colors */
+  --background: var(--neutral-50);
+  --surface: var(--neutral-100);
+  --surface-secondary: var(--neutral-200);
+  --surface-tertiary: var(--neutral-300);
   
-  /* Animations */
-  --duration-fast: 150ms;
-  --duration-normal: 300ms;
-  --duration-slow: 500ms;
+  /* Text Colors */
+  --text-primary: var(--neutral-900);
+  --text-secondary: var(--neutral-700);
+  --text-tertiary: var(--neutral-500);
+  --text-inverse: var(--neutral-50);
+  
+  /* Border Colors */
+  --border: var(--neutral-200);
+  --border-secondary: var(--neutral-300);
+  --border-focus: var(--primary-500);
+  
+  /* === SPACING SCALE === */
+  --space-0: 0;
+  --space-px: 1px;
+  --space-0-5: 0.125rem;    /* 2px */
+  --space-1: 0.25rem;       /* 4px */
+  --space-1-5: 0.375rem;    /* 6px */
+  --space-2: 0.5rem;        /* 8px */
+  --space-2-5: 0.625rem;    /* 10px */
+  --space-3: 0.75rem;       /* 12px */
+  --space-3-5: 0.875rem;    /* 14px */
+  --space-4: 1rem;          /* 16px */
+  --space-5: 1.25rem;       /* 20px */
+  --space-6: 1.5rem;        /* 24px */
+  --space-7: 1.75rem;       /* 28px */
+  --space-8: 2rem;          /* 32px */
+  --space-9: 2.25rem;       /* 36px */
+  --space-10: 2.5rem;       /* 40px */
+  --space-11: 2.75rem;      /* 44px */
+  --space-12: 3rem;         /* 48px */
+  --space-14: 3.5rem;       /* 56px */
+  --space-16: 4rem;         /* 64px */
+  --space-20: 5rem;         /* 80px */
+  --space-24: 6rem;         /* 96px */
+  --space-32: 8rem;         /* 128px */
+  
+  /* === TYPOGRAPHY === */
+  /* Font Families */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  
+  /* Font Sizes */
+  --text-xs: 0.75rem;       /* 12px */
+  --text-sm: 0.875rem;      /* 14px */
+  --text-base: 1rem;        /* 16px */
+  --text-lg: 1.125rem;      /* 18px */
+  --text-xl: 1.25rem;       /* 20px */
+  --text-2xl: 1.5rem;       /* 24px */
+  --text-3xl: 1.875rem;     /* 30px */
+  --text-4xl: 2.25rem;      /* 36px */
+  --text-5xl: 3rem;         /* 48px */
+  --text-6xl: 3.75rem;      /* 60px */
+  
+  /* Font Weights */
+  --font-thin: 100;
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+  --font-black: 900;
+  
+  /* Line Heights */
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+  
+  /* Letter Spacing */
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+  
+  /* === SHADOWS === */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  
+  /* === BORDER RADIUS === */
+  --radius-none: 0;
+  --radius-sm: 0.125rem;     /* 2px */
+  --radius-md: 0.375rem;     /* 6px */
+  --radius-lg: 0.5rem;       /* 8px */
+  --radius-xl: 0.75rem;      /* 12px */
+  --radius-2xl: 1rem;        /* 16px */
+  --radius-3xl: 1.5rem;      /* 24px */
+  --radius-full: 9999px;
+  
+  /* === BORDER WIDTHS === */
+  --border-0: 0;
+  --border: 1px;
+  --border-2: 2px;
+  --border-4: 4px;
+  --border-8: 8px;
+  
+  /* === ANIMATIONS === */
+  /* Durations */
+  --duration-75: 75ms;
+  --duration-100: 100ms;
+  --duration-150: 150ms;
+  --duration-200: 200ms;
+  --duration-300: 300ms;
+  --duration-500: 500ms;
+  --duration-700: 700ms;
+  --duration-1000: 1000ms;
+  
+  /* Timing Functions */
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* === Z-INDEX SCALE === */
+  --z-0: 0;
+  --z-10: 10;
+  --z-20: 20;
+  --z-30: 30;
+  --z-40: 40;
+  --z-50: 50;
+  --z-modal: 1000;
+  --z-overlay: 1010;
+  --z-dropdown: 1020;
+  --z-tooltip: 1030;
 }
 
-.dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --surface: 217.2 32.6% 17.5%;
-  --surface-hover: 217.2 32.6% 20%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
+/* Dark Mode Variants */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: var(--neutral-900);
+    --surface: var(--neutral-800);
+    --surface-secondary: var(--neutral-700);
+    --surface-tertiary: var(--neutral-600);
+    
+    --text-primary: var(--neutral-50);
+    --text-secondary: var(--neutral-300);
+    --text-tertiary: var(--neutral-400);
+    --text-inverse: var(--neutral-900);
+    
+    --border: var(--neutral-700);
+    --border-secondary: var(--neutral-600);
+  }
 }
+
+/* Utility Classes for Design Tokens */
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-tertiary { color: var(--text-tertiary); }
+.bg-primary { background-color: var(--primary-500); }
+.bg-accent { background-color: var(--accent-500); }
+.bg-surface { background-color: var(--surface); }
+.shadow-card { box-shadow: var(--shadow-lg); }
+.rounded-card { border-radius: var(--radius-xl); }
 [/FILE]
+
+COMPONENT TOKEN USAGE REQUIREMENTS (CRITICAL):
+✅ ALL components MUST use CSS custom properties from design-tokens.css
+✅ NO hardcoded colors, spacing, or typography values in components
+✅ Use semantic token names (--text-primary instead of #1e293b)
+✅ Import design tokens in globals.css: @import './design-tokens.css';
+✅ Reference tokens using var() function: color: var(--text-primary);
+✅ Use Tailwind utilities that map to design tokens when possible
 
 COMPONENT ARCHITECTURE REQUIREMENTS:
 - Each component must be under 120 lines (split into smaller components if needed)
