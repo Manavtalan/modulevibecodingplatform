@@ -1075,33 +1075,13 @@ export default function Button({
   className = '',
   ...props 
 }: ButtonProps) {
-  const baseStyles = `
-    inline-flex items-center justify-center
-    font-medium rounded-[var(--radius-lg)]
-    transition-all duration-[var(--duration-200)]
-    focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] focus:ring-offset-2
-    disabled:opacity-50 disabled:cursor-not-allowed
-  `;
+  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-[var(--radius-lg)] transition-all duration-[var(--duration-200)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
   
   const variants = {
-    primary: `
-      bg-[var(--primary-500)] text-[var(--text-inverse)]
-      hover:bg-[var(--primary-600)]
-      shadow-[var(--shadow-md)] hover:shadow-[var(--shadow-lg)]
-    `,
-    secondary: `
-      bg-[var(--surface)] text-[var(--text-primary)]
-      border border-[var(--border)]
-      hover:bg-[var(--surface-secondary)]
-    `,
-    outline: `
-      border-2 border-[var(--primary-500)] text-[var(--primary-500)]
-      hover:bg-[var(--primary-50)]
-    `,
-    ghost: `
-      text-[var(--text-primary)]
-      hover:bg-[var(--surface-secondary)]
-    `
+    primary: 'bg-[var(--primary-500)] text-[var(--text-inverse)] hover:bg-[var(--primary-600)] shadow-[var(--shadow-md)] hover:shadow-[var(--shadow-lg)]',
+    secondary: 'bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] hover:bg-[var(--surface-secondary)]',
+    outline: 'border-2 border-[var(--primary-500)] text-[var(--primary-500)] hover:bg-[var(--primary-50)]',
+    ghost: 'text-[var(--text-primary)] hover:bg-[var(--surface-secondary)]'
   };
   
   const sizes = {
@@ -1112,7 +1092,7 @@ export default function Button({
   
   return (
     <button
-      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
+      className={baseStyles + ' ' + variants[variant] + ' ' + sizes[size] + ' ' + className}
       {...props}
     >
       {children}
@@ -1134,17 +1114,12 @@ export default function Card({
   className = '', 
   ...props 
 }: CardProps) {
+  const baseStyles = 'bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-xl)] shadow-[var(--shadow-md)] p-[var(--space-6)]';
+  const hoverStyles = hover ? 'hover:shadow-[var(--shadow-lg)] hover:-translate-y-1 transition-all duration-[var(--duration-300)]' : '';
+  
   return (
     <div
-      className={`
-        bg-[var(--surface)]
-        border border-[var(--border)]
-        rounded-[var(--radius-xl)]
-        shadow-[var(--shadow-md)]
-        p-[var(--space-6)]
-        ${hover ? 'hover:shadow-[var(--shadow-lg)] hover:-translate-y-1 transition-all duration-[var(--duration-300)]' : ''}
-        ${className}
-      `}
+      className={baseStyles + ' ' + hoverStyles + ' ' + className}
       {...props}
     >
       {children}
@@ -1166,7 +1141,6 @@ export default function Hero() {
         background: 'linear-gradient(135deg, var(--primary-600), var(--primary-800), var(--accent-600))'
       }}
     >
-      {/* Background decoration using tokens */}
       <div 
         className="absolute top-20 left-10 w-72 h-72 rounded-full blur-3xl"
         style={{
