@@ -520,7 +520,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (hero) {
     window.addEventListener('scroll', () => {
       const scrolled = window.pageYOffset;
-      hero.style.transform = `translateY(${scrolled * 0.5}px)`;
+      hero.style.transform = 'translateY(' + (scrolled * 0.5) + 'px)';
     });
   }
 });
