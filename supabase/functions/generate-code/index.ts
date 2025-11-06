@@ -75,6 +75,71 @@ const validateDesignQuality = (content: string): { valid: boolean; suggestions: 
   };
 };
 
+// Design token usage validation function
+const validateDesignTokenUsage = (fullResponse: string): { valid: boolean; issues: string[] } => {
+  const issues: string[] = [];
+  
+  // Check if design-tokens.css exists
+  const hasDesignTokens = fullResponse.includes('design-tokens.css') || fullResponse.includes('tokens.css');
+  
+  if (!hasDesignTokens) {
+    issues.push('Missing design-tokens.css file - design system tokens are required');
+  }
+  
+  // Check for hardcoded hex colors (excluding comments and design token definitions)
+  const hexColorMatches = fullResponse.match(/#[0-9a-fA-F]{3,6}/g);
+  if (hexColorMatches && hexColorMatches.length > 20) {
+    // Allow some hex colors in design-tokens.css, but flag excessive use elsewhere
+    const tokensSection = fullResponse.split('[FILE:src/styles/design-tokens.css]')[1]?.split('[/FILE]')[0] || '';
+    const nonTokenContent = fullResponse.replace(tokensSection, '');
+    const nonTokenHex = nonTokenContent.match(/#[0-9a-fA-F]{3,6}/g);
+    
+    if (nonTokenHex && nonTokenHex.length > 5) {
+      issues.push('Hardcoded hex colors found in components - use design tokens like var(--primary-500)');
+    }
+  }
+  
+  // Check for hardcoded rgb/rgba colors in components
+  if (fullResponse.match(/rgb\s*\(/gi) || fullResponse.match(/rgba\s*\(/gi)) {
+    const componentSection = fullResponse.split('[FILE:src/components/')[1];
+    if (componentSection && (componentSection.includes('rgb(') || componentSection.includes('rgba('))) {
+      issues.push('Hardcoded rgb/rgba colors found in components - use design tokens instead');
+    }
+  }
+  
+  // Check for hardcoded pixel spacing (allow 1px and 2px for borders)
+  const pxMatches = fullResponse.match(/\d+px/g);
+  if (pxMatches) {
+    const largePxValues = pxMatches.filter(match => {
+      const num = parseInt(match);
+      return num > 2 && num < 1000; // Ignore very large values (likely widths/heights)
+    });
+    
+    if (largePxValues.length > 10) {
+      issues.push('Hardcoded pixel spacing found - use design token spacing like var(--space-4)');
+    }
+  }
+  
+  // Check if components use design tokens
+  const hasComponentFiles = fullResponse.includes('[FILE:src/components/');
+  const usesDesignTokens = fullResponse.includes('var(--') && fullResponse.match(/var\(--\w+/g);
+  
+  if (hasComponentFiles && !usesDesignTokens) {
+    issues.push('Components should use design tokens with var(--token-name) syntax');
+  }
+  
+  // Check for Tailwind hardcoded values instead of token references
+  const hasTailwindColors = fullResponse.match(/bg-(blue|red|green|purple|pink|yellow|indigo|gray)-\d{3}/g);
+  if (hasTailwindColors && hasTailwindColors.length > 3) {
+    issues.push('Use design token classes like bg-[var(--primary-500)] instead of Tailwind color utilities');
+  }
+  
+  return {
+    valid: issues.length === 0,
+    issues
+  };
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -1815,11 +1880,21 @@ REQUIREMENTS:
           // Run design quality validation
           const qualityCheck = validateDesignQuality(fullResponse);
           
+          // Run design token usage validation
+          const tokenValidation = validateDesignTokenUsage(fullResponse);
+          
           // Log quality check results for monitoring
           if (!qualityCheck.valid) {
             console.log('⚠️ Design Quality Suggestions:', qualityCheck.suggestions);
           } else {
             console.log('✅ Design quality validation passed');
+          }
+          
+          // Log token validation results
+          if (!tokenValidation.valid) {
+            console.log('⚠️ Design Token Issues:', tokenValidation.issues);
+          } else {
+            console.log('✅ Design token validation passed');
           }
 
           // Deduct tokens
@@ -1883,6 +1958,10 @@ REQUIREMENTS:
             quality_check: {
               valid: qualityCheck.valid,
               suggestions: qualityCheck.suggestions
+            },
+            token_validation: {
+              valid: tokenValidation.valid,
+              issues: tokenValidation.issues
             }
           })}\n\n`));
 

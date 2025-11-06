@@ -43,6 +43,7 @@ const ModuleStudio = () => {
     filePlan,
     error: generationError,
     qualityCheck,
+    tokenValidation,
     generateCode,
     resetGeneration
   } = useCodeGeneration();
@@ -110,6 +111,18 @@ const ModuleStudio = () => {
       }
     }
   }, [generationPhase, qualityCheck]);
+
+  // Display token validation issues when generation completes
+  useEffect(() => {
+    if (generationPhase === 'complete' && tokenValidation) {
+      if (!tokenValidation.valid && tokenValidation.issues.length > 0) {
+        const issuesText = `⚠️ Design Token Issues:\n${tokenValidation.issues.map(i => `• ${i}`).join('\n')}\n\nComponents should use design tokens (var(--primary-500)) instead of hardcoded values for consistency.`;
+        addStatusMessage(issuesText, "status");
+      } else {
+        addStatusMessage("✨ Design token validation passed! All components use the design system properly.", "status");
+      }
+    }
+  }, [generationPhase, tokenValidation]);
 
   const addStatusMessage = (text: string, type: 'status' | 'error') => {
     setMessages(prev => {

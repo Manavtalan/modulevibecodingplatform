@@ -17,6 +17,11 @@ interface QualityCheck {
   suggestions: string[];
 }
 
+interface TokenValidation {
+  valid: boolean;
+  issues: string[];
+}
+
 export const useCodeGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationPhase, setGenerationPhase] = useState<GenerationPhase>('idle');
@@ -25,6 +30,7 @@ export const useCodeGeneration = () => {
   const [filePlan, setFilePlan] = useState<FilePlan[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [qualityCheck, setQualityCheck] = useState<QualityCheck | null>(null);
+  const [tokenValidation, setTokenValidation] = useState<TokenValidation | null>(null);
 
   const parseSSEStream = async (reader: ReadableStreamDefaultReader<Uint8Array>) => {
     const decoder = new TextDecoder();
@@ -67,6 +73,12 @@ export const useCodeGeneration = () => {
               if (parsed.quality_check) {
                 setQualityCheck(parsed.quality_check);
                 console.log('Quality check:', parsed.quality_check);
+              }
+              
+              // Handle token validation if present
+              if (parsed.token_validation) {
+                setTokenValidation(parsed.token_validation);
+                console.log('Token validation:', parsed.token_validation);
               }
               
               setGenerationPhase('complete');
@@ -208,6 +220,7 @@ export const useCodeGeneration = () => {
     setFilePlan([]);
     setError(null);
     setQualityCheck(null);
+    setTokenValidation(null);
   };
 
   return {
@@ -218,6 +231,7 @@ export const useCodeGeneration = () => {
     filePlan,
     error,
     qualityCheck,
+    tokenValidation,
     generateCode,
     resetGeneration
   };
