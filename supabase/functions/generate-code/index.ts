@@ -790,49 +790,233 @@ MANDATORY PATTERNS:
       case 'vue':
         systemPrompt = `${baseFormat}
 
-MANDATORY ARCHITECTURE (Vue 3 + Vite + TypeScript):
+MANDATORY: CREATE PROFESSIONAL, MODERN VUE 3 APPLICATION
 
-FILE STRUCTURE (REQUIRED):
+ARCHITECTURE (Vue 3 + Composition API + TypeScript + Tailwind):
+
+CRITICAL RULES:
+❌ NO single file Vue apps with everything in one component
+❌ NO Options API (use Composition API with <script setup>)
+❌ NO inline styles or basic unstyled components
+❌ NO outdated UI patterns
+❌ NO missing proper component structure
+
+MANDATORY FILE STRUCTURE:
 [PLAN]
 {"files":[
-  {"path":"src/App.vue","description":"Main app entry with router-view"},
-  {"path":"src/components/Navbar.vue","description":"Navigation component"},
-  {"path":"src/components/Hero.vue","description":"Hero section"},
-  {"path":"src/components/Features.vue","description":"Features section"},
-  {"path":"src/components/Footer.vue","description":"Footer component"}
+  {"path":"src/App.vue","description":"Main Vue app with router-view or layout composition"},
+  {"path":"src/components/layout/TheNavbar.vue","description":"Modern navigation with mobile menu"},
+  {"path":"src/components/sections/TheHero.vue","description":"Stunning hero section with gradients and CTA"},
+  {"path":"src/components/sections/TheFeatures.vue","description":"Feature grid with icons"},
+  {"path":"src/components/sections/TheTestimonials.vue","description":"Testimonials section"},
+  {"path":"src/components/sections/TheFooter.vue","description":"Footer with links"},
+  {"path":"src/components/ui/BaseButton.vue","description":"Reusable button component with variants"},
+  {"path":"src/components/ui/BaseCard.vue","description":"Reusable card component"},
+  {"path":"src/styles/design-tokens.css","description":"Design system CSS variables"},
+  {"path":"src/styles/globals.css","description":"Global styles and resets"}
 ]}
 [/PLAN]
 
-EXAMPLE COMPONENT:
-[FILE:src/App.vue]
+DESIGN REQUIREMENTS (CRITICAL - SAME AS REACT):
+✅ Use Tailwind's extended color palette (blue-500, purple-600, indigo-500, slate-800)
+✅ Add smooth transitions (transition-all duration-300 ease-in-out)
+✅ Include hover effects (hover:scale-105, hover:shadow-xl, hover:-translate-y-1)
+✅ Use gradient backgrounds (bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700)
+✅ Add glassmorphism effects (backdrop-blur-lg bg-white/10 border border-white/20)
+✅ Proper spacing with Tailwind scale (space-y-8, gap-6, p-8, px-4)
+✅ Typography hierarchy (text-5xl font-bold, text-lg text-gray-600, leading-tight)
+✅ Add icons using a CDN or iconify
+✅ Dark mode support with proper color schemes
+✅ Responsive design with mobile-first approach
+✅ Accessibility features (aria-labels, focus states, focus-visible:ring-2)
+
+MANDATORY design-tokens.css (SAME AS REACT):
+[FILE:src/styles/design-tokens.css]
+:root {
+  /* Modern Color System - Purple/Blue Theme */
+  --primary: 262.1 83.3% 57.8%;
+  --primary-hover: 262.1 83.3% 47.8%;
+  --primary-foreground: 210 40% 98%;
+  --accent: 340 82% 52%;
+  --accent-hover: 340 82% 42%;
+  --accent-foreground: 210 40% 98%;
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --surface: 0 0% 100%;
+  --surface-hover: 240 4.8% 95.9%;
+  --muted: 240 4.8% 95.9%;
+  --muted-foreground: 240 3.8% 46.1%;
+  --border: 240 5.9% 90%;
+  --input: 240 5.9% 90%;
+  --ring: 262.1 83.3% 57.8%;
+  
+  /* Spacing, Typography, Shadows, etc. */
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 4rem;
+  
+  --font-sans: 'Inter', system-ui, sans-serif;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  
+  --radius: 0.5rem;
+  
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+}
+
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --surface: 217.2 32.6% 17.5%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --border: 217.2 32.6% 17.5%;
+}
+[/FILE]
+
+COMPONENT ARCHITECTURE REQUIREMENTS:
+- Composition API with <script setup lang="ts">
+- Each component under 120 lines (split if larger)
+- TypeScript interfaces for all props with defineProps<>()
+- Use ref(), computed(), onMounted() from Vue
+- Scoped styles when needed, but prefer Tailwind utilities
+- Emit events properly with defineEmits<>()
+- Proper component naming (PascalCase for components, The prefix for layout/unique)
+
+MODERN UI PATTERNS (SAME AS REACT):
+1. Hero Section:
+   - Full/near-full viewport height (min-h-screen or min-h-[80vh])
+   - Gradient background (bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700)
+   - Large heading with gradient text effect
+   - CTA buttons with variants
+   - Background decorative elements
+
+2. Features Grid:
+   - 3-column grid on desktop (grid-cols-1 md:grid-cols-3)
+   - Card components with hover effects
+   - Icons for visual interest
+   - Title + description per feature
+
+3. Navigation:
+   - Sticky header (sticky top-0 z-50)
+   - Glassmorphism effect (backdrop-blur-lg bg-white/80)
+   - Mobile hamburger menu with Vue reactivity
+   - Logo + nav links + CTA button
+
+4. Cards:
+   - Rounded corners (rounded-xl)
+   - Subtle shadows (shadow-lg)
+   - Hover effects (hover:shadow-2xl hover:-translate-y-1)
+   - Proper padding (p-6 or p-8)
+
+5. Buttons:
+   - Multiple variants via props
+   - Proper sizing (px-6 py-3)
+   - Hover states
+   - Rounded (rounded-lg)
+   - Font weight (font-semibold)
+
+EXAMPLE MODERN VUE COMPONENT:
+[FILE:src/components/sections/TheHero.vue]
 <script setup lang="ts">
-import Navbar from './components/Navbar.vue';
-import Hero from './components/Hero.vue';
+import { ref } from 'vue';
+import BaseButton from '@/components/ui/BaseButton.vue';
+
+const showModal = ref(false);
 </script>
 
 <template>
-  <div class="app">
-    <Navbar />
-    <Hero />
-  </div>
+  <section class="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 text-white relative overflow-hidden">
+    <!-- Background decorative elements -->
+    <div class="absolute top-20 left-10 w-72 h-72 bg-white/10 rounded-full blur-3xl" />
+    <div class="absolute bottom-20 right-10 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl" />
+    
+    <div class="container mx-auto px-4 text-center relative z-10">
+      <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-8 border border-white/30">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+        </svg>
+        <span class="text-sm font-medium">New Feature Available</span>
+      </div>
+      
+      <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+        Build Amazing
+        <span class="block bg-gradient-to-r from-pink-300 to-purple-300 bg-clip-text text-transparent">
+          Web Experiences
+        </span>
+      </h1>
+      
+      <p class="text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed">
+        Create stunning, modern websites with our powerful platform. 
+        No coding required, just your creativity.
+      </p>
+      
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <BaseButton 
+          variant="primary" 
+          size="lg"
+          class="bg-white text-purple-600 hover:bg-gray-100 font-semibold px-8 py-6 text-lg rounded-xl shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1"
+        >
+          Get Started
+          <svg class="ml-2 w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </BaseButton>
+        <BaseButton 
+          variant="outline"
+          size="lg"
+          class="border-2 border-white text-white hover:bg-white/10 font-semibold px-8 py-6 text-lg rounded-xl backdrop-blur-sm"
+        >
+          Learn More
+        </BaseButton>
+      </div>
+    </div>
+  </section>
 </template>
 
 <style scoped>
-.app {
-  min-height: 100vh;
-}
+/* Use scoped styles sparingly - prefer Tailwind utilities */
 </style>
 [/FILE]
 
-REQUIREMENTS:
+ACCESSIBILITY REQUIREMENTS (SAME AS REACT):
+- Proper heading hierarchy (single h1, then h2, h3, etc.)
+- Alt text for images (or aria-label for icon images)
+- ARIA labels for interactive elements
+- Focus management (focus-visible:ring-2)
+- Keyboard navigation support
+- Color contrast ratios meeting WCAG AA (4.5:1)
+- Semantic HTML markup
+
+RESPONSIVENESS REQUIREMENTS (SAME AS REACT):
+- Mobile-first approach (320px up)
+- Use Tailwind breakpoints: sm:, md:, lg:, xl:, 2xl:
+- Stack on mobile (flex-col), grid on desktop
+- No horizontal scroll at any viewport
+- Touch-friendly targets (min 44px)
+- Responsive typography (text-3xl md:text-5xl lg:text-7xl)
+
+TYPESCRIPT REQUIREMENTS:
+- Use <script setup lang="ts">
+- Define prop interfaces with defineProps<PropsInterface>()
+- Define emit interfaces with defineEmits<EmitsInterface>()
+- Type all refs and reactive values
+- Avoid 'any' type
+
+MANDATORY PATTERNS:
 - Composition API with <script setup lang="ts">
-- Components ≤120 lines each
-- Scoped styles in each component
-- Props with TypeScript types
-- Responsive 320px-1536px
-- Semantic HTML headings
-- Alt text and ARIA labels
-- Color contrast ≥4.5:1`;
+- Tailwind utilities only (no inline styles, minimal scoped CSS)
+- Mobile-first responsive design
+- Semantic HTML5
+- Meaningful content (no Lorem Ipsum)`;
         break;
       default:
         systemPrompt = `${baseFormat}
