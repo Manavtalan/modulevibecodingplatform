@@ -20,44 +20,106 @@ export const useCodeGeneration = () => {
   const [filePlan, setFilePlan] = useState<FilePlan[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const parseStreamChunk = (chunk: string) => {
-    const lines = chunk.split('\n');
-    
-    for (const line of lines) {
-      if (line.startsWith('[PLAN]')) {
-        setGenerationPhase('planning');
-        const planContent = line.substring('[PLAN]'.length).trim();
-        try {
-          const plan = JSON.parse(planContent);
-          setFilePlan(plan.files || []);
-        } catch (e) {
-          console.error("Failed to parse plan:", e);
-        }
-      } else if (line.startsWith('[FILE:')) {
-        setGenerationPhase('generating');
-        const match = line.match(/\[FILE:(.*?)\]([\s\S]*)/);
-        if (match) {
-          const filepath = match[1].trim();
-          const content = match[2].trim();
+  const parseSSEStream = async (reader: ReadableStreamDefaultReader<Uint8Array>) => {
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let currentFilePath = '';
+    let currentFileContent = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (!line.trim() || line.startsWith(':')) continue;
+        
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6);
           
-          setCurrentFile(filepath);
-          setGeneratedFiles(prev => {
-            const existing = prev.findIndex(f => f.path === filepath);
-            if (existing >= 0) {
-              const updated = [...prev];
-              updated[existing].content = content;
-              return updated;
+          if (data === '[DONE]') {
+            if (currentFilePath && currentFileContent) {
+              setGeneratedFiles(prev => [...prev, { path: currentFilePath, content: currentFileContent }]);
             }
-            return [...prev, { path: filepath, content }];
-          });
+            setGenerationPhase('complete');
+            setCurrentFile(null);
+            continue;
+          }
+
+          // Parse [PLAN] marker
+          if (data.startsWith('[PLAN]')) {
+            setGenerationPhase('planning');
+            const planContent = data.substring('[PLAN]'.length).trim();
+            try {
+              const plan = JSON.parse(planContent);
+              setFilePlan(plan.files || []);
+            } catch (e) {
+              console.error("Failed to parse plan:", e);
+            }
+            continue;
+          }
+
+          // Parse [FILE:filename] marker
+          if (data.startsWith('[FILE:')) {
+            if (currentFilePath && currentFileContent) {
+              setGeneratedFiles(prev => [...prev, { path: currentFilePath, content: currentFileContent }]);
+            }
+            
+            setGenerationPhase('generating');
+            const match = data.match(/\[FILE:(.*?)\]/);
+            if (match) {
+              currentFilePath = match[1].trim();
+              currentFileContent = '';
+              setCurrentFile(currentFilePath);
+            }
+            continue;
+          }
+
+          // Parse [/FILE] marker
+          if (data.startsWith('[/FILE]')) {
+            if (currentFilePath && currentFileContent) {
+              setGeneratedFiles(prev => [...prev, { path: currentFilePath, content: currentFileContent }]);
+              currentFilePath = '';
+              currentFileContent = '';
+            }
+            continue;
+          }
+
+          // Parse [COMPLETE] marker
+          if (data.startsWith('[COMPLETE]')) {
+            if (currentFilePath && currentFileContent) {
+              setGeneratedFiles(prev => [...prev, { path: currentFilePath, content: currentFileContent }]);
+            }
+            setGenerationPhase('complete');
+            setCurrentFile(null);
+            continue;
+          }
+
+          // Parse [ERROR] marker
+          if (data.startsWith('[ERROR]')) {
+            setGenerationPhase('error');
+            const errorMsg = data.substring('[ERROR]'.length).trim();
+            setError(errorMsg);
+            continue;
+          }
+
+          // Regular content - append to current file
+          if (currentFilePath) {
+            currentFileContent += data + '\n';
+            setGeneratedFiles(prev => {
+              const existing = prev.findIndex(f => f.path === currentFilePath);
+              if (existing >= 0) {
+                const updated = [...prev];
+                updated[existing] = { path: currentFilePath, content: currentFileContent };
+                return updated;
+              }
+              return [...prev, { path: currentFilePath, content: currentFileContent }];
+            });
+          }
         }
-      } else if (line.startsWith('[COMPLETE]')) {
-        setGenerationPhase('complete');
-        setCurrentFile(null);
-      } else if (line.startsWith('[ERROR]')) {
-        setGenerationPhase('error');
-        const errorMsg = line.substring('[ERROR]'.length).trim();
-        setError(errorMsg);
       }
     }
   };
@@ -71,27 +133,36 @@ export const useCodeGeneration = () => {
     setCurrentFile(null);
 
     try {
-      const { data, error: invokeError } = await supabase.functions.invoke('generate-code', {
-        body: {
-          prompt: params.prompt,
-          codeType: params.codeType,
-          model: params.model,
-          conversationId: params.conversationId
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await fetch(
+        'https://ryhhskssaplqakovldlp.supabase.co/functions/v1/generate-code',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token || ''}`,
+          },
+          body: JSON.stringify({
+            prompt: params.prompt,
+            codeType: params.codeType,
+            model: params.model,
+            conversationId: params.conversationId
+          })
         }
-      });
+      );
 
-      if (invokeError) throw invokeError;
-
-      // Parse the response
-      if (data?.files) {
-        setGeneratedFiles(data.files);
-        setGenerationPhase('complete');
-      } else if (data?.stream) {
-        // Handle streaming response
-        parseStreamChunk(data.stream);
-      } else {
-        throw new Error("Invalid response format from generate-code function");
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      if (!response.body) {
+        throw new Error("No response body");
+      }
+
+      const reader = response.body.getReader();
+      await parseSSEStream(reader);
+
     } catch (err: any) {
       console.error("Code generation error:", err);
       setError(err.message || "Failed to generate code");
