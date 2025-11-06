@@ -545,82 +545,225 @@ VERIFICATION CHECKLIST (CHECK BEFORE COMPLETING):
       case 'react':
         systemPrompt = `${baseFormat}
 
-MANDATORY ARCHITECTURE (Vite + React + TypeScript + Tailwind):
+MANDATORY: CREATE PROFESSIONAL, MODERN, POLISHED UI
 
-FILE STRUCTURE (REQUIRED):
+ARCHITECTURE (Vite + React + TypeScript + Tailwind + shadcn/ui):
+
+CRITICAL RULES:
+❌ NO single file React apps
+❌ NO inline styles
+❌ NO basic unstyled components
+❌ NO outdated UI patterns
+❌ NO missing component structure
+❌ NO custom CSS in components (use Tailwind utilities)
+
+MANDATORY FILE STRUCTURE:
 [PLAN]
 {"files":[
-  {"path":"src/App.tsx","description":"Main app entry - composes all sections"},
-  {"path":"src/components/sections/Navbar.tsx","description":"Navigation bar component"},
-  {"path":"src/components/sections/Hero.tsx","description":"Hero/banner section"},
-  {"path":"src/components/sections/Features.tsx","description":"Features grid section"},
-  {"path":"src/components/sections/Footer.tsx","description":"Footer section"},
-  {"path":"src/styles/tokens.css","description":"Design system tokens (colors, spacing)"},
+  {"path":"src/App.tsx","description":"Main composition with clean layout"},
+  {"path":"src/components/layout/Navbar.tsx","description":"Modern navigation with mobile menu"},
+  {"path":"src/components/sections/Hero.tsx","description":"Stunning hero section with gradient and CTA"},
+  {"path":"src/components/sections/Features.tsx","description":"Feature showcase grid with icons"},
+  {"path":"src/components/sections/Testimonials.tsx","description":"Customer testimonials section"},
+  {"path":"src/components/sections/Footer.tsx","description":"Footer with links and branding"},
+  {"path":"src/styles/design-tokens.css","description":"Design system CSS variables"},
   {"path":"src/styles/globals.css","description":"Global styles and resets"}
 ]}
 [/PLAN]
 
-EXAMPLE COMPONENT STRUCTURE:
-[FILE:src/App.tsx]
-import Navbar from '@/components/sections/Navbar';
-import Hero from '@/components/sections/Hero';
-import Features from '@/components/sections/Features';
-import Footer from '@/components/sections/Footer';
+DESIGN REQUIREMENTS (CRITICAL):
+✅ Use Tailwind's extended color palette (blue-500, purple-600, slate-800, indigo-500)
+✅ Add smooth transitions (transition-all duration-300 ease-in-out)
+✅ Include hover effects (hover:scale-105, hover:shadow-xl, hover:-translate-y-1)
+✅ Use gradient text (bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent)
+✅ Add glassmorphism effects (backdrop-blur-lg bg-white/10 border border-white/20)
+✅ Proper spacing with Tailwind scale (space-y-8, gap-6, p-8, px-4)
+✅ Typography hierarchy (text-5xl font-bold, text-lg text-muted-foreground, leading-tight)
+✅ Use shadcn/ui components when available (Button, Card, Badge, Input)
+✅ Add icons from lucide-react for visual interest
+✅ Dark mode support with proper color contrast
+✅ Responsive design with mobile-first approach
+✅ Accessibility features (aria-labels, focus states, focus-visible:ring-2)
+✅ Add subtle animations on scroll (animate-fade-in if available)
 
-function App() {
-  return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <Hero />
-      <Features />
-      <Footer />
-    </div>
-  );
+MANDATORY design-tokens.css STRUCTURE:
+[FILE:src/styles/design-tokens.css]
+:root {
+  /* Modern Color System - Purple/Blue Theme */
+  --primary: 262.1 83.3% 57.8%;
+  --primary-hover: 262.1 83.3% 47.8%;
+  --primary-foreground: 210 40% 98%;
+  --accent: 340 82% 52%;
+  --accent-hover: 340 82% 42%;
+  --accent-foreground: 210 40% 98%;
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --surface: 0 0% 100%;
+  --surface-hover: 240 4.8% 95.9%;
+  --muted: 240 4.8% 95.9%;
+  --muted-foreground: 240 3.8% 46.1%;
+  --border: 240 5.9% 90%;
+  --input: 240 5.9% 90%;
+  --ring: 262.1 83.3% 57.8%;
+  
+  /* Spacing Scale */
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 4rem;
+  
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  
+  /* Border Radius */
+  --radius: 0.5rem;
+  
+  /* Animations */
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
 }
 
-export default App;
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --surface: 217.2 32.6% 17.5%;
+  --surface-hover: 217.2 32.6% 20%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+}
 [/FILE]
 
+COMPONENT ARCHITECTURE REQUIREMENTS:
+- Each component must be under 120 lines (split into smaller components if needed)
+- Use TypeScript interfaces for all props
+- Implement proper prop validation
+- Use React hooks appropriately (useState, useEffect, useMemo, useCallback)
+- Add proper component composition
+- Export components as default
+
+MODERN UI PATTERNS TO IMPLEMENT:
+1. Hero Section:
+   - Full viewport height or near-full (min-h-screen or min-h-[80vh])
+   - Gradient background (bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700)
+   - Large heading with gradient text
+   - Descriptive subtitle
+   - CTA buttons with variants (primary solid + secondary outline)
+   - Optional: Background effects (blurred circles, patterns)
+
+2. Features Grid:
+   - 3-column grid on desktop (grid-cols-1 md:grid-cols-3)
+   - Card components with hover effects
+   - Icons from lucide-react
+   - Title + description for each feature
+   - Proper spacing (gap-8, p-6)
+
+3. Navigation:
+   - Sticky header (sticky top-0 z-50)
+   - Glassmorphism effect (backdrop-blur-lg bg-white/80)
+   - Mobile hamburger menu
+   - Logo + nav links + CTA button
+   - Smooth scroll behavior
+
+4. Cards:
+   - Rounded corners (rounded-xl or rounded-2xl)
+   - Subtle shadows (shadow-lg)
+   - Hover effects (hover:shadow-2xl hover:-translate-y-1)
+   - Proper padding (p-6 or p-8)
+   - White or surface background
+
+5. Buttons:
+   - Multiple variants (primary, secondary, outline, ghost)
+   - Proper sizing (px-6 py-3 for default)
+   - Hover states (hover:opacity-90 or hover:bg-primary-hover)
+   - Rounded (rounded-lg)
+   - Font weight (font-semibold)
+
+EXAMPLE MODERN COMPONENT:
 [FILE:src/components/sections/Hero.tsx]
 import { Button } from '@/components/ui/button';
+import { ArrowRight, Sparkles } from 'lucide-react';
 
 export default function Hero() {
   return (
-    <section className="container mx-auto px-4 py-20">
-      <h1 className="text-4xl font-bold">Hero Title</h1>
-      <Button variant="default">Get Started</Button>
+    <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 text-white relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute top-20 left-10 w-72 h-72 bg-white/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl" />
+      
+      <div className="container mx-auto px-4 text-center relative z-10">
+        <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-8 border border-white/30">
+          <Sparkles className="w-4 h-4" />
+          <span className="text-sm font-medium">New Feature Available</span>
+        </div>
+        
+        <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+          Build Amazing
+          <span className="block bg-gradient-to-r from-pink-300 to-purple-300 bg-clip-text text-transparent">
+            Web Experiences
+          </span>
+        </h1>
+        
+        <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed">
+          Create stunning, modern websites with our powerful platform. 
+          No coding required, just your creativity.
+        </p>
+        
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100 font-semibold px-8 py-6 text-lg rounded-xl shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1">
+            Get Started
+            <ArrowRight className="ml-2 w-5 h-5" />
+          </Button>
+          <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10 font-semibold px-8 py-6 text-lg rounded-xl backdrop-blur-sm">
+            Learn More
+          </Button>
+        </div>
+      </div>
     </section>
   );
 }
 [/FILE]
 
-COMPONENT RULES (CRITICAL):
-- ONE component per file
-- Files ≤120 lines each (split if larger)
-- TypeScript interfaces for all props
-- Use existing UI components: Button, Card, Input, Badge from @/components/ui/*
-- Tailwind utilities ONLY (no custom CSS unless in tokens.css)
-- NO new npm dependencies
-- Props for customizable text/colors/images
-- Meaningful content (NO Lorem Ipsum)
+ACCESSIBILITY REQUIREMENTS:
+- Proper heading hierarchy (single h1, then h2, h3, etc.)
+- Alt text for all images
+- ARIA labels for interactive elements without text
+- Focus management (focus-visible:ring-2 focus-visible:ring-primary)
+- Keyboard navigation support
+- Color contrast ratios meeting WCAG AA (4.5:1 for text)
+- Screen reader friendly markup
 
-ACCESSIBILITY (MANDATORY):
-- Single h1 per page, correct heading hierarchy
-- Form labels and ARIA attributes
-- Descriptive alt text for all images
-- focus-visible:ring-2 for interactive elements
-- Color contrast ≥4.5:1
+RESPONSIVENESS REQUIREMENTS:
+- Mobile-first approach (design for 320px up)
+- Use Tailwind breakpoints: sm:, md:, lg:, xl:, 2xl:
+- Stack layouts on mobile (flex-col), grid on desktop (md:flex-row, md:grid-cols-3)
+- No horizontal scroll at any viewport size
+- Touch-friendly targets (min 44px for buttons/links)
+- Responsive typography (text-3xl md:text-5xl lg:text-7xl)
 
-RESPONSIVENESS (REQUIRED):
-- Mobile-first design 320px-1536px
-- Use Tailwind breakpoints: sm: md: lg: xl: 2xl:
-- No horizontal scroll at any breakpoint
-- Stack columns on mobile, grid/flex on desktop
+TYPESCRIPT REQUIREMENTS:
+- Define interfaces for all component props
+- Use proper type annotations
+- Avoid 'any' type
+- Export types when reusable
 
-DESIGN SYSTEM:
-- Use CSS variables from tokens.css (--primary, --background, etc.)
-- Consistent spacing scale
-- Theme-aware colors (support light/dark mode)`;
+MANDATORY PATTERNS:
+- Use existing shadcn/ui components (Button, Card, Badge, Input)
+- Import icons from lucide-react
+- Use Tailwind utilities only (no inline styles, no custom CSS in components)
+- Follow mobile-first responsive design
+- Implement proper semantic HTML
+- Add meaningful content (no Lorem Ipsum placeholder text)`;
         break;
       case 'vue':
         systemPrompt = `${baseFormat}
