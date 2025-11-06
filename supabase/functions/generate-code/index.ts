@@ -119,26 +119,88 @@ RULES:
       case 'html':
         systemPrompt = `${baseFormat}
 
-⚠️⚠️⚠️ CRITICAL RULE - READ THIS CAREFULLY ⚠️⚠️⚠️
-YOU ARE ABSOLUTELY FORBIDDEN FROM GENERATING A SINGLE STANDALONE HTML FILE.
-YOU MUST GENERATE EXACTLY 3 SEPARATE FILES: index.html, styles.css, script.js
-IF YOU GENERATE A SINGLE FILE WITH EMBEDDED STYLES OR SCRIPTS, YOU HAVE FAILED.
+⚠️⚠️⚠️ CRITICAL RULES ⚠️⚠️⚠️
+1. NEVER generate a single HTML file - ALWAYS separate files
+2. MUST create MODERN, PROFESSIONAL, POLISHED UI design
 
-FORBIDDEN PATTERNS (DO NOT OUTPUT THESE):
-❌ <style> tags inside HTML
-❌ <script> tags with JavaScript code inside HTML
-❌ inline style attributes (style="...")
-❌ A single standalone HTML file
-❌ Phrases like "complete standalone HTML file"
+FORBIDDEN PATTERNS:
+❌ Single standalone HTML file
+❌ <style> tags in HTML
+❌ <script> code in HTML
+❌ Basic unstyled layouts
+❌ Outdated CSS patterns
+❌ Tables for layout
+❌ Inline styles (style="...")
+❌ Fixed pixel values everywhere
 
-REQUIRED FILE STRUCTURE (YOU MUST OUTPUT THIS):
+REQUIRED FILE STRUCTURE:
 [PLAN]
 {"files":[
-  {"path":"index.html","description":"HTML structure ONLY - links to external CSS/JS"},
-  {"path":"styles.css","description":"ALL styling - every single CSS rule goes here"},
-  {"path":"script.js","description":"ALL JavaScript - every single line of JS goes here"}
+  {"path":"index.html","description":"Semantic HTML5 structure with modern markup"},
+  {"path":"styles.css","description":"Modern CSS with Grid, Flexbox, animations, gradients"},
+  {"path":"script.js","description":"Interactive JavaScript with smooth interactions"}
 ]}
 [/PLAN]
+
+DESIGN REQUIREMENTS (MANDATORY):
+✅ Modern CSS Grid/Flexbox layouts (no float-based layouts)
+✅ Smooth transitions: transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1)
+✅ Gradient backgrounds: linear-gradient(135deg, #667eea 0%, #764ba2 100%)
+✅ Modern typography: Inter, Poppins, Outfit, or system-ui stack
+✅ Hover effects: transform: translateY(-2px) with box-shadow enhancement
+✅ Glassmorphism: backdrop-filter: blur(10px), background: rgba(255,255,255,0.1)
+✅ Mobile-first responsive (320px-1920px with clamp() and fluid units)
+✅ High color contrast (WCAG AA compliant, minimum 4.5:1)
+✅ Consistent spacing scale (8px base: 8px, 16px, 24px, 32px, 48px, 64px)
+✅ Subtle shadows for depth and visual hierarchy
+✅ Modern color palettes (sophisticated, not basic colors)
+
+EXAMPLE MODERN PATTERNS TO USE:
+- Cards: 
+  border-radius: 16px; 
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+- Buttons: 
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-radius: 8px;
+  padding: 12px 32px;
+  font-weight: 600;
+- Animations: 
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+- Glassmorphism: 
+  backdrop-filter: blur(16px); 
+  background: rgba(255, 255, 255, 0.1); 
+  border: 1px solid rgba(255, 255, 255, 0.2);
+- Modern spacing: 
+  margin: clamp(1rem, 4vw, 3rem); 
+  padding: clamp(1rem, 2.5vw, 2rem);
+
+MANDATORY CSS FEATURES:
+- Use CSS Custom Properties (CSS Variables) for theming
+- Implement smooth scrolling: html { scroll-behavior: smooth; }
+- Add focus-visible states for keyboard navigation
+- Use modern font loading: font-display: swap;
+- Include :hover, :active, :focus states for all interactive elements
+- Add subtle micro-interactions and animations (fade-in, slide-up on load)
+- Use modern CSS features: clamp(), min(), max(), calc()
+
+COLOR PALETTE REQUIREMENTS:
+- Use HSL color values for better manipulation
+- Primary: hsl(263, 70%, 50%) with variations (lighter/darker)
+- Accent: hsl(320, 70%, 50%)
+- Background: hsl(220, 13%, 18%) for dark mode or hsl(0, 0%, 98%) for light mode
+- Text: High contrast ratios (minimum 4.5:1 for body, 3:1 for large text)
+- Use color variables in CSS: --color-primary, --color-accent, etc.
+
+TYPOGRAPHY REQUIREMENTS:
+- Font hierarchy: h1(clamp(2rem, 5vw, 3rem)), h2(clamp(1.75rem, 4vw, 2.5rem)), h3(1.5rem), body(1rem)
+- Line height: 1.6 for body text, 1.2 for headings
+- Font weights: 400 (normal), 600 (semi-bold), 700 (bold)
+- Letter spacing: -0.025em for headings, 0 for body
+- Use system font stack or Google Fonts (Inter, Poppins recommended)
 
 MANDATORY OUTPUT FORMAT:
 [FILE:index.html]
@@ -147,29 +209,36 @@ MANDATORY OUTPUT FORMAT:
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Website Title</title>
+  <title>Modern Website Title</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header>
-    <nav>
+  <header class="header">
+    <nav class="nav">
       <div class="nav-container">
         <h1 class="logo">Logo</h1>
         <ul class="nav-links">
-          <li><a href="#home">Home</a></li>
-          <li><a href="#about">About</a></li>
+          <li><a href="#home" class="nav-link">Home</a></li>
+          <li><a href="#features" class="nav-link">Features</a></li>
+          <li><a href="#about" class="nav-link">About</a></li>
         </ul>
       </div>
     </nav>
   </header>
   <main>
     <section id="hero" class="hero">
-      <h2>Hero Title</h2>
-      <p>Hero description text</p>
+      <div class="hero-content">
+        <h2 class="hero-title">Professional Hero Title</h2>
+        <p class="hero-description">Modern, engaging description text</p>
+        <button class="btn btn-primary">Get Started</button>
+      </div>
     </section>
   </main>
-  <footer>
-    <p>&copy; 2025 Website Name</p>
+  <footer class="footer">
+    <p>&copy; 2025 Website Name. All rights reserved.</p>
   </footer>
   <script src="script.js"></script>
 </body>
@@ -177,76 +246,283 @@ MANDATORY OUTPUT FORMAT:
 [/FILE]
 
 [FILE:styles.css]
-/* Reset and Base Styles */
-* {
+/* CSS Variables for Modern Theming */
+:root {
+  --color-primary: hsl(263, 70%, 50%);
+  --color-primary-light: hsl(263, 70%, 60%);
+  --color-accent: hsl(320, 70%, 50%);
+  --color-bg: hsl(0, 0%, 98%);
+  --color-surface: hsl(0, 0%, 100%);
+  --color-text: hsl(220, 13%, 18%);
+  --color-text-light: hsl(220, 13%, 40%);
+  --spacing-xs: 8px;
+  --spacing-sm: 16px;
+  --spacing-md: 24px;
+  --spacing-lg: 32px;
+  --spacing-xl: 48px;
+  --spacing-2xl: 64px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+/* Modern Reset */
+*, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-body {
-  font-family: system-ui, -apple-system, sans-serif;
-  line-height: 1.6;
-  color: #333;
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
 }
 
-/* Navigation Styles */
-nav {
-  background: #2c3e50;
-  padding: 1rem 0;
+body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.6;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Modern Navigation */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
+}
+
+.nav {
+  padding: var(--spacing-sm) 0;
 }
 
 .nav-container {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 0 var(--spacing-md);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-/* Hero Styles */
+.logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav-links {
+  display: flex;
+  gap: var(--spacing-lg);
+  list-style: none;
+}
+
+.nav-link {
+  color: var(--color-text);
+  text-decoration: none;
+  font-weight: 600;
+  transition: var(--transition);
+  position: relative;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--color-primary);
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Modern Hero Section */
 .hero {
   min-height: 80vh;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  padding: clamp(2rem, 8vw, 6rem) var(--spacing-md);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  filter: blur(80px);
+  top: -250px;
+  right: -250px;
+}
+
+.hero-content {
+  max-width: 800px;
   text-align: center;
-  padding: 2rem;
+  animation: fadeInUp 0.8s ease;
+}
+
+.hero-title {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  color: white;
+  margin-bottom: var(--spacing-md);
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.hero-description {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: var(--spacing-xl);
+  line-height: 1.6;
+}
+
+/* Modern Button */
+.btn {
+  display: inline-block;
+  padding: 12px 32px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: white;
+  color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Modern Footer */
+.footer {
+  background: var(--color-text);
+  color: white;
+  padding: var(--spacing-lg);
+  text-align: center;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
   .nav-container {
     flex-direction: column;
+    gap: var(--spacing-sm);
   }
+  
+  .nav-links {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--spacing-sm);
+  }
+}
+
+/* Focus Styles for Accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 [/FILE]
 
 [FILE:script.js]
-// Wait for DOM to load
+// Modern JavaScript with smooth interactions
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('Website loaded');
+  console.log('Modern website loaded ✨');
   
-  // Mobile menu toggle
-  const menuToggle = document.querySelector('.menu-toggle');
-  if (menuToggle) {
-    menuToggle.addEventListener('click', function() {
-      const navLinks = document.querySelector('.nav-links');
-      navLinks.classList.toggle('active');
-    });
-  }
-  
-  // Smooth scrolling for anchor links
+  // Smooth scroll for anchor links
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
       e.preventDefault();
       const target = document.querySelector(this.getAttribute('href'));
       if (target) {
-        target.scrollIntoView({ behavior: 'smooth' });
+        target.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
       }
     });
   });
+  
+  // Add scroll animations
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.animation = 'fadeInUp 0.8s ease forwards';
+      }
+    });
+  }, observerOptions);
+  
+  // Observe all sections
+  document.querySelectorAll('section').forEach(section => {
+    observer.observe(section);
+  });
+  
+  // Mobile menu toggle (if needed)
+  const menuToggle = document.querySelector('.menu-toggle');
+  const navLinks = document.querySelector('.nav-links');
+  
+  if (menuToggle && navLinks) {
+    menuToggle.addEventListener('click', function() {
+      navLinks.classList.toggle('active');
+      this.classList.toggle('active');
+    });
+  }
+  
+  // Add subtle parallax effect to hero
+  const hero = document.querySelector('.hero');
+  if (hero) {
+    window.addEventListener('scroll', () => {
+      const scrolled = window.pageYOffset;
+      hero.style.transform = `translateY(${scrolled * 0.5}px)`;
+    });
+  }
 });
 [/FILE]
 
@@ -256,12 +532,15 @@ VERIFICATION CHECKLIST (CHECK BEFORE COMPLETING):
 ✓ index.html has <script src="script.js"></script>
 ✓ index.html has NO <style> tags
 ✓ index.html has NO <script> tags with code inside
-✓ styles.css exists and contains all CSS
-✓ script.js exists and contains all JavaScript
+✓ Modern CSS with gradients, transitions, animations
+✓ CSS Variables for theming
+✓ Glassmorphism and modern effects applied
+✓ Mobile-first responsive design (320px-1920px)
 ✓ Semantic HTML5 (header, main, section, footer, nav)
-✓ Responsive 320px-1536px
-✓ Accessible (alt text, headings, ARIA)
-✓ Color contrast ≥4.5:1`;
+✓ Accessible (focus states, ARIA, semantic markup)
+✓ Color contrast ≥4.5:1
+✓ Modern typography with clamp() for fluid sizing
+✓ Smooth animations and micro-interactions`;
         break;
       case 'react':
         systemPrompt = `${baseFormat}
