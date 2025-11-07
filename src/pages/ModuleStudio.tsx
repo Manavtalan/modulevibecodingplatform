@@ -9,6 +9,8 @@ import { TokenUsageDisplay } from "@/components/TokenUsageDisplay";
 import { ModelSelector } from "@/components/ModelSelector";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCodeGeneration } from "@/hooks/useCodeGeneration";
+import { CodeQualityValidator, ValidationResult } from "@/utils/codeQualityValidator";
+import { toast } from "@/hooks/use-toast";
 
 export interface Message {
   id: string;
@@ -34,6 +36,11 @@ const ModuleStudio = () => {
   const [conversationId, setConversationId] = useState<string | null>(location.state?.conversationId || null);
   const [selectedModel, setSelectedModel] = useState("claude-sonnet-4-5");
   const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview');
+  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
+  const [isValidating, setIsValidating] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [originalPrompt, setOriginalPrompt] = useState<string>("");
+  const [currentCodeType, setCurrentCodeType] = useState<string>("html");
 
   const {
     isGenerating,
@@ -141,8 +148,110 @@ const ModuleStudio = () => {
     });
   };
 
+  // Quality validation function
+  const runQualityValidation = async (files: CodeFile[], codeType: string): Promise<ValidationResult> => {
+    setIsValidating(true);
+    
+    try {
+      // Simulate brief validation delay for UX
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Convert CodeFile to the format expected by validator
+      const validatorFiles = files.map(f => ({
+        path: f.path,
+        content: f.content,
+        language: f.path.endsWith('.tsx') ? 'tsx' : 
+                 f.path.endsWith('.jsx') ? 'jsx' : 
+                 f.path.endsWith('.ts') ? 'ts' : 
+                 f.path.endsWith('.js') ? 'js' : 
+                 f.path.endsWith('.css') ? 'css' : 
+                 f.path.endsWith('.html') ? 'html' : 'text'
+      }));
+      
+      const result = CodeQualityValidator.validateCodebase(validatorFiles, codeType);
+      setValidationResult(result);
+      
+      // Log validation results for debugging
+      console.log('Quality Validation Results:', {
+        valid: result.valid,
+        score: result.score,
+        issuesCount: result.issues.length,
+        criticalIssues: result.issues.filter(i => i.severity === 1).length
+      });
+      
+      return result;
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  // Auto-retry function with enhanced prompt
+  const autoRetryWithBetterSettings = async (
+    prompt: string, 
+    codeType: string, 
+    validationResult: ValidationResult
+  ): Promise<void> => {
+    if (retryCount >= 2) {
+      toast({
+        title: "Maximum retry attempts reached",
+        description: "Please try a different approach or simplify your request.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setRetryCount(prev => prev + 1);
+    
+    // Build enhanced prompt based on validation issues
+    let enhancedPrompt = `${prompt}\n\nIMPORTANT QUALITY REQUIREMENTS:\n`;
+    
+    // Add specific fixes based on validation issues
+    if (validationResult.issues.some(i => i.category === 'structure')) {
+      enhancedPrompt += '- ENSURE PROPER FILE STRUCTURE: ';
+      if (codeType === 'html') {
+        enhancedPrompt += 'Generate separate index.html, styles.css, and script.js files\n';
+      } else if (codeType === 'react') {
+        enhancedPrompt += 'Generate App.tsx, Navbar, Hero, Features, Footer components plus design-tokens.css\n';
+      }
+    }
+
+    if (validationResult.issues.some(i => i.category === 'design')) {
+      enhancedPrompt += '- MODERN DESIGN PATTERNS: Use CSS Grid/Flexbox, smooth animations, gradients, hover effects, responsive design\n';
+    }
+
+    if (validationResult.issues.some(i => i.category === 'modern')) {
+      enhancedPrompt += '- MODERN DEVELOPMENT: Use semantic HTML, CSS custom properties, functional components\n';
+    }
+
+    if (validationResult.issues.some(i => i.category === 'accessibility')) {
+      enhancedPrompt += '- ACCESSIBILITY: Include alt attributes, proper labels, heading hierarchy\n';
+    }
+
+    enhancedPrompt += '\nEMPHASIZE MODERN PROFESSIONAL DESIGN with production-ready quality standards.';
+
+    toast({
+      title: `Quality validation failed (Score: ${validationResult.score}/100)`,
+      description: "Retrying with enhanced prompt...",
+    });
+
+    addStatusMessage(`🔄 Auto-retrying with quality improvements (Attempt ${retryCount + 1}/2)...`, "status");
+
+    // Always retry with Claude for better results
+    await generateCode({
+      prompt: enhancedPrompt,
+      codeType,
+      model: 'claude-sonnet-4-5', // Force Claude for retry
+      conversationId: conversationId || undefined
+    });
+  };
+
   const handleSendMessage = async (text: string, files?: File[]) => {
     if (!text.trim()) return;
+
+    // Reset validation state for new request
+    setValidationResult(null);
+    setRetryCount(0);
+    setOriginalPrompt(text);
 
     // Add user message
     const userMessage: Message = {
@@ -155,15 +264,21 @@ const ModuleStudio = () => {
     setMessages(prev => [...prev, userMessage]);
 
     // Check if this is a code generation request
-    const isCodeRequest = /generate|create|build|make|code|website|app|webpage|html|css|js/i.test(text);
+    const isCodeRequest = /generate|create|build|make|code|website|app|webpage|html|css|js|react|vue/i.test(text);
 
     if (isCodeRequest) {
+      // Determine code type from the request
+      const codeType = /react/i.test(text) ? 'react' : 
+                      /vue/i.test(text) ? 'vue' : 
+                      'html';
+      setCurrentCodeType(codeType);
+
       // Trigger code generation
       addStatusMessage("🔨 Module is working on your request...", "status");
       
       await generateCode({
         prompt: text,
-        codeType: "html", // Default to HTML for now
+        codeType,
         model: selectedModel,
         conversationId: conversationId || undefined
       });
@@ -201,6 +316,40 @@ const ModuleStudio = () => {
       }
     }
   };
+
+  // Run quality validation when generation completes
+  useEffect(() => {
+    const runValidationAfterGeneration = async () => {
+      if (generationPhase === 'complete' && generatedFiles.length > 0 && !isValidating) {
+        addStatusMessage("🔍 Running quality validation...", "status");
+        
+        const validation = await runQualityValidation(generatedFiles, currentCodeType);
+        
+        if (!validation.valid) {
+          // Auto-retry with enhanced prompt if validation fails
+          addStatusMessage(
+            `⚠️ Quality check failed (Score: ${validation.score}/100)\n\nIssues found:\n${validation.issues.slice(0, 3).map(i => `• ${i.message}`).join('\n')}${validation.issues.length > 3 ? `\n...and ${validation.issues.length - 3} more` : ''}`,
+            "error"
+          );
+          
+          await autoRetryWithBetterSettings(originalPrompt, currentCodeType, validation);
+        } else {
+          // Success message with score
+          toast({
+            title: "✅ Quality validation passed!",
+            description: `Score: ${validation.score}/100`,
+          });
+          
+          addStatusMessage(
+            `✅ Quality validation passed! Score: ${validation.score}/100\n\nFiles generated: ${generatedFiles.map(f => f.path).join(', ')}`,
+            "status"
+          );
+        }
+      }
+    };
+
+    runValidationAfterGeneration();
+  }, [generationPhase, generatedFiles.length]);
 
   const handleBack = () => {
     navigate("/");
