@@ -1,6 +1,7 @@
 // File: src/utils/codeQualityValidator.ts
 
 import { ComponentArchitectureValidator } from './componentArchitectureValidator';
+import { DesignPatternValidator } from './designPatternValidator';
 
 export interface CodeFile {
   path: string;
@@ -38,6 +39,19 @@ export class CodeQualityValidator {
     const modernValidation = this.validateModernPatterns(files);
     const accessibilityValidation = this.validateAccessibility(files);
 
+    // NEW: Design pattern validation (gradients, glassmorphism, animations, etc.)
+    const patternValidation = DesignPatternValidator.validateModernPatterns(files);
+    
+    // Convert pattern issues to validation issues
+    patternValidation.patterns.filter(p => !p.found).forEach(pattern => {
+      issues.push({
+        type: pattern.importance === 'critical' ? 'error' : 'warning',
+        category: 'design',
+        message: `Missing modern pattern: ${pattern.pattern} - ${pattern.description}`,
+        severity: pattern.importance === 'critical' ? 1 : pattern.importance === 'important' ? 2 : 3
+      });
+    });
+
     // NEW: React architecture validation
     if (codeType === 'react') {
       const componentFiles = files.map(f => ({
@@ -69,6 +83,9 @@ export class CodeQualityValidator {
     issues.push(...modernValidation.issues);
     issues.push(...accessibilityValidation.issues);
 
+    // Pattern score impacts overall score significantly
+    score = Math.min(score, patternValidation.score);
+
     // Calculate overall score
     issues.forEach(issue => {
       switch (issue.severity) {
@@ -82,9 +99,12 @@ export class CodeQualityValidator {
 
     // Generate suggestions
     const suggestions = this.generateSuggestions(issues, codeType);
+    
+    // Add pattern suggestions to overall suggestions
+    suggestions.push(...patternValidation.suggestions);
 
     return {
-      valid: score >= 80 && !issues.some(i => i.severity === 1),
+      valid: score >= 80 && !issues.some(i => i.severity === 1) && patternValidation.valid,
       score,
       issues,
       suggestions
