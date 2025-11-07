@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { ChatPanel } from "@/components/studio/ChatPanel";
@@ -11,6 +11,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCodeGeneration } from "@/hooks/useCodeGeneration";
 import { CodeQualityValidator, ValidationResult } from "@/utils/codeQualityValidator";
 import { toast } from "@/hooks/use-toast";
+import QualitySettings from "@/components/QualitySettings";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 export interface Message {
   id: string;
@@ -41,6 +43,12 @@ const ModuleStudio = () => {
   const [retryCount, setRetryCount] = useState(0);
   const [originalPrompt, setOriginalPrompt] = useState<string>("");
   const [currentCodeType, setCurrentCodeType] = useState<string>("html");
+  
+  // Quality settings state
+  const [showSettings, setShowSettings] = useState(false);
+  const [autoRetry, setAutoRetry] = useState(true);
+  const [minQualityScore, setMinQualityScore] = useState(80);
+  const [maxRetries, setMaxRetries] = useState(2);
 
   const {
     isGenerating,
@@ -191,12 +199,30 @@ const ModuleStudio = () => {
     codeType: string, 
     validationResult: ValidationResult
   ): Promise<void> => {
-    if (retryCount >= 2) {
+    // Check if auto-retry is enabled
+    if (!autoRetry) {
       toast({
-        title: "Maximum retry attempts reached",
-        description: "Please try a different approach or simplify your request.",
+        title: "Quality validation failed",
+        description: "Auto-retry is disabled. Enable it in settings to automatically improve code quality.",
         variant: "destructive"
       });
+      addStatusMessage(`⚠️ Quality validation failed (Score: ${validationResult.score}/100). Auto-retry is disabled.`, "error");
+      return;
+    }
+
+    // Check retry limit
+    if (retryCount >= maxRetries) {
+      toast({
+        title: "Maximum retry attempts reached",
+        description: `Reached ${maxRetries} retry attempts. Please try a different approach or adjust settings.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check if score meets minimum requirement
+    if (validationResult.score >= minQualityScore) {
+      // Score is acceptable, no retry needed
       return;
     }
 
@@ -234,7 +260,7 @@ const ModuleStudio = () => {
       description: "Retrying with enhanced prompt...",
     });
 
-    addStatusMessage(`🔄 Auto-retrying with quality improvements (Attempt ${retryCount + 1}/2)...`, "status");
+    addStatusMessage(`🔄 Auto-retrying with quality improvements (Attempt ${retryCount + 1}/${maxRetries})...`, "status");
 
     // Always retry with Claude for better results
     await generateCode({
@@ -358,18 +384,42 @@ const ModuleStudio = () => {
   return (
     <div className="flex flex-col h-screen bg-background">
       {/* Header */}
-      <header className="flex items-center justify-between px-4 py-3 border-b border-border">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={handleBack}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-xl font-semibold">Module Studio</h1>
+      <header className="flex flex-col border-b border-border">
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={handleBack}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-xl font-semibold">Module Studio</h1>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <Button
+              variant={showSettings ? "default" : "ghost"}
+              size="icon"
+              onClick={() => setShowSettings(!showSettings)}
+              title="Quality Settings"
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
+            <ModelSelector value={selectedModel} onChange={setSelectedModel} />
+            {user && <TokenUsageDisplay />}
+          </div>
         </div>
-        
-        <div className="flex items-center gap-3">
-          <ModelSelector value={selectedModel} onChange={setSelectedModel} />
-          {user && <TokenUsageDisplay />}
-        </div>
+
+        {/* Quality Settings Panel */}
+        <Collapsible open={showSettings}>
+          <CollapsibleContent className="px-4 pb-4">
+            <QualitySettings
+              autoRetry={autoRetry}
+              setAutoRetry={setAutoRetry}
+              minQualityScore={minQualityScore}
+              setMinQualityScore={setMinQualityScore}
+              maxRetries={maxRetries}
+              setMaxRetries={setMaxRetries}
+            />
+          </CollapsibleContent>
+        </Collapsible>
       </header>
 
       {/* Main Content - Resizable Split Layout */}
