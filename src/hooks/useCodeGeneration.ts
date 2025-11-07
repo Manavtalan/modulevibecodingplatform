@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { CodeFile } from "@/pages/ModuleStudio";
 import { FilePlan } from "@/components/GenerationProgress";
+
+// Force reload timestamp: 2025-11-07 14:37:00
 
 interface GenerateCodeParams {
   prompt: string;
@@ -23,6 +25,15 @@ interface TokenValidation {
 }
 
 export const useCodeGeneration = () => {
+  // VERSION CHECK - Should see this in console
+  useEffect(() => {
+    console.log('🔧 CODE GENERATION HOOK v2.0 LOADED - Enhanced Debugging Active');
+    console.log('📅 Build timestamp: 2025-11-07 14:37:00');
+    return () => {
+      console.log('🔧 Code generation hook unmounting');
+    };
+  }, []);
+
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationPhase, setGenerationPhase] = useState<GenerationPhase>('idle');
   const [currentFile, setCurrentFile] = useState<string | null>(null);
