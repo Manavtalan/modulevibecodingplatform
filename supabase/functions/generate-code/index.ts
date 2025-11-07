@@ -1120,87 +1120,225 @@ export function cn(...inputs: ClassValue[]) {
 }
 [/FILE]
 
-EXAMPLE COMPONENTS WITH PROPER ARCHITECTURE:
+COMPONENT TEMPLATES (MUST FOLLOW THESE PATTERNS):
+
+[FILE:src/App.tsx]
+// App.tsx Template (Max 50 lines - COMPOSITION ONLY)
+import Navbar from './components/layout/Navbar';
+import Hero from './components/sections/Hero';
+import Features from './components/sections/Features';
+import Testimonials from './components/sections/Testimonials';
+import CTA from './components/sections/CTA';
+import Footer from './components/layout/Footer';
+
+function App() {
+  return (
+    <div className="min-h-screen bg-[var(--background)]">
+      <Navbar />
+      <main>
+        <Hero />
+        <Features />
+        <Testimonials />
+        <CTA />
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+export default App;
+[/FILE]
 
 [FILE:src/components/ui/Button.tsx]
-import { cn } from '@/lib/utils';
-import type { ButtonProps } from '@/types';
+// Button.tsx Template (UI Component - Max 100 lines)
+import React from 'react';
+import { ButtonProps } from '../../types';
+import { cn } from '../../lib/utils';
 
-export default function Button({ 
+const Button: React.FC<ButtonProps> = ({ 
   variant = 'primary', 
   size = 'md', 
-  children,
+  loading = false,
+  disabled = false,
+  children, 
   className,
   ...props 
-}: ButtonProps) {
-  const variants = {
-    primary: 'bg-[var(--primary-500)] text-white hover:bg-[var(--primary-600)]',
-    secondary: 'bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)]',
-    outline: 'border-2 border-[var(--primary-500)] text-[var(--primary-500)]',
-    ghost: 'text-[var(--text-primary)] hover:bg-[var(--surface)]'
-  };
+}) => {
+  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
   
+  const variants = {
+    primary: 'bg-[var(--primary-500)] text-[var(--text-inverse)] hover:bg-[var(--primary-600)] focus:ring-[var(--primary-500)]',
+    secondary: 'bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] hover:bg-[var(--surface-secondary)]',
+    outline: 'border-2 border-[var(--primary-500)] text-[var(--primary-500)] hover:bg-[var(--primary-500)] hover:text-[var(--text-inverse)]',
+    ghost: 'text-[var(--primary-500)] hover:bg-[var(--primary-50)]'
+  };
+
   const sizes = {
-    sm: 'px-[var(--space-3)] py-[var(--space-1)] text-[var(--text-sm)]',
+    sm: 'px-[var(--space-3)] py-[var(--space-1-5)] text-[var(--text-sm)]',
     md: 'px-[var(--space-4)] py-[var(--space-2)] text-[var(--text-base)]',
     lg: 'px-[var(--space-6)] py-[var(--space-3)] text-[var(--text-lg)]'
   };
-  
+
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center font-medium rounded-[var(--radius-lg)] transition-all',
+        baseStyles,
         variants[variant],
         sizes[size],
         className
       )}
+      disabled={disabled || loading}
       {...props}
     >
+      {loading && <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />}
       {children}
     </button>
   );
-}
+};
+
+export default Button;
+[/FILE]
+
+[FILE:src/components/ui/Card.tsx]
+// Card.tsx Template (UI Component - Max 100 lines)
+import React from 'react';
+import { CardProps } from '../../types';
+import { cn } from '../../lib/utils';
+
+const Card: React.FC<CardProps> = ({ 
+  variant = 'default',
+  children, 
+  className,
+  header,
+  footer,
+  ...props 
+}) => {
+  const variants = {
+    default: 'bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-xl)] shadow-[var(--shadow-lg)]',
+    elevated: 'bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-xl)] shadow-[var(--shadow-xl)]',
+    flat: 'bg-[var(--surface-secondary)] rounded-[var(--radius-lg)]'
+  };
+
+  return (
+    <div className={cn(variants[variant], className)} {...props}>
+      {header && (
+        <div className="border-b border-[var(--border)] px-[var(--space-6)] py-[var(--space-4)]">
+          {header}
+        </div>
+      )}
+      <div className="p-[var(--space-6)]">
+        {children}
+      </div>
+      {footer && (
+        <div className="border-t border-[var(--border)] px-[var(--space-6)] py-[var(--space-4)]">
+          {footer}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Card;
 [/FILE]
 
 [FILE:src/components/sections/Hero.tsx]
-import Button from '@/components/ui/Button';
-import { ArrowRight } from 'lucide-react';
+// Hero.tsx Template (Section Component - Max 200 lines)
+import React from 'react';
+import Button from '../ui/Button';
+import { ArrowRight, Play } from 'lucide-react';
 
-export default function Hero() {
+const Hero: React.FC = () => {
   return (
-    <section 
-      className="min-h-screen flex items-center justify-center"
-      style={{
-        background: 'linear-gradient(135deg, var(--primary-600), var(--accent-600))'
-      }}
-    >
-      <div className="container mx-auto px-[var(--space-4)] text-center">
-        <h1 
-          className="font-bold mb-[var(--space-6)] text-white"
-          style={{ fontSize: 'var(--text-5xl)' }}
-        >
-          Build Amazing Products
+    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--primary-500)] to-[var(--accent-500)] overflow-hidden">
+      <div className="absolute inset-0 bg-black/20"></div>
+      
+      <div className="relative z-10 max-w-7xl mx-auto px-[var(--space-4)] text-center">
+        <h1 className="text-[var(--text-5xl)] md:text-[var(--text-6xl)] font-bold text-white mb-[var(--space-6)] leading-tight">
+          Build Amazing Products with{' '}
+          <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+            Modern Technology
+          </span>
         </h1>
-        <p 
-          className="mb-[var(--space-8)] text-white/90"
-          style={{ fontSize: 'var(--text-xl)' }}
-        >
-          Create stunning applications with our modern platform
+        
+        <p className="text-[var(--text-xl)] text-white/90 mb-[var(--space-8)] max-w-3xl mx-auto leading-relaxed">
+          Create beautiful, scalable applications with our cutting-edge platform. 
+          Transform your ideas into reality with professional-grade tools.
         </p>
-        <div className="flex gap-[var(--space-4)] justify-center">
-          <Button variant="primary" size="lg">
+        
+        <div className="flex flex-col sm:flex-row gap-[var(--space-4)] justify-center">
+          <Button size="lg" className="group">
             Get Started
-            <ArrowRight className="ml-2 w-5 h-5" />
+            <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
           </Button>
-          <Button variant="outline" size="lg">
-            Learn More
+          
+          <Button variant="outline" size="lg" className="bg-white/10 backdrop-blur-sm">
+            <Play className="mr-2 h-5 w-5" />
+            Watch Demo
           </Button>
         </div>
       </div>
+      
+      {/* Background decoration */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-white/5 to-transparent rounded-full blur-3xl"></div>
     </section>
   );
+};
+
+export default Hero;
+[/FILE]
+
+[FILE:src/types/index.ts]
+// Types Template - TypeScript Interfaces
+import React from 'react';
+
+// Component Props Interfaces
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  loading?: boolean;
+  children: React.ReactNode;
+  className?: string;
+}
+
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: 'default' | 'elevated' | 'flat';
+  children: React.ReactNode;
+  className?: string;
+  header?: React.ReactNode;
+  footer?: React.ReactNode;
+}
+
+export interface BadgeProps {
+  variant?: 'success' | 'warning' | 'error' | 'info' | 'neutral';
+  size?: 'sm' | 'md' | 'lg';
+  children: React.ReactNode;
+  className?: string;
+}
+
+// Data Interfaces
+export interface Feature {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ComponentType;
+}
+
+export interface Testimonial {
+  id: string;
+  name: string;
+  role: string;
+  company: string;
+  content: string;
+  avatar: string;
 }
 [/FILE]
+
+COMPONENT LINE LIMITS (STRICTLY ENFORCED):
+- App.tsx: Maximum 50 lines (composition only, no business logic)
+- Layout components (Navbar, Footer): Maximum 150 lines each
+- Section components (Hero, Features, Testimonials, CTA): Maximum 200 lines each
+- UI components (Button, Card, Badge): Maximum 100 lines each
+- Types file: No limit (interfaces only)
 
 VALIDATION REQUIREMENTS:
 ✅ Verify ALL files follow the exact structure above
@@ -1210,8 +1348,22 @@ VALIDATION REQUIREMENTS:
 ✅ Ensure UI components are under 100 lines
 ✅ Verify design tokens are used everywhere
 ✅ Confirm NO hardcoded colors or spacing
-✅ Check TypeScript interfaces are defined
+✅ Check TypeScript interfaces are defined in types/index.ts
 ✅ Verify proper semantic HTML
+✅ Confirm proper imports with @ alias
+✅ Verify all components have proper TypeScript typing
+✅ Check that cn() utility is used for className merging
+
+ARCHITECTURE VALIDATION (AUTOMATIC):
+Every React project will be validated for:
+✅ Correct folder structure (layout/, sections/, ui/)
+✅ Component size limits strictly enforced
+✅ Design token usage (no hardcoded values)
+✅ TypeScript interfaces exported from types/
+✅ Modern React patterns (functional components)
+✅ Proper imports and exports
+✅ Single Responsibility Principle per component
+✅ Reusable UI components with variants
 
 ACCESSIBILITY REQUIREMENTS:
 - Proper heading hierarchy
