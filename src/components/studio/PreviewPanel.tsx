@@ -3,12 +3,15 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Copy, Download, ExternalLink, Smartphone, Tablet, Monitor } from "lucide-react";
+import { Copy, Download, ExternalLink, Smartphone, Tablet, Monitor, AlertCircle, RefreshCw, FileText } from "lucide-react";
 import { CodeFile } from "@/pages/ModuleStudio";
 import { FilePlan } from "@/components/GenerationProgress";
+import { DiagnosticInfo } from "@/hooks/useCodeGeneration";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { toast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface PreviewPanelProps {
   files: CodeFile[];
@@ -18,6 +21,9 @@ interface PreviewPanelProps {
   generationPhase: string;
   currentFile: string | null;
   filePlan: FilePlan[];
+  diagnosticInfo?: DiagnosticInfo | null;
+  rawOutputAvailable?: boolean;
+  onRegenerate?: () => void;
 }
 
 type DeviceMode = 'mobile' | 'tablet' | 'desktop';
@@ -29,10 +35,14 @@ export const PreviewPanel = ({
   isGenerating,
   generationPhase,
   currentFile,
-  filePlan
+  filePlan,
+  diagnosticInfo,
+  rawOutputAvailable,
+  onRegenerate
 }: PreviewPanelProps) => {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [deviceMode, setDeviceMode] = useState<DeviceMode>('desktop');
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -71,12 +81,87 @@ export const PreviewPanel = ({
 
   const renderPreview = () => {
     if (files.length === 0) {
+      // Show detailed error info if available
+      const hasParsingErrors = diagnosticInfo && diagnosticInfo.parsingErrors.length > 0;
+      
       return (
-        <div className="flex items-center justify-center h-full text-muted-foreground">
-          <div className="text-center space-y-2">
-            <p className="text-lg font-medium">No preview available</p>
-            <p className="text-sm">Ask Module to generate code to see a live preview</p>
-          </div>
+        <div className="flex items-center justify-center h-full p-8">
+          <Card className="max-w-2xl p-6 space-y-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-6 w-6 text-yellow-500 mt-1" />
+              <div className="space-y-3 flex-1">
+                <div>
+                  <h3 className="text-lg font-semibold">No Files Generated</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {hasParsingErrors 
+                      ? "The AI generated content, but we couldn't parse it into files."
+                      : "Ask Module to generate code to see a live preview."}
+                  </p>
+                </div>
+                
+                {hasParsingErrors && diagnosticInfo && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Parsing Issues Detected</AlertTitle>
+                    <AlertDescription className="mt-2 space-y-1">
+                      {diagnosticInfo.parsingErrors.map((err, idx) => (
+                        <div key={idx} className="text-xs">• {err}</div>
+                      ))}
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
+                <div className="flex gap-2 pt-2">
+                  {rawOutputAvailable && (
+                    <Dialog open={showDiagnostics} onOpenChange={setShowDiagnostics}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <FileText className="h-4 w-4 mr-2" />
+                          View Raw Output
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl max-h-[80vh]">
+                        <DialogHeader>
+                          <DialogTitle>Raw AI Output & Diagnostics</DialogTitle>
+                          <DialogDescription>
+                            This is the raw content received from the AI. Use this to debug parsing issues.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <ScrollArea className="h-[60vh] rounded border p-4 bg-muted/30">
+                          {diagnosticInfo && (
+                            <div className="space-y-4 text-sm">
+                              <div>
+                                <strong>Extraction Method:</strong> {diagnosticInfo.extractionMethod}
+                              </div>
+                              <div>
+                                <strong>File Markers Found:</strong> {diagnosticInfo.fileMarkersFound}
+                              </div>
+                              <div>
+                                <strong>Code Blocks Found:</strong> {diagnosticInfo.codeBlocksFound}
+                              </div>
+                              <div>
+                                <strong>Raw Content ({diagnosticInfo.rawContent.length} bytes):</strong>
+                                <pre className="mt-2 p-3 bg-background rounded text-xs whitespace-pre-wrap break-all">
+                                  {diagnosticInfo.rawContent}
+                                </pre>
+                              </div>
+                            </div>
+                          )}
+                        </ScrollArea>
+                      </DialogContent>
+                    </Dialog>
+                  )}
+                  
+                  {onRegenerate && (
+                    <Button variant="default" size="sm" onClick={onRegenerate}>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Regenerate with Stricter Prompt
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </Card>
         </div>
       );
     }

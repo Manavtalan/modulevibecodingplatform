@@ -59,6 +59,8 @@ const ModuleStudio = () => {
     error: generationError,
     qualityCheck,
     tokenValidation,
+    diagnosticInfo,
+    rawOutputAvailable,
     generateCode,
     resetGeneration
   } = useCodeGeneration();
@@ -470,6 +472,13 @@ const ModuleStudio = () => {
               generationPhase={generationPhase}
               currentFile={currentFile}
               filePlan={filePlan}
+              diagnosticInfo={diagnosticInfo}
+              rawOutputAvailable={rawOutputAvailable}
+              onRegenerate={() => {
+                if (originalPrompt) {
+                  handleSendMessage(originalPrompt);
+                }
+              }}
             />
           </ResizablePanel>
         </ResizablePanelGroup>
