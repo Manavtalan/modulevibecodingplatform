@@ -71,14 +71,15 @@ export const ChatPanel = ({
           {messages.length === 0 && (
             <div className="text-center text-muted-foreground py-12">
               <h3 className="text-lg font-semibold mb-2">Welcome to Module Studio</h3>
-              <p className="text-sm">Ask me to generate a website, app, or any web project!</p>
+              <p className="text-sm">Ask me to generate React applications - just like Lovable!</p>
+              <p className="text-xs mt-2 text-muted-foreground/80">Powered by React + TypeScript + Tailwind CSS</p>
               <div className="mt-6 space-y-2">
                 <p className="text-xs font-medium">Quick examples:</p>
                 <div className="flex flex-wrap gap-2 justify-center">
                   {[
-                    "Create a modern portfolio website",
-                    "Build a landing page for a SaaS product",
-                    "Make a responsive blog layout"
+                    "Create a modern React portfolio",
+                    "Build a SaaS landing page with components",
+                    "Make a responsive blog with React Router"
                   ].map((example) => (
                     <button
                       key={example}
@@ -179,7 +180,7 @@ export const ChatPanel = ({
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask Module to generate code or chat about your project..."
+            placeholder="Ask Module to generate your React app or chat about your project..."
             className="flex-1 min-h-[60px] max-h-[200px] resize-none"
             disabled={isGenerating}
           />
