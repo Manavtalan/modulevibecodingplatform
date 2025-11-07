@@ -7,15 +7,26 @@ import { Card } from "@/components/ui/card";
 import { Message } from "@/pages/ModuleStudio";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import ValidationResults from "@/components/ValidationResults";
+import { ValidationResult } from "@/utils/codeQualityValidator";
 
 interface ChatPanelProps {
   messages: Message[];
   onSendMessage: (text: string, files?: File[]) => void;
   isGenerating: boolean;
   messagesEndRef: RefObject<HTMLDivElement>;
+  validationResult?: ValidationResult | null;
+  isValidating?: boolean;
 }
 
-export const ChatPanel = ({ messages, onSendMessage, isGenerating, messagesEndRef }: ChatPanelProps) => {
+export const ChatPanel = ({ 
+  messages, 
+  onSendMessage, 
+  isGenerating, 
+  messagesEndRef,
+  validationResult,
+  isValidating 
+}: ChatPanelProps) => {
   const [inputValue, setInputValue] = useState("");
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
 
@@ -119,6 +130,16 @@ export const ChatPanel = ({ messages, onSendMessage, isGenerating, messagesEndRe
                   <span className="text-sm text-muted-foreground">Module is thinking...</span>
                 </div>
               </Card>
+            </div>
+          )}
+
+          {/* Quality Validation Results */}
+          {(validationResult || isValidating) && (
+            <div className="mt-4">
+              <ValidationResults 
+                validationResult={validationResult || null}
+                isValidating={isValidating || false}
+              />
             </div>
           )}
 

@@ -382,6 +382,8 @@ const ModuleStudio = () => {
               onSendMessage={handleSendMessage}
               isGenerating={isGenerating}
               messagesEndRef={messagesEndRef}
+              validationResult={validationResult}
+              isValidating={isValidating}
             />
           </ResizablePanel>
 
