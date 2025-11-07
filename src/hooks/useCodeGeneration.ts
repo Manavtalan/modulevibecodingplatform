@@ -38,129 +38,157 @@ export const useCodeGeneration = () => {
     let currentFilePath = '';
     let currentFileContent = '';
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+    console.log('Starting SSE stream parsing...');
 
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-
-      for (const line of lines) {
-        if (!line.trim() || line.startsWith(':')) continue;
-        
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6);
-          
-          if (data === '[DONE]') {
-            if (currentFilePath && currentFileContent) {
-              setGeneratedFiles(prev => [...prev, { path: currentFilePath, content: currentFileContent }]);
-            }
-            setGenerationPhase('complete');
-            setCurrentFile(null);
-            continue;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          console.log('Stream reading complete');
+          // Final flush - save any remaining file
+          if (currentFilePath && currentFileContent.trim()) {
+            console.log('Final flush - saving remaining file:', currentFilePath);
+            setGeneratedFiles(prev => [...prev, { path: currentFilePath, content: currentFileContent.trim() }]);
           }
+          break;
+        }
 
-          // Try to parse as JSON for completion with metadata
-          try {
-            const parsed = JSON.parse(data);
-            if (parsed.done === true) {
-              if (currentFilePath && currentFileContent) {
-                setGeneratedFiles(prev => [...prev, { path: currentFilePath, content: currentFileContent }]);
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (!line.trim() || line.startsWith(':')) continue;
+          
+          if (line.startsWith('data: ')) {
+            let data = line.slice(6);
+            
+            // First, try to extract content from JSON wrapper
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.content) {
+                data = parsed.content; // Extract the actual content
+              } else if (parsed.done === true) {
+                // Handle completion with metadata
+                if (currentFilePath && currentFileContent.trim()) {
+                  setGeneratedFiles(prev => [...prev, { path: currentFilePath, content: currentFileContent.trim() }]);
+                }
+                
+                // Handle quality check if present
+                if (parsed.quality_check) {
+                  setQualityCheck(parsed.quality_check);
+                  console.log('Quality check:', parsed.quality_check);
+                }
+                
+                // Handle token validation if present
+                if (parsed.token_validation) {
+                  setTokenValidation(parsed.token_validation);
+                  console.log('Token validation:', parsed.token_validation);
+                }
+                
+                setGenerationPhase('complete');
+                setCurrentFile(null);
+                continue;
               }
-              
-              // Handle quality check if present
-              if (parsed.quality_check) {
-                setQualityCheck(parsed.quality_check);
-                console.log('Quality check:', parsed.quality_check);
+            } catch {
+              // Not JSON or doesn't have content field, use data as-is
+            }
+            
+            if (data === '[DONE]') {
+              if (currentFilePath && currentFileContent.trim()) {
+                console.log('Saving file on [DONE]:', currentFilePath);
+                setGeneratedFiles(prev => [...prev, { path: currentFilePath, content: currentFileContent.trim() }]);
               }
-              
-              // Handle token validation if present
-              if (parsed.token_validation) {
-                setTokenValidation(parsed.token_validation);
-                console.log('Token validation:', parsed.token_validation);
-              }
-              
               setGenerationPhase('complete');
               setCurrentFile(null);
               continue;
             }
-          } catch {
-            // Not JSON, continue processing as content
-          }
 
-          // Parse [PLAN] marker
-          if (data.startsWith('[PLAN]')) {
-            setGenerationPhase('planning');
-            const planContent = data.substring('[PLAN]'.length).trim();
-            try {
-              const plan = JSON.parse(planContent);
-              setFilePlan(plan.files || []);
-            } catch (e) {
-              console.error("Failed to parse plan:", e);
-            }
-            continue;
-          }
-
-          // Parse [FILE:filename] marker
-          if (data.startsWith('[FILE:')) {
-            if (currentFilePath && currentFileContent) {
-              setGeneratedFiles(prev => [...prev, { path: currentFilePath, content: currentFileContent }]);
-            }
-            
-            setGenerationPhase('generating');
-            const match = data.match(/\[FILE:(.*?)\]/);
-            if (match) {
-              currentFilePath = match[1].trim();
-              currentFileContent = '';
-              setCurrentFile(currentFilePath);
-            }
-            continue;
-          }
-
-          // Parse [/FILE] marker
-          if (data.startsWith('[/FILE]')) {
-            if (currentFilePath && currentFileContent) {
-              setGeneratedFiles(prev => [...prev, { path: currentFilePath, content: currentFileContent }]);
-              currentFilePath = '';
-              currentFileContent = '';
-            }
-            continue;
-          }
-
-          // Parse [COMPLETE] marker
-          if (data.startsWith('[COMPLETE]')) {
-            if (currentFilePath && currentFileContent) {
-              setGeneratedFiles(prev => [...prev, { path: currentFilePath, content: currentFileContent }]);
-            }
-            setGenerationPhase('complete');
-            setCurrentFile(null);
-            continue;
-          }
-
-          // Parse [ERROR] marker
-          if (data.startsWith('[ERROR]')) {
-            setGenerationPhase('error');
-            const errorMsg = data.substring('[ERROR]'.length).trim();
-            setError(errorMsg);
-            continue;
-          }
-
-          // Regular content - append to current file
-          if (currentFilePath) {
-            currentFileContent += data + '\n';
-            setGeneratedFiles(prev => {
-              const existing = prev.findIndex(f => f.path === currentFilePath);
-              if (existing >= 0) {
-                const updated = [...prev];
-                updated[existing] = { path: currentFilePath, content: currentFileContent };
-                return updated;
+            // Parse [PLAN] marker
+            if (data.startsWith('[PLAN]')) {
+              setGenerationPhase('planning');
+              const planContent = data.substring('[PLAN]'.length).trim();
+              try {
+                const plan = JSON.parse(planContent);
+                setFilePlan(plan.files || []);
+              } catch (e) {
+                console.error("Failed to parse plan:", e);
               }
-              return [...prev, { path: currentFilePath, content: currentFileContent }];
-            });
+              continue;
+            }
+
+            // Parse [FILE:filename] marker
+            if (data.startsWith('[FILE:')) {
+              // Save previous file if exists
+              if (currentFilePath && currentFileContent.trim()) {
+                console.log('Saving completed file:', currentFilePath, 'Length:', currentFileContent.length);
+                setGeneratedFiles(prev => {
+                  const newFile = { path: currentFilePath, content: currentFileContent.trim() };
+                  console.log('Adding file to array:', prev.length, '->', prev.length + 1);
+                  return [...prev, newFile];
+                });
+              }
+              
+              // Start new file
+              setGenerationPhase('generating');
+              const match = data.match(/\[FILE:(.*?)\]/);
+              if (match) {
+                currentFilePath = match[1].trim();
+                currentFileContent = '';
+                setCurrentFile(currentFilePath);
+                console.log('Starting new file:', currentFilePath);
+              }
+              continue;
+            }
+
+            // Parse [/FILE] marker
+            if (data.startsWith('[/FILE]')) {
+              if (currentFilePath && currentFileContent.trim()) {
+                console.log('File marker ended:', currentFilePath, 'Length:', currentFileContent.length);
+                setGeneratedFiles(prev => {
+                  const newFile = { path: currentFilePath, content: currentFileContent.trim() };
+                  console.log('Adding file to array (from /FILE):', prev.length, '->', prev.length + 1);
+                  return [...prev, newFile];
+                });
+                currentFilePath = '';
+                currentFileContent = '';
+              }
+              continue;
+            }
+
+            // Parse [COMPLETE] marker
+            if (data.startsWith('[COMPLETE]')) {
+              // Save any remaining file
+              if (currentFilePath && currentFileContent.trim()) {
+                console.log('Saving final file:', currentFilePath);
+                setGeneratedFiles(prev => [...prev, { path: currentFilePath, content: currentFileContent.trim() }]);
+              }
+              console.log('Generation complete marker received');
+              setGenerationPhase('complete');
+              setCurrentFile(null);
+              continue;
+            }
+
+            // Parse [ERROR] marker
+            if (data.startsWith('[ERROR]')) {
+              const errorMsg = data.substring('[ERROR]'.length).trim();
+              console.error('Generation error:', errorMsg);
+              setGenerationPhase('error');
+              setError(errorMsg);
+              continue;
+            }
+
+            // Regular content - append to current file ONLY (don't update state yet)
+            if (currentFilePath) {
+              currentFileContent += data + '\n';
+            }
           }
         }
       }
+    } catch (error) {
+      console.error('SSE stream parsing error:', error);
+      setGenerationPhase('error');
+      setError(error instanceof Error ? error.message : 'Stream parsing failed');
     }
   };
 

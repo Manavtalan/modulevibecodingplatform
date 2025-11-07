@@ -89,6 +89,14 @@ const ModuleStudio = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Debug: Track generated files
+  useEffect(() => {
+    console.log('Generated files updated:', generatedFiles.length, 'files');
+    if (generatedFiles.length > 0) {
+      console.log('File paths:', generatedFiles.map(f => f.path));
+    }
+  }, [generatedFiles]);
+
   // Add status messages during generation
   useEffect(() => {
     if (generationPhase === 'planning') {
