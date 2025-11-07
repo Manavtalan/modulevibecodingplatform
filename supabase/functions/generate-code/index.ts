@@ -822,14 +822,246 @@ VERIFICATION CHECKLIST (CHECK BEFORE COMPLETING):
       case 'react':
         systemPrompt = `${baseFormat}
 
+🎯 REACT COMPONENT EXAMPLES - FOLLOW THESE EXACTLY:
+
+═══════════════════════════════════════════════════════
+HERO COMPONENT EXAMPLE (Modern Gradient Background):
+═══════════════════════════════════════════════════════
+\`\`\`tsx
+import React from 'react';
+import { ArrowRight, Play } from 'lucide-react';
+
+const Hero: React.FC = () => {
+  return (
+    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--primary-500)] to-[var(--accent-500)] overflow-hidden">
+      {/* Gradient overlay for depth */}
+      <div className="absolute inset-0 bg-black/20"></div>
+      
+      {/* Floating background elements with animation */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-white/3 rounded-full blur-3xl animate-pulse" 
+           style={{ animationDelay: '1000ms' }}></div>
+      
+      <div className="relative z-10 max-w-7xl mx-auto px-[var(--space-4)] text-center">
+        <h1 className="text-[var(--text-5xl)] md:text-[var(--text-6xl)] font-bold text-white mb-[var(--space-6)] leading-tight animate-fade-in">
+          Build Amazing Products with{' '}
+          <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+            Modern Technology
+          </span>
+        </h1>
+        
+        <p className="text-[var(--text-xl)] text-white/90 mb-[var(--space-8)] max-w-3xl mx-auto leading-relaxed"
+           style={{ animationDelay: '200ms' }}>
+          Create beautiful, scalable applications with our cutting-edge platform. 
+          Transform your ideas into reality with professional-grade tools.
+        </p>
+        
+        <div className="flex flex-col sm:flex-row gap-[var(--space-4)] justify-center"
+             style={{ animationDelay: '400ms' }}>
+          <button className="group bg-gradient-to-r from-[var(--primary-600)] to-[var(--primary-500)] 
+                           text-white px-[var(--space-8)] py-[var(--space-4)] rounded-[var(--radius-xl)] 
+                           font-semibold text-[var(--text-lg)] transition-all duration-300
+                           hover:scale-105 hover:shadow-[0_20px_40px_rgba(99,102,241,0.3)]
+                           focus:outline-none focus:ring-4 focus:ring-[var(--primary-500)]/30
+                           active:scale-95">
+            Get Started
+            <ArrowRight className="ml-2 h-5 w-5 inline transition-transform group-hover:translate-x-1" />
+          </button>
+          
+          <button className="group bg-white/10 backdrop-blur-md border border-white/20 
+                           text-white px-[var(--space-8)] py-[var(--space-4)] rounded-[var(--radius-xl)]
+                           font-semibold text-[var(--text-lg)] transition-all duration-300
+                           hover:bg-white/15 hover:scale-105 hover:shadow-[0_20px_40px_rgba(255,255,255,0.1)]
+                           focus:outline-none focus:ring-4 focus:ring-white/20 active:scale-95">
+            <Play className="mr-2 h-5 w-5 inline" />
+            Watch Demo
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default Hero;
+\`\`\`
+
+═══════════════════════════════════════════════════════
+GLASSMORPHISM CARD COMPONENT EXAMPLE:
+═══════════════════════════════════════════════════════
+\`\`\`tsx
+import React from 'react';
+import { LucideIcon } from 'lucide-react';
+
+interface FeatureCardProps {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  delay?: number;
+}
+
+const FeatureCard: React.FC<FeatureCardProps> = ({ 
+  icon: Icon, 
+  title, 
+  description, 
+  delay = 0 
+}) => {
+  return (
+    <div 
+      className="group relative bg-white/10 backdrop-blur-xl border border-white/20 
+                 rounded-[var(--radius-2xl)] p-[var(--space-8)] 
+                 transition-all duration-500 hover:bg-white/15 hover:scale-105 
+                 hover:shadow-[0_25px_50px_rgba(0,0,0,0.15)] hover:-translate-y-2
+                 before:absolute before:inset-0 before:bg-gradient-to-br 
+                 before:from-white/10 before:to-transparent before:rounded-[var(--radius-2xl)]
+                 before:opacity-0 before:transition-opacity before:duration-500 
+                 hover:before:opacity-100"
+      style={{ animationDelay: \`\${delay}ms\` }}
+    >
+      {/* Gradient border glow effect on hover */}
+      <div className="absolute -inset-0.5 bg-gradient-to-br from-[var(--primary-500)] to-[var(--accent-500)] 
+                      rounded-[var(--radius-2xl)] opacity-0 blur transition-opacity duration-500 
+                      group-hover:opacity-30 -z-10"></div>
+      
+      <div className="relative">
+        {/* Icon container with gradient background */}
+        <div className="w-16 h-16 bg-gradient-to-br from-[var(--primary-500)] to-[var(--accent-500)] 
+                        rounded-[var(--radius-xl)] flex items-center justify-center mb-[var(--space-6)]
+                        shadow-[0_8px_32px_rgba(99,102,241,0.3)] transition-all duration-300
+                        group-hover:scale-110 group-hover:shadow-[0_12px_40px_rgba(99,102,241,0.4)]">
+          <Icon className="w-8 h-8 text-white" strokeWidth={1.5} />
+        </div>
+        
+        <h3 className="text-[var(--text-2xl)] font-semibold text-white mb-[var(--space-4)] 
+                       tracking-tight transition-colors duration-300">
+          {title}
+        </h3>
+        
+        <p className="text-white/80 leading-relaxed text-[var(--text-base)]
+                      transition-colors duration-300 group-hover:text-white/90">
+          {description}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default FeatureCard;
+\`\`\`
+
+═══════════════════════════════════════════════════════
+BUTTON COMPONENT WITH MODERN VARIANTS:
+═══════════════════════════════════════════════════════
+\`\`\`tsx
+import React from 'react';
+import { LucideIcon } from 'lucide-react';
+import { cn } from '../../lib/utils';
+
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'gradient';
+  size?: 'sm' | 'md' | 'lg';
+  loading?: boolean;
+  icon?: LucideIcon;
+  iconPosition?: 'left' | 'right';
+  children: React.ReactNode;
+  className?: string;
+}
+
+const Button: React.FC<ButtonProps> = ({
+  variant = 'primary',
+  size = 'md',
+  loading = false,
+  icon: Icon,
+  iconPosition = 'left',
+  children,
+  className,
+  disabled,
+  ...props
+}) => {
+  const baseStyles = \`
+    inline-flex items-center justify-center font-semibold rounded-[var(--radius-lg)]
+    transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-offset-2
+    disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden
+    transform-gpu will-change-transform
+  \`;
+
+  const variants = {
+    primary: \`
+      bg-[var(--primary-600)] text-white hover:bg-[var(--primary-700)]
+      shadow-[0_4px_12px_rgba(99,102,241,0.3)] hover:shadow-[0_8px_25px_rgba(99,102,241,0.4)]
+      focus:ring-[var(--primary-500)]/30 hover:scale-105 active:scale-95
+    \`,
+    secondary: \`
+      bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)]
+      hover:bg-[var(--surface-secondary)] hover:border-[var(--border-secondary)]
+      shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.15)]
+      focus:ring-[var(--primary-500)]/20 hover:scale-105 active:scale-95
+    \`,
+    outline: \`
+      border-2 border-[var(--primary-500)] text-[var(--primary-500)]
+      hover:bg-[var(--primary-500)] hover:text-white
+      focus:ring-[var(--primary-500)]/30 hover:scale-105 active:scale-95
+      shadow-[0_2px_8px_rgba(99,102,241,0.2)] hover:shadow-[0_4px_16px_rgba(99,102,241,0.3)]
+    \`,
+    ghost: \`
+      text-[var(--primary-500)] hover:bg-[var(--primary-50)]
+      focus:ring-[var(--primary-500)]/20 hover:scale-105 active:scale-95
+    \`,
+    gradient: \`
+      bg-gradient-to-r from-[var(--primary-600)] via-[var(--primary-500)] to-[var(--accent-500)]
+      text-white shadow-[0_4px_12px_rgba(99,102,241,0.3)] 
+      hover:shadow-[0_8px_25px_rgba(99,102,241,0.4)] hover:scale-105 active:scale-95
+      focus:ring-[var(--primary-500)]/30
+      before:absolute before:inset-0 before:bg-gradient-to-r 
+      before:from-white/20 before:to-transparent before:opacity-0 
+      before:transition-opacity before:duration-300 hover:before:opacity-100
+    \`
+  };
+
+  const sizes = {
+    sm: 'px-[var(--space-3)] py-[var(--space-1-5)] text-[var(--text-sm)]',
+    md: 'px-[var(--space-6)] py-[var(--space-3)] text-[var(--text-base)]',
+    lg: 'px-[var(--space-8)] py-[var(--space-4)] text-[var(--text-lg)]'
+  };
+
+  const iconSize = size === 'sm' ? 'w-4 h-4' : size === 'lg' ? 'w-6 h-6' : 'w-5 h-5';
+
+  return (
+    <button
+      className={cn(baseStyles, variants[variant], sizes[size], className)}
+      disabled={disabled || loading}
+      {...props}
+    >
+      {loading && (
+        <div className={\`mr-2 \${iconSize} animate-spin rounded-full border-2 border-current border-t-transparent\`} />
+      )}
+      
+      {Icon && iconPosition === 'left' && !loading && (
+        <Icon className={\`mr-2 \${iconSize} transition-transform duration-200 group-hover:scale-110\`} />
+      )}
+      
+      <span className="relative z-10">{children}</span>
+      
+      {Icon && iconPosition === 'right' && !loading && (
+        <Icon className={\`ml-2 \${iconSize} transition-transform duration-200 group-hover:translate-x-1\`} />
+      )}
+    </button>
+  );
+};
+
+export default Button;
+\`\`\`
+
+═══════════════════════════════════════════════════════
+
 MANDATORY: ENFORCE STRICT REACT COMPONENT ARCHITECTURE
 
 CRITICAL RULES:
 ❌ NO flat component structure
 ❌ NO components over 200 lines  
 ❌ NO mixing layout, section, and UI components in same folder
-❌ NO hardcoded styles - must use design tokens
+❌ NO hardcoded styles - must use design tokens EXACTLY as shown above
 ❌ NO inline styles or className strings without proper organization
+❌ MUST use the EXACT component patterns shown in examples above
 
 REQUIRED FILE STRUCTURE (EXACTLY AS SHOWN):
 [PLAN]
