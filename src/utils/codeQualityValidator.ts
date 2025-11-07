@@ -118,47 +118,32 @@ export class CodeQualityValidator {
     const issues: ValidationIssue[] = [];
     
     if (codeType === 'html') {
-      // HTML project must have minimum 3 files
+      // HTML project recommendations (not strict requirements)
       if (files.length < 3) {
+        const hasInlineStyles = files.some(f => f.content.includes('<style>'));
+        const hasInlineScripts = files.some(f => f.content.includes('<script>'));
+        
+        // Only suggest separation if content is substantial
+        if (hasInlineStyles || hasInlineScripts) {
+          issues.push({
+            type: 'info',
+            category: 'structure',
+            message: 'For larger projects, consider separating HTML, CSS, and JS into different files',
+            severity: 3
+          });
+        }
+      }
+
+      // Check if HTML file exists
+      const hasHTML = files.some(f => f.path.includes('.html'));
+      if (!hasHTML) {
         issues.push({
           type: 'error',
           category: 'structure',
-          message: `HTML projects must have at least 3 files, found ${files.length}`,
+          message: 'No HTML file found',
           severity: 1
         });
       }
-
-      // Check for required files
-      const requiredFiles = ['index.html', '.css', '.js'];
-      const missingFiles = requiredFiles.filter(required => 
-        !files.some(file => 
-          required === 'index.html' ? file.path.includes('index.html') :
-          file.path.endsWith(required)
-        )
-      );
-
-      missingFiles.forEach(missing => {
-        issues.push({
-          type: 'error',
-          category: 'structure',
-          message: `Missing required file type: ${missing}`,
-          severity: 1
-        });
-      });
-
-      // Check for inline styles/scripts (bad practice)
-      const htmlFiles = files.filter(f => f.path.endsWith('.html'));
-      htmlFiles.forEach(file => {
-        if (file.content.includes('<style>') || file.content.includes('<script>')) {
-          issues.push({
-            type: 'warning',
-            category: 'structure',
-            message: 'Avoid inline styles and scripts. Use external files.',
-            file: file.path,
-            severity: 2
-          });
-        }
-      });
     }
 
     if (codeType === 'react') {

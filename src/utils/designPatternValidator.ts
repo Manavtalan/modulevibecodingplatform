@@ -121,7 +121,7 @@ export class DesignPatternValidator {
     const suggestions = this.generatePatternSuggestions(patterns);
     
     return {
-      valid: score >= 80 && patterns.filter(p => p.importance === 'critical').every(p => p.found),
+      valid: score >= 60, // More lenient validation - focus on suggestions rather than blocking
       score,
       patterns,
       suggestions

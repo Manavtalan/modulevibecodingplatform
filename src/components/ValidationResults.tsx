@@ -82,13 +82,9 @@ const ValidationResults: React.FC<ValidationResultsProps> = ({
       {/* Quality Score Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-2">
-          {validationResult.valid ? (
-            <CheckCircle className="h-5 w-5 text-green-500" />
-          ) : (
-            <AlertCircle className="h-5 w-5 text-red-500" />
-          )}
+          <Info className="h-5 w-5 text-primary" />
           <h3 className="font-semibold text-foreground">
-            Quality Validation {validationResult.valid ? 'Passed' : 'Failed'}
+            Code Quality Analysis
           </h3>
         </div>
         <div className={cn('text-xl font-bold', getScoreColor(validationResult.score))}>
@@ -99,7 +95,7 @@ const ValidationResults: React.FC<ValidationResultsProps> = ({
       {/* Issues List */}
       {validationResult.issues.length > 0 && (
         <div className="space-y-2 mb-3">
-          <h4 className="font-medium text-foreground text-sm">Issues Found:</h4>
+          <h4 className="font-medium text-foreground text-sm">Observations:</h4>
           {validationResult.issues.slice(0, 5).map((issue, index) => (
             <div key={index} className="flex items-start space-x-2 text-sm">
               {getIssueIcon(issue)}
@@ -123,7 +119,7 @@ const ValidationResults: React.FC<ValidationResultsProps> = ({
       {/* Suggestions */}
       {validationResult.suggestions.length > 0 && (
         <div className="space-y-1">
-          <h4 className="font-medium text-foreground text-sm">Suggestions:</h4>
+          <h4 className="font-medium text-foreground text-sm">Enhancement Ideas:</h4>
           {validationResult.suggestions.map((suggestion, index) => (
             <div key={index} className="text-sm text-foreground/80 ml-6">
               • {suggestion}
