@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
+import { MODERN_DESIGN_EXAMPLES } from './designExamples.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -308,25 +309,112 @@ RULES:
       case 'html':
         systemPrompt = `${baseFormat}
 
+🎯 EXAMPLE-DRIVEN MODERN DESIGN REQUIREMENTS 🎯
+
+You MUST follow these EXACT modern design patterns shown in the examples below.
+Do NOT deviate from these patterns - they represent current 2025 professional web design standards.
+
+═══════════════════════════════════════════════════════
+1. GRADIENT BACKGROUNDS (MANDATORY)
+═══════════════════════════════════════════════════════
+${MODERN_DESIGN_EXAMPLES.gradientBackgrounds.examples[0].css}
+
+${MODERN_DESIGN_EXAMPLES.gradientBackgrounds.examples[1].css}
+
+${MODERN_DESIGN_EXAMPLES.gradientBackgrounds.examples[2].css}
+
+USE THESE PATTERNS FOR:
+- Hero sections: Animated gradients with overlay
+- Feature cards: Subtle gradient backgrounds with glassmorphism
+- Buttons: Interactive gradients with hover shine effects
+
+═══════════════════════════════════════════════════════
+2. GLASSMORPHISM EFFECTS (MANDATORY)
+═══════════════════════════════════════════════════════
+${MODERN_DESIGN_EXAMPLES.glassmorphismCards.examples[0].css}
+
+${MODERN_DESIGN_EXAMPLES.glassmorphismCards.examples[1].css}
+
+USE GLASSMORPHISM FOR:
+- Feature cards
+- Pricing tables
+- Navigation overlays
+- Modal dialogs
+- Floating elements
+
+═══════════════════════════════════════════════════════
+3. SMOOTH ANIMATIONS (MANDATORY)
+═══════════════════════════════════════════════════════
+${MODERN_DESIGN_EXAMPLES.smoothAnimations.examples[0].css}
+
+REQUIRED ANIMATIONS:
+✓ Card hover: translateY(-6px) + scale(1.02)
+✓ Button press: scale(0.96)
+✓ Floating elements: 6s infinite animation
+✓ Staggered list items: 0.1s, 0.2s, 0.3s delays
+✓ Text reveal: translateY(100%) to 0
+
+═══════════════════════════════════════════════════════
+4. MODERN TYPOGRAPHY (MANDATORY)
+═══════════════════════════════════════════════════════
+${MODERN_DESIGN_EXAMPLES.modernTypography.examples[0].css}
+
+TYPOGRAPHY RULES:
+✓ Use Inter for body, Poppins for display
+✓ Modular scale: 1.250 ratio (12px → 72px)
+✓ Letter spacing: -0.05em to -0.025em for headings
+✓ Line height: 1.25 for headings, 1.625 for body
+✓ Font weights: 400, 600, 700 only
+✓ Gradient text for emphasis
+
+═══════════════════════════════════════════════════════
+5. ACCESSIBLE COLORS (MANDATORY - WCAG AAA)
+═══════════════════════════════════════════════════════
+${MODERN_DESIGN_EXAMPLES.colorContrast.examples[0].css}
+
+COLOR CONTRAST REQUIREMENTS:
+✓ Minimum 4.5:1 for normal text (WCAG AA)
+✓ Minimum 7.0:1 for body text (WCAG AAA)
+✓ Use --neutral-600 minimum for text on light backgrounds
+✓ Use white text only on --primary-600 or darker
+✓ Status colors: success/warning/error with proper contrast
+
+═══════════════════════════════════════════════════════
+6. RESPONSIVE GRIDS (MANDATORY)
+═══════════════════════════════════════════════════════
+${MODERN_DESIGN_EXAMPLES.responsiveGrids.examples[0].css}
+
+RESPONSIVE PATTERNS:
+✓ CSS Grid with auto-fit: minmax(300px, 1fr)
+✓ clamp() for fluid spacing: clamp(1.5rem, 4vw, 3rem)
+✓ Mobile-first breakpoints: 768px, 1024px
+✓ Container max-width: 1200px with fluid padding
+✓ Section spacing: clamp(3rem, 8vw, 6rem)
+
+═══════════════════════════════════════════════════════
+
 ⚠️⚠️⚠️ CRITICAL RULES ⚠️⚠️⚠️
 1. NEVER generate a single HTML file - ALWAYS separate files
-2. MUST create MODERN, PROFESSIONAL, POLISHED UI design
+2. MUST use the EXACT patterns shown above
+3. Apply ALL design patterns: gradients, glassmorphism, animations, typography, accessible colors, responsive grids
 
 FORBIDDEN PATTERNS:
 ❌ Single standalone HTML file
 ❌ <style> tags in HTML
 ❌ <script> code in HTML
-❌ Basic unstyled layouts
-❌ Outdated CSS patterns
-❌ Tables for layout
-❌ Inline styles (style="...")
-❌ Fixed pixel values everywhere
+❌ Flat solid backgrounds (use gradients)
+❌ No hover effects (use scale + translateY)
+❌ Default system fonts (use Inter/Poppins)
+❌ Poor contrast colors (follow WCAG AAA)
+❌ Fixed-width layouts (use clamp() + Grid)
+❌ Basic cards (use glassmorphism)
+❌ No animations (add smooth transitions)
 
 REQUIRED FILE STRUCTURE:
 [PLAN]
 {"files":[
   {"path":"index.html","description":"Semantic HTML5 structure with modern markup"},
-  {"path":"styles.css","description":"Modern CSS with Grid, Flexbox, animations, gradients"},
+  {"path":"styles.css","description":"Modern CSS with the EXACT patterns shown above"},
   {"path":"script.js","description":"Interactive JavaScript with smooth interactions"}
 ]}
 [/PLAN]
