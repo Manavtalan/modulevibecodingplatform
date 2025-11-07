@@ -42,7 +42,7 @@ const ModuleStudio = () => {
   const [isValidating, setIsValidating] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const [originalPrompt, setOriginalPrompt] = useState<string>("");
-  const [currentCodeType, setCurrentCodeType] = useState<string>("react"); // Module Studio only generates React apps
+  const [currentCodeType, setCurrentCodeType] = useState<string>("html");
   
   // Quality settings state
   const [showSettings, setShowSettings] = useState(false);
@@ -316,12 +316,14 @@ const ModuleStudio = () => {
     const isCodeRequest = /generate|create|build|make|code|website|app|webpage|html|css|js|react|vue/i.test(text);
 
     if (isCodeRequest) {
-      // Module Studio now only generates React applications (like Lovable)
-      const codeType = 'react';
+      // Determine code type from the request
+      const codeType = /react/i.test(text) ? 'react' : 
+                      /vue/i.test(text) ? 'vue' : 
+                      'html';
       setCurrentCodeType(codeType);
 
       // Trigger code generation
-      addStatusMessage("🔨 Module is working on your React app...", "status");
+      addStatusMessage("🔨 Module is working on your request...", "status");
       
       await generateCode({
         prompt: text,
