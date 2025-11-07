@@ -734,58 +734,217 @@ VERIFICATION CHECKLIST (CHECK BEFORE COMPLETING):
       case 'react':
         systemPrompt = `${baseFormat}
 
-MANDATORY: CREATE PROFESSIONAL REACT APPLICATION WITH DESIGN SYSTEM
-
-CRITICAL REQUIREMENT: ALWAYS generate src/styles/design-tokens.css file
-This file MUST contain CSS custom properties for the entire design system.
-
-ARCHITECTURE (Vite + React + TypeScript + Tailwind + shadcn/ui):
+MANDATORY: ENFORCE STRICT REACT COMPONENT ARCHITECTURE
 
 CRITICAL RULES:
-❌ NO single file React apps
-❌ NO inline styles
-❌ NO basic unstyled components
-❌ NO outdated UI patterns
-❌ NO missing component structure
-❌ NO custom CSS in components (use Tailwind utilities)
+❌ NO flat component structure
+❌ NO components over 200 lines  
+❌ NO mixing layout, section, and UI components in same folder
+❌ NO hardcoded styles - must use design tokens
+❌ NO inline styles or className strings without proper organization
 
-MANDATORY FILE STRUCTURE:
+REQUIRED FILE STRUCTURE (EXACTLY AS SHOWN):
 [PLAN]
 {"files":[
-  {"path":"src/App.tsx","description":"Main composition with routing"},
-  {"path":"src/components/layout/Navbar.tsx","description":"Modern navigation with mobile menu"},
-  {"path":"src/components/sections/Hero.tsx","description":"Stunning hero section with CTA"},
-  {"path":"src/components/sections/Features.tsx","description":"Feature showcase grid"},
-  {"path":"src/components/sections/Footer.tsx","description":"Footer component"},
-  {"path":"src/components/ui/Button.tsx","description":"Reusable button component"},
+  {"path":"src/App.tsx","description":"Main composition only - no business logic"},
+  {"path":"src/components/layout/Navbar.tsx","description":"Navigation component with mobile responsiveness"},
+  {"path":"src/components/layout/Footer.tsx","description":"Footer with links and social media"},
+  {"path":"src/components/sections/Hero.tsx","description":"Hero section with CTA"},
+  {"path":"src/components/sections/Features.tsx","description":"Features showcase grid"},
+  {"path":"src/components/sections/Testimonials.tsx","description":"Customer testimonials carousel"},
+  {"path":"src/components/sections/CTA.tsx","description":"Call-to-action section"},
+  {"path":"src/components/ui/Button.tsx","description":"Reusable button component with variants"},
   {"path":"src/components/ui/Card.tsx","description":"Reusable card component"},
-  {"path":"src/styles/design-tokens.css","description":"MANDATORY - Complete design system variables"},
-  {"path":"src/styles/globals.css","description":"Global styles importing design tokens"},
-  {"path":"tailwind.config.js","description":"Tailwind configuration mapped to design tokens"},
-  {"path":"src/lib/utils.ts","description":"Utility functions including design helpers"}
+  {"path":"src/components/ui/Badge.tsx","description":"Reusable badge component"},
+  {"path":"src/styles/design-tokens.css","description":"Design system variables"},
+  {"path":"src/styles/globals.css","description":"Global styles and resets"},
+  {"path":"src/lib/utils.ts","description":"Utility functions and helpers"},
+  {"path":"src/types/index.ts","description":"TypeScript interfaces and types"},
+  {"path":"package.json","description":"Dependencies and scripts"}
 ]}
 [/PLAN]
 
-DESIGN REQUIREMENTS (CRITICAL):
-✅ Use Tailwind's extended color palette (blue-500, purple-600, slate-800, indigo-500)
-✅ Add smooth transitions (transition-all duration-300 ease-in-out)
-✅ Include hover effects (hover:scale-105, hover:shadow-xl, hover:-translate-y-1)
-✅ Use gradient text (bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent)
-✅ Add glassmorphism effects (backdrop-blur-lg bg-white/10 border border-white/20)
-✅ Proper spacing with Tailwind scale (space-y-8, gap-6, p-8, px-4)
-✅ Typography hierarchy (text-5xl font-bold, text-lg text-muted-foreground, leading-tight)
-✅ Use shadcn/ui components when available (Button, Card, Badge, Input)
-✅ Add icons from lucide-react for visual interest
-✅ Dark mode support with proper color contrast
+COMPONENT ARCHITECTURE RULES:
+
+1. APP COMPOSITION (App.tsx):
+✅ ONLY imports and composes other components
+✅ NO business logic or state management
+✅ Maximum 50 lines
+✅ Clean component composition only
+
+Example App.tsx structure:
+import Navbar from './components/layout/Navbar';
+import Hero from './components/sections/Hero';
+import Features from './components/sections/Features';
+import Testimonials from './components/sections/Testimonials';
+import CTA from './components/sections/CTA';
+import Footer from './components/layout/Footer';
+
+function App() {
+  return (
+    <div className="min-h-screen bg-[var(--background)]">
+      <Navbar />
+      <main>
+        <Hero />
+        <Features />
+        <Testimonials />
+        <CTA />
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+export default App;
+
+2. LAYOUT COMPONENTS (components/layout/):
+✅ Handle page structure and navigation
 ✅ Responsive design with mobile-first approach
-✅ Accessibility features (aria-labels, focus states, focus-visible:ring-2)
-✅ Add subtle animations on scroll (animate-fade-in if available)
+✅ Proper semantic HTML (nav, footer, header)
+✅ Maximum 150 lines each
+✅ Use design tokens for all styling
+
+3. SECTION COMPONENTS (components/sections/):
+✅ Self-contained page sections
+✅ Import and use UI components
+✅ Handle their own local state if needed
+✅ Maximum 200 lines each
+✅ Use design tokens and UI components
+
+4. UI COMPONENTS (components/ui/):
+✅ Reusable, atomic components
+✅ Accept props for customization
+✅ Include proper TypeScript interfaces
+✅ Maximum 100 lines each
+✅ Support multiple variants/sizes
+
+COMPONENT REQUIREMENTS:
+
+Button Component MUST include:
+- Multiple variants (primary, secondary, outline, ghost)
+- Size options (sm, md, lg)
+- Loading and disabled states
+- Proper TypeScript interface
+- Design token usage
+
+Card Component MUST include:
+- Different card styles (default, elevated, flat)
+- Optional header, body, footer sections
+- Responsive design
+- Hover effects using design tokens
+
+Badge Component MUST include:
+- Color variants (success, warning, error, info)
+- Size options (sm, md, lg)
+- Icon support
+- Proper contrast ratios
+
+TYPESCRIPT REQUIREMENTS:
+✅ EVERY component must have proper interface definitions
+✅ Props must be typed with interfaces
+✅ Export interfaces for reuse
+✅ Use generic types where appropriate
+
+Example TypeScript interfaces:
+// In src/types/index.ts
+export interface ButtonProps {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  loading?: boolean;
+  disabled?: boolean;
+  children: React.ReactNode;
+  onClick?: () => void;
+  className?: string;
+}
+
+export interface CardProps {
+  variant?: 'default' | 'elevated' | 'flat';
+  children: React.ReactNode;
+  className?: string;
+  header?: React.ReactNode;
+  footer?: React.ReactNode;
+}
+
+DESIGN TOKEN USAGE:
+✅ ALL components MUST use design tokens from design-tokens.css
+✅ NO hardcoded colors, spacing, or typography
+✅ Use CSS custom properties: var(--token-name)
+✅ Import tokens in each component file
+
+COMPONENT BEST PRACTICES:
+✅ Single Responsibility Principle - one purpose per component
+✅ Pure functions where possible
+✅ Proper error boundaries
+✅ Accessible markup with ARIA labels
+✅ Semantic HTML elements
+✅ Mobile-first responsive design
+✅ Proper focus management
+
+FOLDER STRUCTURE ENFORCEMENT:
+src/
+├── App.tsx                    (Composition only, max 50 lines)
+├── components/
+│   ├── layout/               (Page structure components)
+│   │   ├── Navbar.tsx        (Navigation, max 150 lines)
+│   │   └── Footer.tsx        (Footer, max 150 lines)
+│   ├── sections/             (Page section components)
+│   │   ├── Hero.tsx          (Hero section, max 200 lines)
+│   │   ├── Features.tsx      (Features grid, max 200 lines)
+│   │   ├── Testimonials.tsx  (Testimonials, max 200 lines)
+│   │   └── CTA.tsx           (Call-to-action, max 200 lines)
+│   └── ui/                   (Reusable UI components)
+│       ├── Button.tsx        (Button variants, max 100 lines)
+│       ├── Card.tsx          (Card component, max 100 lines)
+│       └── Badge.tsx         (Badge variants, max 100 lines)
+├── styles/
+│   ├── design-tokens.css     (Design system variables)
+│   └── globals.css           (Global styles)
+├── lib/
+│   └── utils.ts             (Utility functions)
+├── types/
+│   └── index.ts             (TypeScript interfaces)
+└── package.json
+
+PACKAGE.JSON REQUIREMENTS:
+Include these essential dependencies:
+{
+  "name": "generated-react-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "lucide-react": "^0.263.1",
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^1.14.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitejs/plugin-react": "^4.0.3",
+    "autoprefixer": "^10.4.14",
+    "eslint": "^8.45.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.3",
+    "postcss": "^8.4.27",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5"
+  }
+}
 
 MANDATORY design-tokens.css STRUCTURE:
 [FILE:src/styles/design-tokens.css]
 :root {
   /* === COLORS - Modern Purple/Blue Professional Theme === */
-  /* Primary Colors */
   --primary-50: #ede9fe;
   --primary-100: #ddd6fe;
   --primary-200: #c4b5fd;
@@ -797,7 +956,6 @@ MANDATORY design-tokens.css STRUCTURE:
   --primary-800: #3730a3;
   --primary-900: #312e81;
   
-  /* Accent Colors */
   --accent-50: #fdf2f8;
   --accent-100: #fce7f3;
   --accent-200: #fbcfe8;
@@ -806,10 +964,7 @@ MANDATORY design-tokens.css STRUCTURE:
   --accent-500: #ec4899;
   --accent-600: #db2777;
   --accent-700: #be185d;
-  --accent-800: #9d174d;
-  --accent-900: #831843;
   
-  /* Neutral Colors */
   --neutral-50: #f8fafc;
   --neutral-100: #f1f5f9;
   --neutral-200: #e2e8f0;
@@ -821,205 +976,75 @@ MANDATORY design-tokens.css STRUCTURE:
   --neutral-800: #1e293b;
   --neutral-900: #0f172a;
   
-  /* Semantic Colors */
   --success: #10b981;
   --warning: #f59e0b;
   --error: #ef4444;
   --info: #3b82f6;
   
-  /* Surface Colors */
   --background: var(--neutral-50);
   --surface: var(--neutral-100);
-  --surface-secondary: var(--neutral-200);
-  --surface-tertiary: var(--neutral-300);
-  
-  /* Text Colors */
   --text-primary: var(--neutral-900);
   --text-secondary: var(--neutral-700);
   --text-tertiary: var(--neutral-500);
-  --text-inverse: var(--neutral-50);
-  
-  /* Border Colors */
   --border: var(--neutral-200);
-  --border-secondary: var(--neutral-300);
-  --border-focus: var(--primary-500);
   
   /* === SPACING SCALE === */
-  --space-0: 0;
-  --space-px: 1px;
-  --space-0-5: 0.125rem;    /* 2px */
-  --space-1: 0.25rem;       /* 4px */
-  --space-1-5: 0.375rem;    /* 6px */
-  --space-2: 0.5rem;        /* 8px */
-  --space-2-5: 0.625rem;    /* 10px */
-  --space-3: 0.75rem;       /* 12px */
-  --space-3-5: 0.875rem;    /* 14px */
-  --space-4: 1rem;          /* 16px */
-  --space-5: 1.25rem;       /* 20px */
-  --space-6: 1.5rem;        /* 24px */
-  --space-7: 1.75rem;       /* 28px */
-  --space-8: 2rem;          /* 32px */
-  --space-9: 2.25rem;       /* 36px */
-  --space-10: 2.5rem;       /* 40px */
-  --space-11: 2.75rem;      /* 44px */
-  --space-12: 3rem;         /* 48px */
-  --space-14: 3.5rem;       /* 56px */
-  --space-16: 4rem;         /* 64px */
-  --space-20: 5rem;         /* 80px */
-  --space-24: 6rem;         /* 96px */
-  --space-32: 8rem;         /* 128px */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
   
   /* === TYPOGRAPHY === */
-  /* Font Families */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-serif: 'Playfair Display', Georgia, serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-  
-  /* Font Sizes */
-  --text-xs: 0.75rem;       /* 12px */
-  --text-sm: 0.875rem;      /* 14px */
-  --text-base: 1rem;        /* 16px */
-  --text-lg: 1.125rem;      /* 18px */
-  --text-xl: 1.25rem;       /* 20px */
-  --text-2xl: 1.5rem;       /* 24px */
-  --text-3xl: 1.875rem;     /* 30px */
-  --text-4xl: 2.25rem;      /* 36px */
-  --text-5xl: 3rem;         /* 48px */
-  --text-6xl: 3.75rem;      /* 60px */
-  
-  /* Font Weights */
-  --font-thin: 100;
-  --font-light: 300;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
   --font-normal: 400;
   --font-medium: 500;
   --font-semibold: 600;
   --font-bold: 700;
-  --font-extrabold: 800;
-  --font-black: 900;
-  
-  /* Line Heights */
-  --leading-none: 1;
-  --leading-tight: 1.25;
-  --leading-snug: 1.375;
-  --leading-normal: 1.5;
-  --leading-relaxed: 1.625;
-  --leading-loose: 2;
-  
-  /* Letter Spacing */
-  --tracking-tighter: -0.05em;
-  --tracking-tight: -0.025em;
-  --tracking-normal: 0;
-  --tracking-wide: 0.025em;
-  --tracking-wider: 0.05em;
-  --tracking-widest: 0.1em;
   
   /* === SHADOWS === */
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   
   /* === BORDER RADIUS === */
-  --radius-none: 0;
-  --radius-sm: 0.125rem;     /* 2px */
-  --radius-md: 0.375rem;     /* 6px */
-  --radius-lg: 0.5rem;       /* 8px */
-  --radius-xl: 0.75rem;      /* 12px */
-  --radius-2xl: 1rem;        /* 16px */
-  --radius-3xl: 1.5rem;      /* 24px */
-  --radius-full: 9999px;
-  
-  /* === BORDER WIDTHS === */
-  --border-0: 0;
-  --border: 1px;
-  --border-2: 2px;
-  --border-4: 4px;
-  --border-8: 8px;
-  
-  /* === ANIMATIONS === */
-  /* Durations */
-  --duration-75: 75ms;
-  --duration-100: 100ms;
-  --duration-150: 150ms;
-  --duration-200: 200ms;
-  --duration-300: 300ms;
-  --duration-500: 500ms;
-  --duration-700: 700ms;
-  --duration-1000: 1000ms;
-  
-  /* Timing Functions */
-  --ease-linear: linear;
-  --ease-in: cubic-bezier(0.4, 0, 1, 1);
-  --ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  
-  /* === GRADIENTS === */
-  --gradient-primary: linear-gradient(135deg, var(--primary-500), var(--primary-700));
-  --gradient-accent: linear-gradient(135deg, var(--accent-500), var(--accent-700));
-  --gradient-hero: linear-gradient(135deg, var(--primary-600), var(--primary-800), var(--accent-600));
-  --gradient-surface: linear-gradient(180deg, var(--surface), var(--surface-secondary));
-  
-  /* === Z-INDEX SCALE === */
-  --z-0: 0;
-  --z-10: 10;
-  --z-20: 20;
-  --z-30: 30;
-  --z-40: 40;
-  --z-50: 50;
-  --z-modal: 1000;
-  --z-overlay: 1010;
-  --z-dropdown: 1020;
-  --z-tooltip: 1030;
+  --radius-sm: 0.125rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
 }
 
-/* Dark Mode Variants */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: var(--neutral-900);
     --surface: var(--neutral-800);
-    --surface-secondary: var(--neutral-700);
-    --surface-tertiary: var(--neutral-600);
-    
     --text-primary: var(--neutral-50);
     --text-secondary: var(--neutral-300);
     --text-tertiary: var(--neutral-400);
-    --text-inverse: var(--neutral-900);
-    
     --border: var(--neutral-700);
-    --border-secondary: var(--neutral-600);
   }
 }
-
-/* Utility Classes for Design Tokens */
-.text-primary { color: var(--text-primary); }
-.text-secondary { color: var(--text-secondary); }
-.text-tertiary { color: var(--text-tertiary); }
-.bg-primary { background-color: var(--primary-500); }
-.bg-accent { background-color: var(--accent-500); }
-.bg-surface { background-color: var(--surface); }
-.shadow-card { box-shadow: var(--shadow-lg); }
-.rounded-card { border-radius: var(--radius-xl); }
 [/FILE]
-
-COMPONENT TOKEN USAGE REQUIREMENTS (CRITICAL):
-✅ ALL components MUST use CSS custom properties from design-tokens.css
-✅ NO hardcoded colors, spacing, or typography values in components
-✅ Use semantic token names (--text-primary instead of #1e293b)
-✅ Import design tokens in globals.css: @import './design-tokens.css';
-✅ Reference tokens using var() function: color: var(--text-primary);
-✅ Use Tailwind utilities that map to design tokens when possible
 
 MANDATORY globals.css CONTENT:
 [FILE:src/styles/globals.css]
 @import './design-tokens.css';
 
-/* Reset and Base Styles */
-*,
-*::before,
-*::after {
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -1027,167 +1052,20 @@ MANDATORY globals.css CONTENT:
 
 html {
   font-family: var(--font-sans);
-  line-height: var(--leading-normal);
+  line-height: 1.5;
   color: var(--text-primary);
   background-color: var(--background);
-  scroll-behavior: smooth;
-  font-size: 16px;
 }
 
 body {
   min-height: 100vh;
-  font-size: var(--text-base);
-  font-weight: var(--font-normal);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Focus Management for Accessibility */
-*:focus {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 2px;
-}
-
-*:focus:not(:focus-visible) {
-  outline: none;
-}
-
-/* Button Reset */
-button {
-  font-family: inherit;
-  font-size: inherit;
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: inherit;
-}
-
-/* Link Reset */
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-/* Image Reset */
-img, picture, video, canvas, svg {
-  display: block;
-  max-width: 100%;
-}
-
-/* Form Elements */
-input, textarea, select, button {
-  font: inherit;
-  color: inherit;
-}
-
-/* Typography Utilities */
-.heading-1 { 
-  font-size: var(--text-5xl); 
-  font-weight: var(--font-bold); 
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
-}
-
-.heading-2 { 
-  font-size: var(--text-4xl); 
-  font-weight: var(--font-bold); 
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
-}
-
-.heading-3 { 
-  font-size: var(--text-3xl); 
-  font-weight: var(--font-semibold); 
-  line-height: var(--leading-snug);
-}
-
-.heading-4 { 
-  font-size: var(--text-2xl); 
-  font-weight: var(--font-semibold); 
-  line-height: var(--leading-snug);
-}
-
-.body-large { 
-  font-size: var(--text-lg); 
-  line-height: var(--leading-relaxed);
-  color: var(--text-primary);
-}
-
-.body-base { 
-  font-size: var(--text-base); 
-  line-height: var(--leading-normal);
-  color: var(--text-primary);
-}
-
-.body-small { 
-  font-size: var(--text-sm); 
-  line-height: var(--leading-normal);
-  color: var(--text-secondary);
-}
-
-/* Spacing Utilities */
-.container {
-  width: 100%;
-  max-width: 1280px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: var(--space-4);
-  padding-right: var(--space-4);
-}
-
-.section {
-  padding-top: var(--space-16);
-  padding-bottom: var(--space-16);
-}
-
-/* Animation Utilities */
-.transition-smooth {
-  transition-duration: var(--duration-300);
-  transition-timing-function: var(--ease-in-out);
-}
-
-.transition-fast {
-  transition-duration: var(--duration-150);
-  transition-timing-function: var(--ease-out);
-}
-
-/* Card Utilities */
-.card {
-  background-color: var(--surface);
-  border: var(--border) solid var(--border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-md);
-  padding: var(--space-6);
-}
-
-.card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
-  transition: all var(--duration-300) var(--ease-out);
-}
-
-/* Screen Reader Only */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
 }
 [/FILE]
 
-MANDATORY tailwind.config.js CONTENT:
+MANDATORY tailwind.config.js:
 [FILE:tailwind.config.js]
-/** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
@@ -1212,8 +1090,6 @@ export default {
           500: 'var(--accent-500)',
           600: 'var(--accent-600)',
           700: 'var(--accent-700)',
-          800: 'var(--accent-800)',
-          900: 'var(--accent-900)',
         },
         neutral: {
           50: 'var(--neutral-50)',
@@ -1227,131 +1103,6 @@ export default {
           800: 'var(--neutral-800)',
           900: 'var(--neutral-900)',
         },
-        surface: 'var(--surface)',
-        background: 'var(--background)',
-        border: 'var(--border)',
-      },
-      spacing: {
-        '0': 'var(--space-0)',
-        'px': 'var(--space-px)',
-        '0.5': 'var(--space-0-5)',
-        '1': 'var(--space-1)',
-        '1.5': 'var(--space-1-5)',
-        '2': 'var(--space-2)',
-        '2.5': 'var(--space-2-5)',
-        '3': 'var(--space-3)',
-        '3.5': 'var(--space-3-5)',
-        '4': 'var(--space-4)',
-        '5': 'var(--space-5)',
-        '6': 'var(--space-6)',
-        '7': 'var(--space-7)',
-        '8': 'var(--space-8)',
-        '9': 'var(--space-9)',
-        '10': 'var(--space-10)',
-        '11': 'var(--space-11)',
-        '12': 'var(--space-12)',
-        '14': 'var(--space-14)',
-        '16': 'var(--space-16)',
-        '20': 'var(--space-20)',
-        '24': 'var(--space-24)',
-        '32': 'var(--space-32)',
-      },
-      fontFamily: {
-        sans: 'var(--font-sans)',
-        serif: 'var(--font-serif)',
-        mono: 'var(--font-mono)',
-      },
-      fontSize: {
-        xs: 'var(--text-xs)',
-        sm: 'var(--text-sm)',
-        base: 'var(--text-base)',
-        lg: 'var(--text-lg)',
-        xl: 'var(--text-xl)',
-        '2xl': 'var(--text-2xl)',
-        '3xl': 'var(--text-3xl)',
-        '4xl': 'var(--text-4xl)',
-        '5xl': 'var(--text-5xl)',
-        '6xl': 'var(--text-6xl)',
-      },
-      fontWeight: {
-        thin: 'var(--font-thin)',
-        light: 'var(--font-light)',
-        normal: 'var(--font-normal)',
-        medium: 'var(--font-medium)',
-        semibold: 'var(--font-semibold)',
-        bold: 'var(--font-bold)',
-        extrabold: 'var(--font-extrabold)',
-        black: 'var(--font-black)',
-      },
-      lineHeight: {
-        none: 'var(--leading-none)',
-        tight: 'var(--leading-tight)',
-        snug: 'var(--leading-snug)',
-        normal: 'var(--leading-normal)',
-        relaxed: 'var(--leading-relaxed)',
-        loose: 'var(--leading-loose)',
-      },
-      letterSpacing: {
-        tighter: 'var(--tracking-tighter)',
-        tight: 'var(--tracking-tight)',
-        normal: 'var(--tracking-normal)',
-        wide: 'var(--tracking-wide)',
-        wider: 'var(--tracking-wider)',
-        widest: 'var(--tracking-widest)',
-      },
-      boxShadow: {
-        xs: 'var(--shadow-xs)',
-        sm: 'var(--shadow-sm)',
-        md: 'var(--shadow-md)',
-        lg: 'var(--shadow-lg)',
-        xl: 'var(--shadow-xl)',
-        '2xl': 'var(--shadow-2xl)',
-        inner: 'var(--shadow-inner)',
-      },
-      borderRadius: {
-        none: 'var(--radius-none)',
-        sm: 'var(--radius-sm)',
-        md: 'var(--radius-md)',
-        lg: 'var(--radius-lg)',
-        xl: 'var(--radius-xl)',
-        '2xl': 'var(--radius-2xl)',
-        '3xl': 'var(--radius-3xl)',
-        full: 'var(--radius-full)',
-      },
-      borderWidth: {
-        0: 'var(--border-0)',
-        DEFAULT: 'var(--border)',
-        2: 'var(--border-2)',
-        4: 'var(--border-4)',
-        8: 'var(--border-8)',
-      },
-      transitionDuration: {
-        75: 'var(--duration-75)',
-        100: 'var(--duration-100)',
-        150: 'var(--duration-150)',
-        200: 'var(--duration-200)',
-        300: 'var(--duration-300)',
-        500: 'var(--duration-500)',
-        700: 'var(--duration-700)',
-        1000: 'var(--duration-1000)',
-      },
-      transitionTimingFunction: {
-        linear: 'var(--ease-linear)',
-        in: 'var(--ease-in)',
-        out: 'var(--ease-out)',
-        'in-out': 'var(--ease-in-out)',
-      },
-      zIndex: {
-        0: 'var(--z-0)',
-        10: 'var(--z-10)',
-        20: 'var(--z-20)',
-        30: 'var(--z-30)',
-        40: 'var(--z-40)',
-        50: 'var(--z-50)',
-        modal: 'var(--z-modal)',
-        overlay: 'var(--z-overlay)',
-        dropdown: 'var(--z-dropdown)',
-        tooltip: 'var(--z-tooltip)',
       },
     },
   },
@@ -1359,191 +1110,50 @@ export default {
 }
 [/FILE]
 
-TAILWIND + DESIGN TOKENS BENEFITS:
-✅ Use Tailwind utilities: bg-primary-500, text-neutral-900, p-4, rounded-lg
-✅ Use direct tokens: bg-[var(--primary-500)], text-[var(--text-primary)]
-✅ All values stay synced through design-tokens.css
-✅ Easy theme updates by changing CSS variables only
-✅ Consistent spacing, colors, typography across entire app
-
-MANDATORY src/lib/utils.ts CONTENT:
+MANDATORY src/lib/utils.ts:
 [FILE:src/lib/utils.ts]
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-// Utility for merging Tailwind classes with proper precedence
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-
-// Design token utilities - provides easy access to design system tokens
-export const tokens = {
-  colors: {
-    primary: 'var(--primary-500)',
-    primaryHover: 'var(--primary-600)',
-    primaryLight: 'var(--primary-100)',
-    accent: 'var(--accent-500)',
-    accentHover: 'var(--accent-600)',
-    background: 'var(--background)',
-    surface: 'var(--surface)',
-    surfaceSecondary: 'var(--surface-secondary)',
-    textPrimary: 'var(--text-primary)',
-    textSecondary: 'var(--text-secondary)',
-    textTertiary: 'var(--text-tertiary)',
-    textInverse: 'var(--text-inverse)',
-    border: 'var(--border)',
-    borderFocus: 'var(--border-focus)',
-    success: 'var(--success)',
-    warning: 'var(--warning)',
-    error: 'var(--error)',
-    info: 'var(--info)',
-  },
-  spacing: {
-    xs: 'var(--space-2)',
-    sm: 'var(--space-4)',
-    md: 'var(--space-6)',
-    lg: 'var(--space-8)',
-    xl: 'var(--space-12)',
-    '2xl': 'var(--space-16)',
-  },
-  typography: {
-    headingXl: 'var(--text-5xl)',
-    headingLg: 'var(--text-4xl)',
-    headingMd: 'var(--text-3xl)',
-    headingSm: 'var(--text-2xl)',
-    bodyLg: 'var(--text-lg)',
-    body: 'var(--text-base)',
-    bodySm: 'var(--text-sm)',
-    bodyXs: 'var(--text-xs)',
-    fontBold: 'var(--font-bold)',
-    fontSemibold: 'var(--font-semibold)',
-    fontMedium: 'var(--font-medium)',
-    fontNormal: 'var(--font-normal)',
-  },
-  shadows: {
-    xs: 'var(--shadow-xs)',
-    sm: 'var(--shadow-sm)',
-    md: 'var(--shadow-md)',
-    lg: 'var(--shadow-lg)',
-    xl: 'var(--shadow-xl)',
-    card: 'var(--shadow-lg)',
-    button: 'var(--shadow-md)',
-    overlay: 'var(--shadow-xl)',
-  },
-  radius: {
-    sm: 'var(--radius-sm)',
-    md: 'var(--radius-md)',
-    lg: 'var(--radius-lg)',
-    xl: 'var(--radius-xl)',
-    '2xl': 'var(--radius-2xl)',
-    button: 'var(--radius-lg)',
-    card: 'var(--radius-xl)',
-    input: 'var(--radius-md)',
-  },
-  duration: {
-    fast: 'var(--duration-150)',
-    normal: 'var(--duration-300)',
-    slow: 'var(--duration-500)',
-  },
-};
-
-// Component variant utilities - reusable component styles
-export const buttonVariants = {
-  primary: 'bg-[var(--primary-500)] text-[var(--text-inverse)] hover:bg-[var(--primary-600)] shadow-[var(--shadow-md)] hover:shadow-[var(--shadow-lg)]',
-  secondary: 'bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] hover:bg-[var(--surface-secondary)]',
-  accent: 'bg-[var(--accent-500)] text-[var(--text-inverse)] hover:bg-[var(--accent-600)] shadow-[var(--shadow-md)]',
-  outline: 'border-2 border-[var(--primary-500)] text-[var(--primary-500)] hover:bg-[var(--primary-50)]',
-  ghost: 'text-[var(--text-primary)] hover:bg-[var(--surface-secondary)]',
-  danger: 'bg-[var(--error)] text-[var(--text-inverse)] hover:opacity-90',
-};
-
-export const buttonSizes = {
-  sm: 'px-[var(--space-3)] py-[var(--space-1-5)] text-[var(--text-sm)]',
-  md: 'px-[var(--space-4)] py-[var(--space-2)] text-[var(--text-base)]',
-  lg: 'px-[var(--space-6)] py-[var(--space-3)] text-[var(--text-lg)]',
-};
-
-export const cardVariants = {
-  default: 'bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-xl)] shadow-[var(--shadow-lg)] p-[var(--space-6)]',
-  elevated: 'bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-xl)] shadow-[var(--shadow-xl)] p-[var(--space-6)]',
-  flat: 'bg-[var(--surface-secondary)] rounded-[var(--radius-lg)] p-[var(--space-6)]',
-  outline: 'border-2 border-[var(--border)] rounded-[var(--radius-xl)] p-[var(--space-6)]',
-};
-
-export const inputVariants = {
-  default: 'border border-[var(--border)] rounded-[var(--radius-md)] px-[var(--space-3)] py-[var(--space-2)] focus:border-[var(--border-focus)] focus:ring-2 focus:ring-[var(--border-focus)] focus:ring-opacity-50',
-  error: 'border-2 border-[var(--error)] rounded-[var(--radius-md)] px-[var(--space-3)] py-[var(--space-2)] focus:ring-2 focus:ring-[var(--error)] focus:ring-opacity-50',
-};
-
-// Animation utilities
-export const animations = {
-  fadeIn: 'animate-[fadeIn_0.3s_ease-in-out]',
-  slideUp: 'animate-[slideUp_0.3s_ease-out]',
-  scaleIn: 'animate-[scaleIn_0.2s_ease-out]',
-};
-
-// Layout utilities
-export const layouts = {
-  container: 'max-w-7xl mx-auto px-[var(--space-4)] sm:px-[var(--space-6)] lg:px-[var(--space-8)]',
-  section: 'py-[var(--space-16)] sm:py-[var(--space-20)]',
-  grid: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[var(--space-6)]',
-};
-
-// Typography utilities
-export const typography = {
-  h1: 'text-[var(--text-5xl)] font-[var(--font-bold)] leading-tight tracking-tight text-[var(--text-primary)]',
-  h2: 'text-[var(--text-4xl)] font-[var(--font-bold)] leading-tight tracking-tight text-[var(--text-primary)]',
-  h3: 'text-[var(--text-3xl)] font-[var(--font-semibold)] leading-snug text-[var(--text-primary)]',
-  h4: 'text-[var(--text-2xl)] font-[var(--font-semibold)] leading-snug text-[var(--text-primary)]',
-  bodyLarge: 'text-[var(--text-lg)] leading-relaxed text-[var(--text-primary)]',
-  body: 'text-[var(--text-base)] leading-normal text-[var(--text-primary)]',
-  bodySmall: 'text-[var(--text-sm)] leading-normal text-[var(--text-secondary)]',
-  caption: 'text-[var(--text-xs)] leading-normal text-[var(--text-tertiary)]',
-};
 [/FILE]
 
-DESIGN SYSTEM UTILITIES USAGE:
-✅ Use cn() to merge classes: className={cn('base-class', condition && 'conditional-class', className)}
-✅ Use tokens object for inline styles: style={{color: tokens.colors.primary}}
-✅ Use variant utilities: className={buttonVariants.primary + ' ' + buttonSizes.lg}
-✅ Use typography utilities: className={typography.h1}
-✅ Use layout utilities: className={layouts.container}
+EXAMPLE COMPONENTS WITH PROPER ARCHITECTURE:
 
-COMPONENT TOKEN USAGE EXAMPLES (MANDATORY):
-
-Example 1: Button Component with Design Tokens
 [FILE:src/components/ui/Button.tsx]
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
-  size?: 'small' | 'medium' | 'large';
-  children: React.ReactNode;
-}
+import { cn } from '@/lib/utils';
+import type { ButtonProps } from '@/types';
 
 export default function Button({ 
   variant = 'primary', 
-  size = 'medium', 
-  children, 
-  className = '',
+  size = 'md', 
+  children,
+  className,
   ...props 
 }: ButtonProps) {
-  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-[var(--radius-lg)] transition-all duration-[var(--duration-200)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
-  
   const variants = {
-    primary: 'bg-[var(--primary-500)] text-[var(--text-inverse)] hover:bg-[var(--primary-600)] shadow-[var(--shadow-md)] hover:shadow-[var(--shadow-lg)]',
-    secondary: 'bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] hover:bg-[var(--surface-secondary)]',
-    outline: 'border-2 border-[var(--primary-500)] text-[var(--primary-500)] hover:bg-[var(--primary-50)]',
-    ghost: 'text-[var(--text-primary)] hover:bg-[var(--surface-secondary)]'
+    primary: 'bg-[var(--primary-500)] text-white hover:bg-[var(--primary-600)]',
+    secondary: 'bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)]',
+    outline: 'border-2 border-[var(--primary-500)] text-[var(--primary-500)]',
+    ghost: 'text-[var(--text-primary)] hover:bg-[var(--surface)]'
   };
   
   const sizes = {
-    small: 'px-[var(--space-3)] py-[var(--space-1-5)] text-[var(--text-sm)]',
-    medium: 'px-[var(--space-4)] py-[var(--space-2)] text-[var(--text-base)]',
-    large: 'px-[var(--space-6)] py-[var(--space-3)] text-[var(--text-lg)]'
+    sm: 'px-[var(--space-3)] py-[var(--space-1)] text-[var(--text-sm)]',
+    md: 'px-[var(--space-4)] py-[var(--space-2)] text-[var(--text-base)]',
+    lg: 'px-[var(--space-6)] py-[var(--space-3)] text-[var(--text-lg)]'
   };
   
   return (
     <button
-      className={baseStyles + ' ' + variants[variant] + ' ' + sizes[size] + ' ' + className}
+      className={cn(
+        'inline-flex items-center justify-center font-medium rounded-[var(--radius-lg)] transition-all',
+        variants[variant],
+        sizes[size],
+        className
+      )}
       {...props}
     >
       {children}
@@ -1552,34 +1162,6 @@ export default function Button({
 }
 [/FILE]
 
-Example 2: Card Component with Design Tokens
-[FILE:src/components/ui/Card.tsx]
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  children: React.ReactNode;
-  hover?: boolean;
-}
-
-export default function Card({ 
-  children, 
-  hover = true,
-  className = '', 
-  ...props 
-}: CardProps) {
-  const baseStyles = 'bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-xl)] shadow-[var(--shadow-md)] p-[var(--space-6)]';
-  const hoverStyles = hover ? 'hover:shadow-[var(--shadow-lg)] hover:-translate-y-1 transition-all duration-[var(--duration-300)]' : '';
-  
-  return (
-    <div
-      className={baseStyles + ' ' + hoverStyles + ' ' + className}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-}
-[/FILE]
-
-Example 3: Section Component with Design Tokens
 [FILE:src/components/sections/Hero.tsx]
 import Button from '@/components/ui/Button';
 import { ArrowRight } from 'lucide-react';
@@ -1587,48 +1169,30 @@ import { ArrowRight } from 'lucide-react';
 export default function Hero() {
   return (
     <section 
-      className="min-h-screen flex items-center justify-center relative overflow-hidden"
+      className="min-h-screen flex items-center justify-center"
       style={{
-        background: 'linear-gradient(135deg, var(--primary-600), var(--primary-800), var(--accent-600))'
+        background: 'linear-gradient(135deg, var(--primary-600), var(--accent-600))'
       }}
     >
-      <div 
-        className="absolute top-20 left-10 w-72 h-72 rounded-full blur-3xl"
-        style={{
-          background: 'var(--primary-300)',
-          opacity: 0.2
-        }}
-      />
-      
-      <div className="container mx-auto px-[var(--space-4)] text-center relative z-10">
+      <div className="container mx-auto px-[var(--space-4)] text-center">
         <h1 
-          className="font-bold mb-[var(--space-6)] leading-tight"
-          style={{
-            fontSize: 'clamp(var(--text-3xl), 5vw, var(--text-6xl))',
-            color: 'var(--text-inverse)'
-          }}
+          className="font-bold mb-[var(--space-6)] text-white"
+          style={{ fontSize: 'var(--text-5xl)' }}
         >
-          Build Amazing Web Experiences
+          Build Amazing Products
         </h1>
-        
         <p 
-          className="mb-[var(--space-12)] max-w-3xl mx-auto"
-          style={{
-            fontSize: 'var(--text-xl)',
-            color: 'var(--text-inverse)',
-            opacity: 0.9,
-            lineHeight: 'var(--leading-relaxed)'
-          }}
+          className="mb-[var(--space-8)] text-white/90"
+          style={{ fontSize: 'var(--text-xl)' }}
         >
-          Create stunning, modern websites with our powerful platform.
+          Create stunning applications with our modern platform
         </p>
-        
-        <div className="flex flex-col sm:flex-row gap-[var(--space-4)] justify-center">
-          <Button variant="primary" size="large">
+        <div className="flex gap-[var(--space-4)] justify-center">
+          <Button variant="primary" size="lg">
             Get Started
             <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
-          <Button variant="outline" size="large">
+          <Button variant="outline" size="lg">
             Learn More
           </Button>
         </div>
@@ -1638,236 +1202,30 @@ export default function Hero() {
 }
 [/FILE]
 
-CRITICAL RULES FOR COMPONENT GENERATION (MANDATORY):
-❌ NEVER use hardcoded colors like #ffffff, rgb(255,255,255), or blue-500
-❌ NEVER use hardcoded spacing like margin: 20px or padding: 16px or p-4
-❌ NEVER use hardcoded font sizes like text-2xl or font-size: 24px
-❌ NEVER use hardcoded shadows like shadow-lg or box-shadow: 0 10px 15px
-❌ NEVER use hardcoded border radius like rounded-xl or border-radius: 12px
-
-✅ ALWAYS use design tokens with bg-[var(--primary-500)] syntax
-✅ ALWAYS use design tokens with style={{backgroundColor: 'var(--primary-500)'}} for inline styles
-✅ ALWAYS use semantic token names (--text-primary not --neutral-900)
-✅ ALWAYS include hover and focus states using token variants (--primary-600 for hover)
-✅ ALWAYS use spacing scale tokens (--space-4, --space-6, etc)
-✅ ALWAYS use typography tokens (--text-xl, --font-semibold, --leading-tight)
-✅ ALWAYS use shadow tokens (--shadow-md, --shadow-lg)
-✅ ALWAYS use radius tokens (--radius-lg, --radius-xl)
-✅ ALWAYS use animation tokens (--duration-300, --ease-in-out)
-
-TOKEN REFERENCE PATTERNS:
-- Tailwind classes: bg-[var(--primary-500)] text-[var(--text-primary)]
-- Inline styles: style={{color: 'var(--text-primary)', padding: 'var(--space-4)'}}
-- Pseudo-classes: hover:bg-[var(--primary-600)] focus:ring-[var(--border-focus)]
-
-COMPONENT ARCHITECTURE REQUIREMENTS:
-- Each component must be under 120 lines (split into smaller components if needed)
-- Use TypeScript interfaces for all props
-- Implement proper prop validation
-- Use React hooks appropriately (useState, useEffect, useMemo, useCallback)
-- Add proper component composition
-- Export components as default
-
-MODERN UI PATTERNS TO IMPLEMENT:
-1. Hero Section:
-   - Full viewport height or near-full (min-h-screen or min-h-[80vh])
-   - Gradient background (bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700)
-   - Large heading with gradient text
-   - Descriptive subtitle
-   - CTA buttons with variants (primary solid + secondary outline)
-   - Optional: Background effects (blurred circles, patterns)
-
-2. Features Grid:
-   - 3-column grid on desktop (grid-cols-1 md:grid-cols-3)
-   - Card components with hover effects
-   - Icons from lucide-react
-   - Title + description for each feature
-   - Proper spacing (gap-8, p-6)
-
-3. Navigation:
-   - Sticky header (sticky top-0 z-50)
-   - Glassmorphism effect (backdrop-blur-lg bg-white/80)
-   - Mobile hamburger menu
-   - Logo + nav links + CTA button
-   - Smooth scroll behavior
-
-4. Cards:
-   - Rounded corners (rounded-xl or rounded-2xl)
-   - Subtle shadows (shadow-lg)
-   - Hover effects (hover:shadow-2xl hover:-translate-y-1)
-   - Proper padding (p-6 or p-8)
-   - White or surface background
-
-5. Buttons:
-   - Multiple variants (primary, secondary, outline, ghost)
-   - Proper sizing (px-6 py-3 for default)
-   - Hover states (hover:opacity-90 or hover:bg-primary-hover)
-   - Rounded (rounded-lg)
-   - Font weight (font-semibold)
-
-🚨 MANDATORY FILES CHECKLIST - VERIFY BEFORE COMPLETING:
-✓ src/styles/design-tokens.css MUST exist with complete color palette
-✓ src/styles/globals.css MUST exist with @import './design-tokens.css'
-✓ tailwind.config.js MUST exist with token mappings
-✓ src/lib/utils.ts MUST exist with cn() function and token utilities
-✓ ALL components MUST use var(--token-name) or bg-[var(--token-name)] syntax
-✓ ZERO hardcoded Tailwind colors (no purple-600, blue-500, text-white, etc.)
-✓ ZERO hardcoded spacing (no p-4, m-8 - use p-[var(--space-4)] instead)
-
-EXAMPLE MODERN COMPONENT WITH PROPER DESIGN TOKENS:
-[FILE:src/components/sections/Hero.tsx]
-import Button from '@/components/ui/Button';
-import { ArrowRight, Sparkles } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
-export default function Hero() {
-  return (
-    <section 
-      className="min-h-screen flex items-center justify-center relative overflow-hidden"
-      style={{
-        background: 'linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 50%, var(--accent-600) 100%)'
-      }}
-    >
-      {/* Background decorative elements using design tokens */}
-      <div 
-        className="absolute blur-3xl rounded-full"
-        style={{
-          top: 'var(--space-20)',
-          left: 'var(--space-10)',
-          width: '18rem',
-          height: '18rem',
-          backgroundColor: 'var(--primary-300)',
-          opacity: 0.2
-        }}
-      />
-      <div 
-        className="absolute blur-3xl rounded-full"
-        style={{
-          bottom: 'var(--space-20)',
-          right: 'var(--space-10)',
-          width: '24rem',
-          height: '24rem',
-          backgroundColor: 'var(--accent-400)',
-          opacity: 0.15
-        }}
-      />
-      
-      <div 
-        className="container mx-auto text-center relative z-10"
-        style={{
-          paddingLeft: 'var(--space-4)',
-          paddingRight: 'var(--space-4)'
-        }}
-      >
-        <div 
-          className="inline-flex items-center backdrop-blur-sm rounded-full border"
-          style={{
-            gap: 'var(--space-2)',
-            backgroundColor: 'rgba(255, 255, 255, 0.15)',
-            paddingLeft: 'var(--space-4)',
-            paddingRight: 'var(--space-4)',
-            paddingTop: 'var(--space-2)',
-            paddingBottom: 'var(--space-2)',
-            marginBottom: 'var(--space-8)',
-            borderColor: 'rgba(255, 255, 255, 0.25)'
-          }}
-        >
-          <Sparkles className="w-4 h-4" style={{ color: 'var(--text-inverse)' }} />
-          <span 
-            style={{
-              fontSize: 'var(--text-sm)',
-              fontWeight: 'var(--font-medium)',
-              color: 'var(--text-inverse)'
-            }}
-          >
-            New Feature Available
-          </span>
-        </div>
-        
-        <h1 
-          className="font-bold leading-tight"
-          style={{
-            fontSize: 'clamp(var(--text-3xl), 5vw, var(--text-6xl))',
-            marginBottom: 'var(--space-6)',
-            color: 'var(--text-inverse)'
-          }}
-        >
-          Build Amazing
-          <span 
-            className="block bg-clip-text"
-            style={{
-              backgroundImage: 'linear-gradient(to right, var(--accent-300), var(--primary-300))',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}
-          >
-            Web Experiences
-          </span>
-        </h1>
-        
-        <p 
-          className="max-w-3xl mx-auto"
-          style={{
-            fontSize: 'clamp(var(--text-lg), 2vw, var(--text-2xl))',
-            color: 'var(--text-inverse)',
-            opacity: 0.9,
-            marginBottom: 'var(--space-12)',
-            lineHeight: 'var(--leading-relaxed)'
-          }}
-        >
-          Create stunning, modern websites with our powerful platform. 
-          No coding required, just your creativity.
-        </p>
-        
-        <div 
-          className="flex flex-col sm:flex-row justify-center"
-          style={{ gap: 'var(--space-4)' }}
-        >
-          <Button variant="primary" size="large">
-            Get Started
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Button>
-          <Button variant="outline" size="large">
-            Learn More
-          </Button>
-        </div>
-      </div>
-    </section>
-  );
-}
-[/FILE]
+VALIDATION REQUIREMENTS:
+✅ Verify ALL files follow the exact structure above
+✅ Check that App.tsx is under 50 lines
+✅ Ensure layout components are under 150 lines
+✅ Ensure section components are under 200 lines
+✅ Ensure UI components are under 100 lines
+✅ Verify design tokens are used everywhere
+✅ Confirm NO hardcoded colors or spacing
+✅ Check TypeScript interfaces are defined
+✅ Verify proper semantic HTML
 
 ACCESSIBILITY REQUIREMENTS:
-- Proper heading hierarchy (single h1, then h2, h3, etc.)
-- Alt text for all images
-- ARIA labels for interactive elements without text
-- Focus management (focus-visible:ring-2 focus-visible:ring-primary)
-- Keyboard navigation support
-- Color contrast ratios meeting WCAG AA (4.5:1 for text)
-- Screen reader friendly markup
+- Proper heading hierarchy
+- Alt text for images
+- ARIA labels where needed
+- Keyboard navigation
+- Focus states
+- Color contrast ≥4.5:1
 
-RESPONSIVENESS REQUIREMENTS:
-- Mobile-first approach (design for 320px up)
-- Use Tailwind breakpoints: sm:, md:, lg:, xl:, 2xl:
-- Stack layouts on mobile (flex-col), grid on desktop (md:flex-row, md:grid-cols-3)
-- No horizontal scroll at any viewport size
-- Touch-friendly targets (min 44px for buttons/links)
-- Responsive typography (text-3xl md:text-5xl lg:text-7xl)
-
-TYPESCRIPT REQUIREMENTS:
-- Define interfaces for all component props
-- Use proper type annotations
-- Avoid 'any' type
-- Export types when reusable
-
-MANDATORY PATTERNS:
-- Use existing shadcn/ui components (Button, Card, Badge, Input)
-- Import icons from lucide-react
-- Use Tailwind utilities only (no inline styles, no custom CSS in components)
-- Follow mobile-first responsive design
-- Implement proper semantic HTML
-- Add meaningful content (no Lorem Ipsum placeholder text)`;
+RESPONSIVENESS:
+- Mobile-first design
+- Tailwind breakpoints (sm:, md:, lg:)
+- No horizontal scroll
+- Touch-friendly targets (44px min)`;
         break;
       case 'vue':
         systemPrompt = `${baseFormat}
