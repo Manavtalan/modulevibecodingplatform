@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CodeFile } from "@/pages/ModuleStudio";
 import { FilePlan } from "@/components/GenerationProgress";
 
-// Force reload timestamp: 2025-11-07 20:41:00 - COMPLETE REWRITE
+// Force reload timestamp: 2025-11-07 21:30:00 - SUPER DEBUG VERSION
 
 interface GenerateCodeParams {
   prompt: string;
@@ -27,8 +27,9 @@ interface TokenValidation {
 export const useCodeGeneration = () => {
   // VERSION CHECK - Should see this in console
   useEffect(() => {
-    console.log('🔧 CODE GENERATION HOOK v3.0 LOADED - COMPLETE ACCUMULATION FIX');
-    console.log('📅 Build timestamp: 2025-11-07 20:41:00');
+    console.log('%c🚨 CODE GENERATION HOOK v4.0 LOADED 🚨', 'background: #ff0000; color: #ffffff; font-size: 20px; padding: 10px;');
+    console.log('%c📅 Build timestamp: 2025-11-07 21:30:00', 'background: #0000ff; color: #ffffff; font-size: 16px; padding: 5px;');
+    console.log('%c✅ NEW ACCUMULATION LOGIC ACTIVE', 'background: #00ff00; color: #000000; font-size: 16px; padding: 5px;');
     return () => {
       console.log('🔧 Code generation hook unmounting');
     };
