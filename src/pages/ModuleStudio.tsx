@@ -89,13 +89,26 @@ const ModuleStudio = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Debug: Track generated files
+  // Debug: Track generated files with detailed logging
   useEffect(() => {
-    console.log('Generated files updated:', generatedFiles.length, 'files');
+    console.log('🔄 Generated files state updated:', {
+      count: generatedFiles.length,
+      phase: generationPhase,
+      isGenerating,
+      paths: generatedFiles.map(f => f.path),
+      sizes: generatedFiles.map(f => f.content.length)
+    });
+    
     if (generatedFiles.length > 0) {
-      console.log('File paths:', generatedFiles.map(f => f.path));
+      console.log('📊 File details:');
+      generatedFiles.forEach((file, idx) => {
+        console.log(`  ${idx + 1}. ${file.path} (${file.content.length} bytes)`);
+        console.log(`     Preview: ${file.content.substring(0, 100)}...`);
+      });
+    } else {
+      console.warn('⚠️ Generated files array is empty');
     }
-  }, [generatedFiles]);
+  }, [generatedFiles, generationPhase, isGenerating]);
 
   // Add status messages during generation
   useEffect(() => {
