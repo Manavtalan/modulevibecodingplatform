@@ -1,5 +1,7 @@
 // File: src/utils/codeQualityValidator.ts
 
+import { ComponentArchitectureValidator } from './componentArchitectureValidator';
+
 export interface CodeFile {
   path: string;
   content: string;
@@ -15,7 +17,7 @@ export interface ValidationResult {
 
 export interface ValidationIssue {
   type: 'error' | 'warning' | 'info';
-  category: 'structure' | 'design' | 'modern' | 'accessibility';
+  category: 'structure' | 'design' | 'modern' | 'accessibility' | 'architecture';
   message: string;
   file?: string;
   severity: 1 | 2 | 3; // 1=critical, 2=important, 3=minor
@@ -35,6 +37,31 @@ export class CodeQualityValidator {
     const designValidation = this.validateDesignQuality(files);
     const modernValidation = this.validateModernPatterns(files);
     const accessibilityValidation = this.validateAccessibility(files);
+
+    // NEW: React architecture validation
+    if (codeType === 'react') {
+      const componentFiles = files.map(f => ({
+        path: f.path,
+        content: f.content,
+        lineCount: f.content.split('\n').length
+      }));
+
+      const architectureValidation = ComponentArchitectureValidator.validateReactArchitecture(componentFiles);
+      
+      // Convert architecture issues to validation issues
+      const convertedIssues = architectureValidation.issues.map(issue => ({
+        type: issue.type,
+        category: 'architecture' as const,
+        message: issue.message,
+        file: issue.file,
+        severity: issue.severity
+      }));
+
+      issues.push(...convertedIssues);
+      
+      // Architecture score impacts overall score more heavily
+      score = Math.min(score, architectureValidation.score);
+    }
 
     // Combine all issues
     issues.push(...structureValidation.issues);
@@ -479,9 +506,22 @@ export class CodeQualityValidator {
     const errorIssues = issues.filter(i => i.severity === 1);
     const designIssues = issues.filter(i => i.category === 'design');
     const modernIssues = issues.filter(i => i.category === 'modern');
+    const architectureIssues = issues.filter(i => i.category === 'architecture');
 
     if (errorIssues.length > 0) {
       suggestions.push('CRITICAL: Fix structural issues before proceeding');
+    }
+
+    if (architectureIssues.length > 0) {
+      suggestions.push('Refactor component architecture: use proper folder structure (layout/, sections/, ui/)');
+      
+      if (architectureIssues.some(i => i.message.includes('exceeds'))) {
+        suggestions.push('Break down large components into smaller, focused components');
+      }
+      
+      if (architectureIssues.some(i => i.message.includes('TypeScript'))) {
+        suggestions.push('Add proper TypeScript interfaces for all component props');
+      }
     }
 
     if (designIssues.length > 0) {
