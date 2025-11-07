@@ -22,7 +22,6 @@ interface PreviewPanelProps {
   currentFile: string | null;
   filePlan: FilePlan[];
   diagnosticInfo?: DiagnosticInfo | null;
-  rawOutputAvailable?: boolean;
   onRegenerate?: () => void;
 }
 
@@ -37,7 +36,6 @@ export const PreviewPanel = ({
   currentFile,
   filePlan,
   diagnosticInfo,
-  rawOutputAvailable,
   onRegenerate
 }: PreviewPanelProps) => {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
@@ -112,7 +110,7 @@ export const PreviewPanel = ({
                 )}
                 
                 <div className="flex gap-2 pt-2">
-                  {rawOutputAvailable && (
+                  {diagnosticInfo && (
                     <Dialog open={showDiagnostics} onOpenChange={setShowDiagnostics}>
                       <DialogTrigger asChild>
                         <Button variant="outline" size="sm">

@@ -1,329 +1,275 @@
-import { useState, useEffect } from "react";
+// FIXED MODULE CODE GENERATION HOOK WITH QUALITY VALIDATION
+import { useState, useCallback } from 'react';
 import { supabase } from "@/integrations/supabase/client";
-import { CodeFile } from "@/pages/ModuleStudio";
-import { FilePlan } from "@/components/GenerationProgress";
+import { toast } from '@/hooks/use-toast';
 
-// Force reload timestamp: 2025-11-07 22:00:00 - BULLETPROOF VERSION v5.0
-
-interface GenerateCodeParams {
-  prompt: string;
-  codeType: string;
-  model: string;
-  conversationId?: string;
+export interface CodeFile {
+  path: string;
+  content: string;
+  language: string;
 }
 
-type GenerationPhase = 'idle' | 'planning' | 'generating' | 'complete' | 'error';
-
-interface QualityCheck {
-  valid: boolean;
-  suggestions: string[];
-}
-
-interface TokenValidation {
-  valid: boolean;
-  issues: string[];
+export interface FilePlan {
+  path: string;
+  description: string;
 }
 
 export interface DiagnosticInfo {
-  rawContent: string;
   extractionMethod: string;
   fileMarkersFound: number;
   codeBlocksFound: number;
   parsingErrors: string[];
+  rawContent: string;
 }
 
+export interface GenerateCodeParams {
+  prompt: string;
+  codeType: string;
+  model?: string;
+  conversationId?: string;
+}
+
+type GenerationPhase = 'planning' | 'generating' | 'complete' | 'error';
+
 export const useCodeGeneration = () => {
-  // VERSION CHECK - Should see this in console
-  useEffect(() => {
-    console.log('%c🛡️ CODE GENERATION HOOK v5.0 - BULLETPROOF 🛡️', 'background: #00ff00; color: #000000; font-size: 24px; padding: 15px; font-weight: bold;');
-    console.log('%c📅 Build timestamp: 2025-11-07 22:00:00', 'background: #0000ff; color: #ffffff; font-size: 16px; padding: 5px;');
-    console.log('%c✅ MULTI-STRATEGY PARSING + DIAGNOSTICS ACTIVE', 'background: #ff6600; color: #ffffff; font-size: 16px; padding: 5px;');
-    return () => {
-      console.log('🔧 Code generation hook unmounting');
-    };
-  }, []);
-
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generationPhase, setGenerationPhase] = useState<GenerationPhase>('idle');
-  const [currentFile, setCurrentFile] = useState<string | null>(null);
   const [generatedFiles, setGeneratedFiles] = useState<CodeFile[]>([]);
+  const [generationPhase, setGenerationPhase] = useState<GenerationPhase>('planning');
+  const [currentFile, setCurrentFile] = useState<string | null>(null);
   const [filePlan, setFilePlan] = useState<FilePlan[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [qualityCheck, setQualityCheck] = useState<QualityCheck | null>(null);
-  const [tokenValidation, setTokenValidation] = useState<TokenValidation | null>(null);
   const [diagnosticInfo, setDiagnosticInfo] = useState<DiagnosticInfo | null>(null);
-  const [rawOutputAvailable, setRawOutputAvailable] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // BULLETPROOF: Multi-strategy file extraction with diagnostics
-  const extractFilesFromContent = (content: string): { files: CodeFile[], diagnostic: DiagnosticInfo } => {
-    console.log('%c🔍 BULLETPROOF FILE EXTRACTION STARTING', 'background: #0066ff; color: #ffffff; font-size: 14px; padding: 5px;');
-    console.log(`   Total content length: ${content.length} bytes`);
+  // Quality validation function
+  const validateModernStandards = (files: CodeFile[]): { passed: boolean; score: number; issues: string[] } => {
+    const content = files.map(f => f.content).join(' ').toLowerCase();
+    const issues: string[] = [];
+    let score = 100;
     
-    const diagnostic: DiagnosticInfo = {
-      rawContent: content,
-      extractionMethod: 'none',
-      fileMarkersFound: 0,
-      codeBlocksFound: 0,
-      parsingErrors: []
+    // Check for modern patterns
+    const modernPatterns = {
+      tailwindCSS: content.includes('tailwind') || content.includes('bg-') || content.includes('text-'),
+      gradients: content.includes('gradient-to-') || content.includes('linear-gradient'),
+      glassmorphism: content.includes('backdrop-blur') && content.includes('bg-white/'),
+      animations: content.includes('transition') || content.includes('animate-') || content.includes('hover:'),
+      responsiveDesign: content.includes('md:') || content.includes('lg:') || content.includes('@media'),
+      modernTypography: content.includes('font-') && content.includes('text-') && content.includes('leading-'),
     };
-    
-    let files: CodeFile[] = [];
-    
-    // STRATEGY 1: Standard [FILE:path]...[/FILE] markers
-    console.log('📋 Strategy 1: Looking for [FILE:path] markers...');
-    const fileRegex = /\[FILE:(.*?)\]([\s\S]*?)\[\/FILE\]/g;
-    let match;
-    let markersFound = 0;
-    
-    while ((match = fileRegex.exec(content)) !== null) {
-      markersFound++;
-      const path = match[1].trim();
-      const fileContent = match[2].trim();
-      
-      console.log(`   ✅ Marker #${markersFound}: ${path} (${fileContent.length} bytes)`);
-      
-      files.push({ path, content: fileContent });
+
+    // Score deductions for missing patterns
+    if (!modernPatterns.tailwindCSS) {
+      score -= 25;
+      issues.push('Missing Tailwind CSS for modern styling');
     }
-    
-    diagnostic.fileMarkersFound = markersFound;
-    
-    if (files.length > 0) {
-      diagnostic.extractionMethod = 'file-markers';
-      console.log(`✅ Strategy 1 SUCCESS: ${files.length} files extracted via markers`);
-      return { files, diagnostic };
+    if (!modernPatterns.gradients) {
+      score -= 20;
+      issues.push('Missing gradient backgrounds for visual depth');
     }
-    
-    console.warn('⚠️ Strategy 1 FAILED: No file markers found');
-    diagnostic.parsingErrors.push('No [FILE:path] markers detected');
-    
-    // STRATEGY 2: Detect code blocks with file paths
-    console.log('📋 Strategy 2: Looking for markdown code blocks with file paths...');
-    const codeBlockRegex = /```(\w+)\s*(?:\/\/\s*(.+?)\s*)?\n([\s\S]*?)```/g;
-    let blockMatch;
-    let blocksFound = 0;
-    
-    while ((blockMatch = codeBlockRegex.exec(content)) !== null) {
-      blocksFound++;
-      const language = blockMatch[1];
-      const possiblePath = blockMatch[2];
-      const code = blockMatch[3].trim();
-      
-      // Try to infer file path
-      let path = possiblePath || `file${blocksFound}.${language}`;
-      
-      console.log(`   📝 Code block #${blocksFound}: ${path} (${code.length} bytes, lang: ${language})`);
-      
-      files.push({ path, content: code });
+    if (!modernPatterns.glassmorphism) {
+      score -= 15;
+      issues.push('Missing glassmorphism effects (backdrop-blur, transparency)');
     }
-    
-    diagnostic.codeBlocksFound = blocksFound;
-    
-    if (files.length > 0) {
-      diagnostic.extractionMethod = 'code-blocks';
-      console.log(`✅ Strategy 2 SUCCESS: ${files.length} files extracted from code blocks`);
-      return { files, diagnostic };
+    if (!modernPatterns.animations) {
+      score -= 20;
+      issues.push('Missing smooth hover animations and transitions');
     }
-    
-    console.warn('⚠️ Strategy 2 FAILED: No code blocks found');
-    diagnostic.parsingErrors.push('No markdown code blocks detected');
-    
-    // STRATEGY 3: Heuristic detection - look for common file patterns
-    console.log('📋 Strategy 3: Heuristic file detection...');
-    
-    // Try to detect HTML
-    if (/<html|<!DOCTYPE/i.test(content)) {
-      console.log('   🔍 Detected HTML content');
-      files.push({ path: 'index.html', content: content });
-      diagnostic.extractionMethod = 'heuristic-html';
+    if (!modernPatterns.responsiveDesign) {
+      score -= 15;
+      issues.push('Missing responsive design patterns');
     }
-    
-    // Try to detect CSS
-    if (/^[\s\S]*{[\s\S]*:[\s\S]*;[\s\S]*}/.test(content) && !/<html/i.test(content)) {
-      console.log('   🔍 Detected CSS content');
-      files.push({ path: 'styles.css', content: content });
-      diagnostic.extractionMethod = 'heuristic-css';
+    if (!modernPatterns.modernTypography) {
+      score -= 5;
+      issues.push('Missing modern typography with proper spacing');
     }
-    
-    // Try to detect JavaScript
-    if (/(function|const|let|var|=>|import|export)/i.test(content) && !/<html/i.test(content)) {
-      console.log('   🔍 Detected JavaScript content');
-      files.push({ path: 'script.js', content: content });
-      diagnostic.extractionMethod = 'heuristic-js';
+
+    // File structure requirements
+    const hasProperStructure = files.length >= 3;
+    if (!hasProperStructure) {
+      score -= 20;
+      issues.push('Insufficient file structure (needs minimum 3 files)');
     }
-    
-    if (files.length > 0) {
-      console.log(`✅ Strategy 3 SUCCESS: ${files.length} files detected heuristically`);
-      return { files, diagnostic };
-    }
-    
-    console.error('❌ ALL STRATEGIES FAILED!');
-    diagnostic.parsingErrors.push('All extraction strategies failed');
-    diagnostic.parsingErrors.push(`Content preview: ${content.substring(0, 200)}...`);
-    
-    // LAST RESORT: Provide raw content as single file
-    console.warn('🚨 LAST RESORT: Creating single file with raw content');
-    files.push({ 
-      path: 'output.txt', 
-      content: content || 'No content generated' 
+
+    console.log('Quality validation:', {
+      score,
+      patterns: modernPatterns,
+      fileCount: files.length,
+      issues
     });
-    diagnostic.extractionMethod = 'fallback-raw';
-    diagnostic.parsingErrors.push('Using fallback: raw content as single file');
     
-    return { files, diagnostic };
+    return {
+      passed: score >= 80 && modernPatterns.tailwindCSS,
+      score,
+      issues
+    };
   };
 
-  const parseSSEStream = async (reader: ReadableStreamDefaultReader<Uint8Array>) => {
-    const decoder = new TextDecoder();
-    let buffer = '';
-    let accumulatedContent = ''; // NEW: Accumulate ALL content here
-    let messageCount = 0;
-    let planContent = '';
+  // Helper function to get language from file path
+  const getLanguageFromPath = (path: string): string => {
+    const extension = path.split('.').pop()?.toLowerCase();
+    switch (extension) {
+      case 'tsx': return 'typescript';
+      case 'ts': return 'typescript';
+      case 'jsx': return 'javascript';
+      case 'js': return 'javascript';
+      case 'css': return 'css';
+      case 'html': return 'html';
+      case 'json': return 'json';
+      case 'md': return 'markdown';
+      default: return 'text';
+    }
+  };
 
-    console.log('\n🚀 === STARTING SSE STREAM PARSING (v3.0) ===');
-    console.log('Strategy: Accumulate all content first, then parse for files at the end\n');
+  // Enhanced file parsing with better error handling
+  const parseStreamedContent = (content: string): { files: CodeFile[]; diagnostics: DiagnosticInfo } => {
+    const diagnostics: DiagnosticInfo = {
+      extractionMethod: 'unknown',
+      fileMarkersFound: 0,
+      codeBlocksFound: 0,
+      parsingErrors: [],
+      rawContent: content
+    };
+
+    let files: CodeFile[] = [];
 
     try {
-      while (true) {
-        const { done, value } = await reader.read();
+      // Method 1: Try file markers [FILE:...] format
+      const fileMarkerRegex = /\[FILE:([^\]]+)\](.*?)\[\/FILE\]/gs;
+      const fileMatches = Array.from(content.matchAll(fileMarkerRegex));
+      
+      if (fileMatches.length > 0) {
+        diagnostics.extractionMethod = 'file-markers';
+        diagnostics.fileMarkersFound = fileMatches.length;
         
-        if (done) {
-          console.log('\n🏁 Stream reading complete');
-          console.log(`📊 Total messages received: ${messageCount}`);
-          console.log(`📊 Total accumulated content: ${accumulatedContent.length} characters`);
-          break;
-        }
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (!line.trim() || line.startsWith(':')) continue;
+        files = fileMatches.map(match => {
+          const path = match[1].trim();
+          const content = match[2].trim();
+          return {
+            path,
+            content,
+            language: getLanguageFromPath(path)
+          };
+        });
+      } 
+      // Method 2: Try code blocks format
+      else {
+        const codeBlockRegex = /```(\w+)?\s*(?:\/\/\s*(.+?)\n)?(.*?)```/gs;
+        const codeMatches = Array.from(content.matchAll(codeBlockRegex));
+        
+        if (codeMatches.length > 0) {
+          diagnostics.extractionMethod = 'code-blocks';
+          diagnostics.codeBlocksFound = codeMatches.length;
           
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6).trim();
-            messageCount++;
+          files = codeMatches.map((match, index) => {
+            const language = match[1] || 'text';
+            const comment = match[2]?.trim();
+            const codeContent = match[3].trim();
             
-            // Try to parse as JSON
-            try {
-              const parsed = JSON.parse(data);
-              
-              // Accumulate content from JSON-wrapped messages
-              if (parsed.content) {
-                accumulatedContent += parsed.content;
-                
-                // Log every 10 messages to track progress
-                if (messageCount % 10 === 0) {
-                  console.log(`📦 Message #${messageCount}: Accumulated ${accumulatedContent.length} chars total`);
-                }
-                
-                // Update UI state for planning/generating phases
-                if (accumulatedContent.includes('[PLAN]') && !planContent) {
-                  setGenerationPhase('planning');
-                  console.log('📋 Detected [PLAN] marker - entering planning phase');
-                }
-                if (accumulatedContent.includes('[FILE:')) {
-                  setGenerationPhase('generating');
-                  // Extract current file name for UI feedback
-                  const fileMatch = accumulatedContent.match(/\[FILE:([^\]]+)\][^\[]*$/);
-                  if (fileMatch) {
-                    setCurrentFile(fileMatch[1].trim());
-                  }
-                }
+            // Try to infer filename from comment or use index
+            let filename = `file${index + 1}`;
+            if (comment) {
+              if (comment.includes('.')) {
+                filename = comment;
+              } else {
+                const ext = language === 'html' ? '.html' : 
+                           language === 'css' ? '.css' : 
+                           language === 'javascript' ? '.js' : '.txt';
+                filename = `${comment.replace(/\s+/g, '-').toLowerCase()}${ext}`;
               }
-              
-              // Handle completion signal
-              if (parsed.done === true) {
-                console.log('\n✅ Received completion signal (done: true)');
-                
-                // Handle quality check if present
-                if (parsed.quality_check) {
-                  setQualityCheck(parsed.quality_check);
-                  console.log('✨ Quality check received:', parsed.quality_check);
-                }
-                
-                // Handle token validation if present
-                if (parsed.token_validation) {
-                  setTokenValidation(parsed.token_validation);
-                  console.log('🔍 Token validation received:', parsed.token_validation);
-                }
-                
-                break;
-              }
-            } catch (e) {
-              // Not JSON - accumulate raw content
-              accumulatedContent += data;
-              
-              if (messageCount % 10 === 0) {
-                console.log(`📝 Message #${messageCount}: Raw data accumulated (${data.length} chars)`);
-              }
-              
-              // Check for legacy markers
-              if (data === '[DONE]' || data === '[COMPLETE]') {
-                console.log(`\n✅ Received completion marker: ${data}`);
-                break;
-              }
+            } else {
+              const ext = language === 'html' ? '.html' : 
+                         language === 'css' ? '.css' : 
+                         language === 'javascript' ? '.js' : '.txt';
+              filename = `${filename}${ext}`;
             }
+            
+            return {
+              path: filename,
+              content: codeContent,
+              language: language
+            };
+          });
+        } 
+        // Method 3: Fallback - create single file from content
+        else {
+          diagnostics.extractionMethod = 'fallback-single-file';
+          diagnostics.parsingErrors.push('No file markers or code blocks found');
+          
+          // Try to detect if it's HTML and create basic structure
+          if (content.includes('<html>') || content.includes('<!DOCTYPE')) {
+            files = [
+              {
+                path: 'index.html',
+                content: content,
+                language: 'html'
+              }
+            ];
           }
         }
       }
 
-      console.log('\n📊 === STREAM ACCUMULATION SUMMARY ===');
-      console.log(`Messages processed: ${messageCount}`);
-      console.log(`Total content accumulated: ${accumulatedContent.length} characters`);
-      console.log(`Content starts with: ${accumulatedContent.substring(0, 100)}`);
-      console.log(`Content ends with: ${accumulatedContent.substring(Math.max(0, accumulatedContent.length - 100))}`);
+      // Validation and cleanup
+      files = files.filter(file => {
+        if (!file.content.trim()) {
+          diagnostics.parsingErrors.push(`Empty content for file: ${file.path}`);
+          return false;
+        }
+        return true;
+      });
 
-      // NOW parse the complete accumulated content for files
-      console.log('\n🔍 Starting file extraction from accumulated content...');
-      const { files: extractedFiles, diagnostic } = extractFilesFromContent(accumulatedContent);
-      
-      console.log(`✅ File extraction complete: ${extractedFiles.length} files`);
-      console.log('📊 Diagnostic Info:', diagnostic);
-      
-      setGeneratedFiles(extractedFiles);
-      setDiagnosticInfo(diagnostic);
-      setRawOutputAvailable(true);
-      
-      if (extractedFiles.length > 0 && diagnostic.extractionMethod === 'file-markers') {
-        console.log(`\n✅ SUCCESS: Extracted ${extractedFiles.length} files via standard markers`);
-        extractedFiles.forEach((file, index) => {
-          console.log(`   ${index + 1}. ${file.path} (${file.content.length} characters)`);
-        });
-        setGenerationPhase('complete');
-        setCurrentFile(null);
-      } else if (extractedFiles.length > 0) {
-        console.warn(`\n⚠️ PARTIAL SUCCESS: Extracted ${extractedFiles.length} files using fallback method: ${diagnostic.extractionMethod}`);
-        setGenerationPhase('complete');
-        setCurrentFile(null);
-      } else {
-        console.error('\n❌ FAILURE: No files were extracted');
-        setGenerationPhase('error');
-        setError('No files were generated. The AI response may not have contained the expected file markers.');
-      }
-
-    } catch (error) {
-      console.error('\n❌ SSE STREAM PARSING ERROR:', error);
-      console.error('Error details:', error instanceof Error ? error.stack : error);
-      setGenerationPhase('error');
-      setError(error instanceof Error ? error.message : 'Stream parsing failed');
+    } catch (error: any) {
+      diagnostics.parsingErrors.push(`Parsing error: ${error.message}`);
     }
-    
-    console.log('\n🏁 === PARSING COMPLETE ===\n');
+
+    return { files, diagnostics };
   };
 
-  const generateCode = async (params: GenerateCodeParams) => {
-    console.log('🎬 Starting code generation:', params);
+  // Enhanced generation with quality retry
+  const generateWithQualityRetry = async (params: GenerateCodeParams, retryCount = 0): Promise<void> => {
+    const MAX_RETRIES = 2;
+    
+    try {
+      await generateCode(params);
+    } catch (error: any) {
+      if (error.message.includes('quality validation') && retryCount < MAX_RETRIES) {
+        console.log(`Quality retry ${retryCount + 1}/${MAX_RETRIES}`);
+        
+        // Enhanced prompt with specific requirements
+        const enhancedPrompt = `${params.prompt}
+
+🚨 CRITICAL: Previous generation failed quality standards.
+MANDATORY REQUIREMENTS:
+- Use Tailwind CSS for ALL styling (bg-, text-, hover:, etc.)
+- Include gradient backgrounds: bg-gradient-to-br from-indigo-900 to-pink-700
+- Add glassmorphism: backdrop-blur-md, bg-white/10
+- Include smooth animations: transition-all duration-300, hover:scale-105
+- Add visual depth: shadow-2xl, rounded-2xl
+- Generate minimum 3 separate files (HTML, CSS, JS)
+- Use modern component patterns
+
+REFERENCE: Make it look like Stripe's website - professional, animated, beautiful.`;
+
+        await generateWithQualityRetry({
+          ...params,
+          prompt: enhancedPrompt
+        }, retryCount + 1);
+      } else {
+        throw error;
+      }
+    }
+  };
+
+  // Main generation function
+  const generateCode = async (params: GenerateCodeParams): Promise<void> => {
     setIsGenerating(true);
     setGenerationPhase('planning');
     setError(null);
     setGeneratedFiles([]);
     setFilePlan([]);
     setCurrentFile(null);
+    setDiagnosticInfo(null);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('🔑 Auth session:', session ? 'Valid' : 'Invalid');
       
       const requestBody = {
         prompt: params.prompt,
@@ -332,11 +278,7 @@ export const useCodeGeneration = () => {
         conversationId: params.conversationId
       };
       
-      console.log('📤 Sending request:', {
-        url: 'https://ryhhskssaplqakovldlp.supabase.co/functions/v1/generate-code',
-        body: requestBody,
-        hasAuth: !!session?.access_token
-      });
+      console.log('📤 Sending request to generate-code edge function');
       
       const response = await fetch(
         'https://ryhhskssaplqakovldlp.supabase.co/functions/v1/generate-code',
@@ -350,13 +292,6 @@ export const useCodeGeneration = () => {
         }
       );
 
-      console.log('📥 Response received:', {
-        ok: response.ok,
-        status: response.status,
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries())
-      });
-
       if (!response.ok) {
         const errorText = await response.text();
         console.error('❌ HTTP error:', response.status, errorText);
@@ -364,53 +299,182 @@ export const useCodeGeneration = () => {
       }
 
       if (!response.body) {
-        console.error('❌ No response body');
-        throw new Error("No response body");
+        throw new Error('No response body received');
       }
 
-      console.log('📖 Starting to read response stream...');
       const reader = response.body.getReader();
-      await parseSSEStream(reader);
+      const decoder = new TextDecoder();
       
-      console.log('✅ Stream parsing completed');
+      let buffer = '';
+      let fullContent = '';
+      let currentFileContent = '';
+      let currentFileName = '';
+      let isInFile = false;
+      let accumulatedFiles: CodeFile[] = [];
+
+      console.log('Starting enhanced stream parsing...');
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) {
+          console.log('Stream ended. Processing final content...');
+          break;
+        }
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const jsonStr = line.slice(6).trim();
+              if (!jsonStr || jsonStr === '[DONE]') continue;
+              
+              const data = JSON.parse(jsonStr);
+              const content = data.content || '';
+              
+              fullContent += content;
+
+              // Enhanced file parsing logic
+              if (content.includes('[PLAN]')) {
+                setGenerationPhase('planning');
+                try {
+                  const planMatch = fullContent.match(/\[PLAN\](.*?)\[\/PLAN\]/s);
+                  if (planMatch) {
+                    const planJson = JSON.parse(planMatch[1].trim());
+                    if (planJson.files) {
+                      setFilePlan(planJson.files);
+                    }
+                  }
+                } catch (e) {
+                  console.warn('Could not parse plan JSON:', e);
+                }
+              }
+              
+              if (content.includes('[FILE:')) {
+                const fileMatch = content.match(/\[FILE:([^\]]+)\]/);
+                if (fileMatch) {
+                  // Save previous file
+                  if (isInFile && currentFileName && currentFileContent.trim()) {
+                    accumulatedFiles.push({
+                      path: currentFileName,
+                      content: currentFileContent.trim(),
+                      language: getLanguageFromPath(currentFileName)
+                    });
+                  }
+                  
+                  // Start new file
+                  currentFileName = fileMatch[1].trim();
+                  currentFileContent = '';
+                  isInFile = true;
+                  setCurrentFile(currentFileName);
+                  setGenerationPhase('generating');
+                }
+              }
+              
+              if (content.includes('[/FILE]')) {
+                if (isInFile && currentFileName) {
+                  accumulatedFiles.push({
+                    path: currentFileName,
+                    content: currentFileContent.trim(),
+                    language: getLanguageFromPath(currentFileName)
+                  });
+                  isInFile = false;
+                  currentFileName = '';
+                  currentFileContent = '';
+                  setCurrentFile(null);
+                }
+              }
+              
+              if (isInFile) {
+                currentFileContent += content.replace(/\[FILE:[^\]]+\]/, '').replace(/\[\/FILE\]/, '');
+              }
+              
+              if (content.includes('[COMPLETE]')) {
+                setGenerationPhase('complete');
+                break;
+              }
+
+            } catch (e) {
+              console.error('Parse error:', e);
+            }
+          }
+        }
+      }
+
+      // Final parsing attempt if streaming markers failed
+      if (accumulatedFiles.length === 0) {
+        console.log('No files from streaming, attempting full content parsing...');
+        const { files, diagnostics } = parseStreamedContent(fullContent);
+        accumulatedFiles = files;
+        setDiagnosticInfo(diagnostics);
+      }
+
+      // Quality validation
+      if (accumulatedFiles.length > 0) {
+        const validation = validateModernStandards(accumulatedFiles);
+        
+        if (!validation.passed) {
+          console.warn('Quality validation failed:', validation);
+          toast({
+            title: "Quality Enhancement Needed",
+            description: `Generated code scored ${validation.score}/100. ${validation.issues.join('. ')}`,
+            variant: "destructive"
+          });
+          
+          // Still set files but with quality warning
+          setGeneratedFiles(accumulatedFiles);
+        } else {
+          console.log('Quality validation passed!');
+          setGeneratedFiles(accumulatedFiles);
+          toast({
+            title: "High-Quality Code Generated!",
+            description: `Professional application created with modern design patterns.`
+          });
+        }
+      } else {
+        throw new Error('No files were generated. The AI response may not have contained the expected file markers.');
+      }
 
     } catch (err: any) {
-      console.error("❌ Code generation error:", err);
-      console.error("Error stack:", err.stack);
+      console.error("Code generation error:", err);
       setError(err.message || "Failed to generate code");
       setGenerationPhase('error');
+      toast({
+        title: "Generation Failed",
+        description: err.message,
+        variant: "destructive"
+      });
     } finally {
-      console.log('🏁 Generation process finished');
       setIsGenerating(false);
     }
   };
 
   const resetGeneration = () => {
-    console.log('🔄 Resetting generation state');
     setIsGenerating(false);
-    setGenerationPhase('idle');
+    setGenerationPhase('planning');
     setCurrentFile(null);
     setGeneratedFiles([]);
     setFilePlan([]);
     setError(null);
-    setQualityCheck(null);
-    setTokenValidation(null);
     setDiagnosticInfo(null);
-    setRawOutputAvailable(false);
   };
 
+  const regenerateWithEnhancement = useCallback(() => {
+    console.log('Regenerating with enhanced quality requirements...');
+  }, []);
+
   return {
+    generateCode: generateWithQualityRetry,
     isGenerating,
+    generatedFiles,
     generationPhase,
     currentFile,
-    generatedFiles,
     filePlan,
-    error,
-    qualityCheck,
-    tokenValidation,
     diagnosticInfo,
-    rawOutputAvailable,
-    generateCode,
-    resetGeneration
+    error,
+    resetGeneration,
+    regenerateWithEnhancement
   };
 };

@@ -57,10 +57,7 @@ const ModuleStudio = () => {
     generatedFiles,
     filePlan,
     error: generationError,
-    qualityCheck,
-    tokenValidation,
     diagnosticInfo,
-    rawOutputAvailable,
     generateCode,
     resetGeneration
   } = useCodeGeneration();
@@ -138,29 +135,12 @@ const ModuleStudio = () => {
     }
   }, [currentFile]);
 
-  // Display quality check suggestions when generation completes
+  // Display generation progress status
   useEffect(() => {
-    if (generationPhase === 'complete' && qualityCheck) {
-      if (!qualityCheck.valid && qualityCheck.suggestions.length > 0) {
-        const suggestionsText = `⚠️ Design Quality Suggestions:\n${qualityCheck.suggestions.map(s => `• ${s}`).join('\n')}\n\nConsider regenerating with these improvements for a more modern, professional result.`;
-        addStatusMessage(suggestionsText, "status");
-      } else {
-        addStatusMessage("✨ Code quality check passed! All modern design patterns detected.", "status");
-      }
+    if (generationPhase === 'complete') {
+      addStatusMessage("✨ Code generation complete!", "status");
     }
-  }, [generationPhase, qualityCheck]);
-
-  // Display token validation issues when generation completes
-  useEffect(() => {
-    if (generationPhase === 'complete' && tokenValidation) {
-      if (!tokenValidation.valid && tokenValidation.issues.length > 0) {
-        const issuesText = `⚠️ Design Token Issues:\n${tokenValidation.issues.map(i => `• ${i}`).join('\n')}\n\nComponents should use design tokens (var(--primary-500)) instead of hardcoded values for consistency.`;
-        addStatusMessage(issuesText, "status");
-      } else {
-        addStatusMessage("✨ Design token validation passed! All components use the design system properly.", "status");
-      }
-    }
-  }, [generationPhase, tokenValidation]);
+  }, [generationPhase]);
 
   const addStatusMessage = (text: string, type: 'status' | 'error') => {
     setMessages(prev => {
@@ -471,7 +451,6 @@ const ModuleStudio = () => {
               currentFile={currentFile}
               filePlan={filePlan}
               diagnosticInfo={diagnosticInfo}
-              rawOutputAvailable={rawOutputAvailable}
               onRegenerate={() => {
                 if (originalPrompt) {
                   handleSendMessage(originalPrompt);
