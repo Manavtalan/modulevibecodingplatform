@@ -36,7 +36,7 @@ serve(async (req) => {
 
   try {
     // Get environment variables
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
 
@@ -48,10 +48,10 @@ serve(async (req) => {
       );
     }
 
-    if (!OPENAI_API_KEY) {
-      console.error('OpenAI API key not configured');
+    if (!ANTHROPIC_API_KEY) {
+      console.error('Anthropic API key not configured');
       return new Response(
-        JSON.stringify({ code: 'SERVER_ERROR', message: 'OpenAI API not configured' }),
+        JSON.stringify({ code: 'SERVER_ERROR', message: 'Anthropic API not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -210,51 +210,57 @@ serve(async (req) => {
 
     messages.push({ role: 'user', content: user_message });
 
-    // Use OpenAI GPT-4o-mini as primary model
+    // Use Claude Opus 4 as primary model
     let assistantReply = '';
-    let modelUsed = 'openai:gpt-4o-mini';
+    let modelUsed = 'anthropic:claude-opus-4-1-20250805';
     let tokensUsed = 0;
     let inputTokens = 0;
     let outputTokens = 0;
 
-    if (!OPENAI_API_KEY) {
+    if (!ANTHROPIC_API_KEY) {
       return new Response(
-        JSON.stringify({ code: 'SERVER_ERROR', message: 'OpenAI API not configured' }),
+        JSON.stringify({ code: 'SERVER_ERROR', message: 'Anthropic API not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     try {
-      console.log('=== OpenAI GPT-4o-mini Request ===');
-      console.log('Model: gpt-4o-mini');
+      console.log('=== Claude Opus 4 Request ===');
+      console.log('Model: claude-opus-4-1-20250805');
       console.log('Messages count:', messages.length);
       
+      // Convert messages to Anthropic format (separate system from messages)
+      const systemMessage = messages.find(m => m.role === 'system')?.content || '';
+      const conversationMessages = messages.filter(m => m.role !== 'system');
+      
       const requestBody = {
-        model: 'gpt-4o-mini',
-        messages: messages,
-        max_tokens: 16000,
+        model: 'claude-opus-4-1-20250805',
+        max_tokens: 32000, // 32K output tokens as specified
         temperature: 0.7,
+        messages: conversationMessages,
+        system: systemMessage,
         stream: true,
       };
       console.log('Request body:', JSON.stringify(requestBody, null, 2));
       
-      const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          'x-api-key': ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
       });
 
-      console.log('=== OpenAI Response Debug ===');
-      console.log('Status:', openaiResponse.status);
+      console.log('=== Anthropic Response Debug ===');
+      console.log('Status:', anthropicResponse.status);
 
-      if (!openaiResponse.ok) {
-        const errorText = await openaiResponse.text();
-        console.error('OpenAI API error response:', errorText);
+      if (!anthropicResponse.ok) {
+        const errorText = await anthropicResponse.text();
+        console.error('Anthropic API error response:', errorText);
         
-        if (openaiResponse.status === 429) {
+        if (anthropicResponse.status === 429) {
           return new Response(
             JSON.stringify({ 
               code: 'RATE_LIMIT_EXCEEDED', 
@@ -264,14 +270,14 @@ serve(async (req) => {
           );
         }
         
-        throw new Error(`OpenAI API failed with status ${openaiResponse.status}: ${errorText}`);
+        throw new Error(`Anthropic API failed with status ${anthropicResponse.status}: ${errorText}`);
       }
 
-      if (!openaiResponse.body) {
+      if (!anthropicResponse.body) {
         throw new Error('No response body');
       }
 
-      const reader = openaiResponse.body.getReader();
+      const reader = anthropicResponse.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
 
@@ -292,40 +298,47 @@ serve(async (req) => {
         for (const line of lines) {
           const trimmedLine = line.trim();
           
-          if (!trimmedLine || trimmedLine === 'data: [DONE]') {
+          if (!trimmedLine || !trimmedLine.startsWith('data: ')) {
             continue;
           }
 
-          if (trimmedLine.startsWith('data: ')) {
-            try {
-              const jsonStr = trimmedLine.slice(6);
-              const data = JSON.parse(jsonStr);
-              
-              const delta = data.choices?.[0]?.delta?.content;
-              if (delta) {
-                assistantReply += delta;
-              }
+          const jsonStr = trimmedLine.slice(6);
+          
+          if (jsonStr === '[DONE]') {
+            continue;
+          }
 
-              if (data.usage) {
-                inputTokens = data.usage.prompt_tokens || 0;
-                outputTokens = data.usage.completion_tokens || 0;
-                tokensUsed = inputTokens + outputTokens;
-                console.log(`Token usage - Input: ${inputTokens}, Output: ${outputTokens}, Total: ${tokensUsed}`);
-              }
-            } catch (e) {
-              console.error('Error parsing SSE line:', trimmedLine, e);
+          try {
+            const data = JSON.parse(jsonStr);
+            
+            // Handle content blocks
+            if (data.type === 'content_block_delta' && data.delta?.text) {
+              assistantReply += data.delta.text;
             }
+            
+            // Handle message completion with usage stats
+            if (data.type === 'message_delta' && data.usage) {
+              outputTokens = data.usage.output_tokens || 0;
+            }
+            
+            if (data.type === 'message_start' && data.message?.usage) {
+              inputTokens = data.message.usage.input_tokens || 0;
+            }
+          } catch (e) {
+            console.error('Error parsing SSE line:', trimmedLine, e);
           }
         }
       }
 
-      console.log('✓ OpenAI GPT-4o-mini succeeded, length:', assistantReply.length);
+      tokensUsed = inputTokens + outputTokens;
+      console.log(`Token usage - Input: ${inputTokens}, Output: ${outputTokens}, Total: ${tokensUsed}`);
+      console.log('✓ Claude Opus 4 succeeded, length:', assistantReply.length);
       
       if (!assistantReply.trim()) {
-        throw new Error('OpenAI returned empty content');
+        throw new Error('Claude returned empty content');
       }
     } catch (error) {
-      console.error('=== OpenAI GPT-4o-mini Failed ===');
+      console.error('=== Claude Opus 4 Failed ===');
       console.error('Error:', error?.message);
       throw error;
     }

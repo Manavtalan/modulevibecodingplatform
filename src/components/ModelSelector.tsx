@@ -11,23 +11,23 @@ interface ModelSelectorProps {
 
 const models = [
   {
-    value: 'claude-sonnet-4-5',
-    label: 'Claude Sonnet 4.5 ⭐',
+    value: 'claude-opus-4-1-20250805',
+    label: 'Claude Opus 4',
     badge: 'Primary',
-    description: '🏆 Best quality. Superior reasoning and multi-file generation. 8K tokens output.',
+    description: 'Highly intelligent model - 200K context, 32K output tokens'
   },
   {
-    value: 'gpt-5-mini',
-    label: 'GPT-5 Mini',
+    value: 'gpt-4o-mini',
+    label: 'GPT-4o Mini',
     badge: 'Secondary',
-    description: '⚡ Fast and reliable. Balanced performance. 8K tokens output.',
+    description: 'Fast and efficient for most tasks'
   },
   {
-    value: 'gemini-flash',
-    label: 'Gemini Flash ⚠️',
+    value: 'claude-3-sonnet',
+    label: 'Claude 3 Sonnet',
     badge: 'Fallback',
-    description: '🚀 Fastest but may generate single files. Use for simple projects only.',
-  },
+    description: 'Balanced performance and quality'
+  }
 ] as const;
 
 export function ModelSelector({ value, onChange, disabled }: ModelSelectorProps) {

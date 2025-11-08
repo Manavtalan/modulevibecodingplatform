@@ -13,7 +13,7 @@ interface GenerateCodeRequest {
   codeType?: 'react' | 'vue' | 'javascript' | 'typescript' | 'css';
   framework?: string;
   conversation_id?: string;
-  model?: 'gpt-4o-mini';
+  model?: 'claude-opus-4-1-20250805';
 }
 
 serve(async (req) => {
@@ -22,7 +22,7 @@ serve(async (req) => {
   }
 
   try {
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
 
@@ -30,8 +30,8 @@ serve(async (req) => {
       throw new Error('Missing required environment variables');
     }
     
-    if (!OPENAI_API_KEY) {
-      throw new Error('OpenAI API key not configured');
+    if (!ANTHROPIC_API_KEY) {
+      throw new Error('Anthropic API key not configured');
     }
 
     const authHeader = req.headers.get('Authorization');
@@ -55,7 +55,7 @@ serve(async (req) => {
       });
     }
 
-    const { prompt, codeType = 'react', framework, conversation_id, model = 'gpt-4o-mini' } = await req.json() as GenerateCodeRequest;
+    const { prompt, codeType = 'react', framework, conversation_id, model = 'claude-opus-4-1-20250805' } = await req.json() as GenerateCodeRequest;
 
     if (!prompt || prompt.trim().length === 0) {
       return new Response(JSON.stringify({ error: 'Prompt is required' }), {
@@ -1396,12 +1396,12 @@ COMPONENT REQUIREMENTS:
       { role: 'user', content: enhancedPrompt }
     ];
 
-    // Use OpenAI GPT-5 Mini for code generation
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY not configured');
+    // Use Claude Opus 4 for code generation
+    if (!ANTHROPIC_API_KEY) {
+      throw new Error('ANTHROPIC_API_KEY not configured');
     }
 
-    const modelUsed = 'gpt-4o-mini';
+    const modelUsed = 'claude-opus-4-1-20250805';
 
     console.log('=== Code Generation Request ===');
     console.log('Model:', modelUsed);
@@ -1410,27 +1410,29 @@ COMPONENT REQUIREMENTS:
     console.log('Prompt length:', prompt.length);
     console.log('Expected files:', codeType === 'react' ? '25+ files' : 'multiple files');
 
-    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        max_tokens: 16000, // GPT-4o-mini uses max_tokens parameter
+        model: 'claude-opus-4-1-20250805',
+        max_tokens: 32000, // 32K output tokens as specified
         temperature: 0.7,
-        messages: messages,
+        messages: messages.filter(m => m.role !== 'system'),
+        system: systemPrompt,
         stream: true,
       }),
     });
 
-    if (!openaiResponse.ok) {
-      const errorText = await openaiResponse.text();
-      console.error('OpenAI API error:', openaiResponse.status, errorText);
+    if (!anthropicResponse.ok) {
+      const errorText = await anthropicResponse.text();
+      console.error('Anthropic API error:', anthropicResponse.status, errorText);
       
       // Handle rate limiting
-      if (openaiResponse.status === 429) {
+      if (anthropicResponse.status === 429) {
         return new Response(JSON.stringify({ 
           error: 'Rate limit exceeded',
           details: 'Too many requests. Please try again later.' 
@@ -1449,7 +1451,7 @@ COMPONENT REQUIREMENTS:
       });
     }
 
-    const reader = openaiResponse.body?.getReader();
+    const reader = anthropicResponse.body?.getReader();
     if (!reader) {
       throw new Error('Failed to get response reader');
     }
@@ -1483,19 +1485,21 @@ COMPONENT REQUIREMENTS:
               try {
                 const parsed = JSON.parse(data);
                 
-                // OpenAI sends content in delta.content
-                const delta = parsed.choices?.[0]?.delta?.content;
-                if (delta) {
+                // Anthropic sends content in delta.text for content_block_delta events
+                if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+                  const delta = parsed.delta.text;
                   fullResponse += delta;
                   
                   // Send to frontend in simple format
                   controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: delta })}\n\n`));
                 }
                 
-                // Track token usage if provided
-                if (parsed.usage) {
-                  inputTokens = parsed.usage.prompt_tokens || 0;
-                  outputTokens = parsed.usage.completion_tokens || 0;
+                // Track token usage from message_start and message_delta
+                if (parsed.type === 'message_start' && parsed.message?.usage) {
+                  inputTokens = parsed.message.usage.input_tokens || 0;
+                }
+                if (parsed.type === 'message_delta' && parsed.usage) {
+                  outputTokens = parsed.usage.output_tokens || 0;
                 }
               } catch (e) {
                 console.error('Parse error:', e);
