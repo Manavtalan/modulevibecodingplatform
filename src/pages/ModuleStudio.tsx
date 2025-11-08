@@ -42,7 +42,7 @@ const ModuleStudio = () => {
   const [isValidating, setIsValidating] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const [originalPrompt, setOriginalPrompt] = useState<string>("");
-  const [currentCodeType, setCurrentCodeType] = useState<string>("html");
+  const [currentCodeType, setCurrentCodeType] = useState<string>("react");
   
   // Quality settings state
   const [showSettings, setShowSettings] = useState(false);
@@ -257,10 +257,10 @@ const ModuleStudio = () => {
     // Add specific fixes based on validation issues
     if (validationResult.issues.some(i => i.category === 'structure')) {
       enhancedPrompt += '- ENSURE PROPER FILE STRUCTURE: ';
-      if (codeType === 'html') {
-        enhancedPrompt += 'Generate separate index.html, styles.css, and script.js files\n';
-      } else if (codeType === 'react') {
-        enhancedPrompt += 'Generate App.tsx, Navbar, Hero, Features, Footer components plus design-tokens.css\n';
+      if (codeType === 'react') {
+        enhancedPrompt += 'Generate 25+ files: App.tsx, multiple components (Navbar, Hero, Features, Footer), design-tokens.css, tailwind.config, utils\n';
+      } else if (codeType === 'vue') {
+        enhancedPrompt += 'Generate multiple .vue components with proper structure\n';
       }
     }
 
@@ -316,10 +316,8 @@ const ModuleStudio = () => {
     const isCodeRequest = /generate|create|build|make|code|website|app|webpage|html|css|js|react|vue/i.test(text);
 
     if (isCodeRequest) {
-      // Determine code type from the request
-      const codeType = /react/i.test(text) ? 'react' : 
-                      /vue/i.test(text) ? 'vue' : 
-                      'html';
+      // Determine code type - default to React for comprehensive multi-file apps
+      const codeType = /vue/i.test(text) ? 'vue' : 'react';
       setCurrentCodeType(codeType);
 
       // Trigger code generation
