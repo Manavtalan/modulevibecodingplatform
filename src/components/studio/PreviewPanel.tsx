@@ -12,6 +12,7 @@ import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ReactPreview } from "./ReactPreview";
 
 interface PreviewPanelProps {
   files: CodeFile[];
@@ -173,21 +174,26 @@ export const PreviewPanel = ({
       );
     }
 
-    // Check if it's a React/Vue app (has package.json or React/Vue files)
+    // Check if it's a React app
     const hasReactFiles = files.some(f => 
       f.path.includes('.tsx') || 
       f.path.includes('.jsx') || 
       f.content.includes('import React') ||
-      f.content.includes('from "react"')
+      f.content.includes('from "react"') ||
+      f.content.includes('from \'react\'')
     );
+
+    if (hasReactFiles) {
+      return <ReactPreview files={files} deviceMode={deviceMode} />;
+    }
     
+    // Check if it's a Vue app (Sandpack also supports Vue, but for now we'll show a message)
     const hasVueFiles = files.some(f => 
       f.path.includes('.vue') || 
       f.content.includes('<script setup')
     );
 
-    if (hasReactFiles || hasVueFiles) {
-      const framework = hasReactFiles ? 'React' : 'Vue';
+    if (hasVueFiles) {
       return (
         <div className="flex items-center justify-center h-full p-8">
           <Card className="max-w-2xl p-6 space-y-4">
@@ -195,27 +201,12 @@ export const PreviewPanel = ({
               <AlertCircle className="h-6 w-6 text-blue-500 mt-1" />
               <div className="space-y-3 flex-1">
                 <div>
-                  <h3 className="text-lg font-semibold">{framework} Application Generated</h3>
+                  <h3 className="text-lg font-semibold">Vue Application Generated</h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {framework} applications require a build environment to preview. Use the Code tab to view and download the generated files.
+                    Vue preview coming soon! Use the Code tab to view and download the generated files.
                   </p>
                 </div>
                 
-                <Alert>
-                  <FileText className="h-4 w-4" />
-                  <AlertTitle>Generated Files</AlertTitle>
-                  <AlertDescription className="mt-2">
-                    <div className="space-y-1 text-xs">
-                      {files.slice(0, 10).map((file, idx) => (
-                        <div key={idx}>✓ {file.path}</div>
-                      ))}
-                      {files.length > 10 && (
-                        <div className="text-muted-foreground">... and {files.length - 10} more files</div>
-                      )}
-                    </div>
-                  </AlertDescription>
-                </Alert>
-
                 <div className="flex gap-2 pt-2">
                   <Button variant="default" size="sm" onClick={() => onTabChange('code')}>
                     <FileText className="h-4 w-4 mr-2" />
