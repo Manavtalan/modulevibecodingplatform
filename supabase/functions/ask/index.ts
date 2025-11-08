@@ -210,9 +210,9 @@ serve(async (req) => {
 
     messages.push({ role: 'user', content: user_message });
 
-    // Use OpenAI GPT-5 Mini as primary model
+    // Use OpenAI GPT-4o-mini as primary model
     let assistantReply = '';
-    let modelUsed = 'openai:gpt-5-mini';
+    let modelUsed = 'openai:gpt-4o-mini';
     let tokensUsed = 0;
     let inputTokens = 0;
     let outputTokens = 0;
@@ -225,14 +225,15 @@ serve(async (req) => {
     }
 
     try {
-      console.log('=== OpenAI GPT-5 Mini Request ===');
-      console.log('Model: gpt-5-mini');
+      console.log('=== OpenAI GPT-4o-mini Request ===');
+      console.log('Model: gpt-4o-mini');
       console.log('Messages count:', messages.length);
       
       const requestBody = {
-        model: 'gpt-5-mini',
+        model: 'gpt-4o-mini',
         messages: messages,
-        max_completion_tokens: 128000, // GPT-5 Mini supports up to 128k output tokens
+        max_tokens: 16000,
+        temperature: 0.7,
         stream: true,
       };
       console.log('Request body:', JSON.stringify(requestBody, null, 2));
@@ -318,13 +319,13 @@ serve(async (req) => {
         }
       }
 
-      console.log('✓ OpenAI GPT-5 Mini succeeded, length:', assistantReply.length);
+      console.log('✓ OpenAI GPT-4o-mini succeeded, length:', assistantReply.length);
       
       if (!assistantReply.trim()) {
         throw new Error('OpenAI returned empty content');
       }
     } catch (error) {
-      console.error('=== OpenAI GPT-5 Mini Failed ===');
+      console.error('=== OpenAI GPT-4o-mini Failed ===');
       console.error('Error:', error?.message);
       throw error;
     }

@@ -13,7 +13,7 @@ interface GenerateCodeRequest {
   codeType?: 'react' | 'vue' | 'javascript' | 'typescript' | 'css';
   framework?: string;
   conversation_id?: string;
-  model?: 'gpt-5-mini';
+  model?: 'gpt-4o-mini';
 }
 
 serve(async (req) => {
@@ -55,7 +55,7 @@ serve(async (req) => {
       });
     }
 
-    const { prompt, codeType = 'react', framework, conversation_id, model = 'gpt-5-mini' } = await req.json() as GenerateCodeRequest;
+    const { prompt, codeType = 'react', framework, conversation_id, model = 'gpt-4o-mini' } = await req.json() as GenerateCodeRequest;
 
     if (!prompt || prompt.trim().length === 0) {
       return new Response(JSON.stringify({ error: 'Prompt is required' }), {
@@ -1401,7 +1401,7 @@ COMPONENT REQUIREMENTS:
       throw new Error('OPENAI_API_KEY not configured');
     }
 
-    const modelUsed = 'gpt-5-mini';
+    const modelUsed = 'gpt-4o-mini';
 
     console.log('=== Code Generation Request ===');
     console.log('Model:', modelUsed);
@@ -1417,8 +1417,9 @@ COMPONENT REQUIREMENTS:
         'Authorization': `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-5-mini',
-        max_completion_tokens: 128000, // GPT-5 Mini maximum output tokens
+        model: 'gpt-4o-mini',
+        max_tokens: 16000, // GPT-4o-mini uses max_tokens parameter
+        temperature: 0.7,
         messages: messages,
         stream: true,
       }),
