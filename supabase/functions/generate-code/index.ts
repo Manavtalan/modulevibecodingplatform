@@ -1961,7 +1961,8 @@ COMPONENT REQUIREMENTS:
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 8000,
+        max_tokens: 16384, // Maximum for Claude Sonnet (50k input + 16k output)
+        temperature: 0.7, // Balanced creativity and consistency
         messages: messages.filter(m => m.role !== 'system'),
         system: systemPrompt,
         stream: true,
