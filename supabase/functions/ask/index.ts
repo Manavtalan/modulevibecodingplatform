@@ -36,7 +36,7 @@ serve(async (req) => {
 
   try {
     // Get environment variables
-    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
 
@@ -48,10 +48,10 @@ serve(async (req) => {
       );
     }
 
-    if (!ANTHROPIC_API_KEY) {
-      console.error('Anthropic API key not configured');
+    if (!OPENAI_API_KEY) {
+      console.error('OpenAI API key not configured');
       return new Response(
-        JSON.stringify({ code: 'SERVER_ERROR', message: 'Anthropic API not configured' }),
+        JSON.stringify({ code: 'SERVER_ERROR', message: 'OpenAI API not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -210,57 +210,51 @@ serve(async (req) => {
 
     messages.push({ role: 'user', content: user_message });
 
-    // Use Claude Opus 4 as primary model
+    // Use GPT-4o as primary model
     let assistantReply = '';
-    let modelUsed = 'anthropic:claude-opus-4-1-20250805';
+    let modelUsed = 'openai:gpt-4o';
     let tokensUsed = 0;
     let inputTokens = 0;
     let outputTokens = 0;
 
-    if (!ANTHROPIC_API_KEY) {
+    if (!OPENAI_API_KEY) {
       return new Response(
-        JSON.stringify({ code: 'SERVER_ERROR', message: 'Anthropic API not configured' }),
+        JSON.stringify({ code: 'SERVER_ERROR', message: 'OpenAI API not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     try {
-      console.log('=== Claude Opus 4 Request ===');
-      console.log('Model: claude-opus-4-1-20250805');
+      console.log('=== GPT-4o Request ===');
+      console.log('Model: gpt-4o');
       console.log('Messages count:', messages.length);
       
-      // Convert messages to Anthropic format (separate system from messages)
-      const systemMessage = messages.find(m => m.role === 'system')?.content || '';
-      const conversationMessages = messages.filter(m => m.role !== 'system');
-      
       const requestBody = {
-        model: 'claude-opus-4-1-20250805',
+        model: 'gpt-4o',
         max_tokens: 32000, // 32K output tokens as specified
         temperature: 0.7,
-        messages: conversationMessages,
-        system: systemMessage,
+        messages: messages.map(m => ({ role: m.role, content: m.content })),
         stream: true,
       };
       console.log('Request body:', JSON.stringify(requestBody, null, 2));
       
-      const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
+      const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'x-api-key': ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01',
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
       });
 
-      console.log('=== Anthropic Response Debug ===');
-      console.log('Status:', anthropicResponse.status);
+      console.log('=== OpenAI Response Debug ===');
+      console.log('Status:', openaiResponse.status);
 
-      if (!anthropicResponse.ok) {
-        const errorText = await anthropicResponse.text();
-        console.error('Anthropic API error response:', errorText);
+      if (!openaiResponse.ok) {
+        const errorText = await openaiResponse.text();
+        console.error('OpenAI API error response:', errorText);
         
-        if (anthropicResponse.status === 429) {
+        if (openaiResponse.status === 429) {
           return new Response(
             JSON.stringify({ 
               code: 'RATE_LIMIT_EXCEEDED', 
@@ -270,14 +264,14 @@ serve(async (req) => {
           );
         }
         
-        throw new Error(`Anthropic API failed with status ${anthropicResponse.status}: ${errorText}`);
+        throw new Error(`OpenAI API failed with status ${openaiResponse.status}: ${errorText}`);
       }
 
-      if (!anthropicResponse.body) {
+      if (!openaiResponse.body) {
         throw new Error('No response body');
       }
 
-      const reader = anthropicResponse.body.getReader();
+      const reader = openaiResponse.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
 
@@ -311,18 +305,15 @@ serve(async (req) => {
           try {
             const data = JSON.parse(jsonStr);
             
-            // Handle content blocks
-            if (data.type === 'content_block_delta' && data.delta?.text) {
-              assistantReply += data.delta.text;
+            // Handle content from OpenAI streaming format
+            if (data.choices?.[0]?.delta?.content) {
+              assistantReply += data.choices[0].delta.content;
             }
             
-            // Handle message completion with usage stats
-            if (data.type === 'message_delta' && data.usage) {
-              outputTokens = data.usage.output_tokens || 0;
-            }
-            
-            if (data.type === 'message_start' && data.message?.usage) {
-              inputTokens = data.message.usage.input_tokens || 0;
+            // Handle usage stats (sent at the end in OpenAI)
+            if (data.usage) {
+              inputTokens = data.usage.prompt_tokens || 0;
+              outputTokens = data.usage.completion_tokens || 0;
             }
           } catch (e) {
             console.error('Error parsing SSE line:', trimmedLine, e);
@@ -332,13 +323,13 @@ serve(async (req) => {
 
       tokensUsed = inputTokens + outputTokens;
       console.log(`Token usage - Input: ${inputTokens}, Output: ${outputTokens}, Total: ${tokensUsed}`);
-      console.log('✓ Claude Opus 4 succeeded, length:', assistantReply.length);
+      console.log('✓ GPT-4o succeeded, length:', assistantReply.length);
       
       if (!assistantReply.trim()) {
-        throw new Error('Claude returned empty content');
+        throw new Error('GPT-4o returned empty content');
       }
     } catch (error) {
-      console.error('=== Claude Opus 4 Failed ===');
+      console.error('=== GPT-4o Failed ===');
       console.error('Error:', error?.message);
       throw error;
     }

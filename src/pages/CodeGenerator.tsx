@@ -39,7 +39,7 @@ export default function CodeGenerator() {
   const [prompt, setPrompt] = useState('');
   const [codeType, setCodeType] = useState<'html' | 'react' | 'vue' | 'javascript' | 'typescript' | 'css'>('html');
   const [framework, setFramework] = useState('');
-  const [model, setModel] = useState<'claude-opus-4-1-20250805' | 'gpt-4o-mini' | 'claude-3-sonnet'>('claude-opus-4-1-20250805');
+  const [model, setModel] = useState<'gpt-4o' | 'gpt-4o-mini' | 'claude-3-sonnet'>('gpt-4o');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedCodes, setGeneratedCodes] = useState<GeneratedCode[]>([]);
   const [showTemplates, setShowTemplates] = useState(true);

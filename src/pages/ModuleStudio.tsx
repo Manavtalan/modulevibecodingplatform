@@ -289,12 +289,12 @@ const ModuleStudio = () => {
       setCurrentCodeType(codeType);
 
       // Trigger code generation with detailed status
-      addStatusMessage("🚀 Starting code generation...\n🤖 Using Claude Opus 4 for highly intelligent code generation", "status");
+      addStatusMessage("🚀 Starting code generation...\n🤖 Using GPT-4o with 200K context & 32K output for highly intelligent code generation", "status");
       
       await generateCode({
         prompt: text,
         codeType,
-        model: 'claude-opus-4-1-20250805',
+        model: 'gpt-4o',
         conversationId: conversationId || undefined
       });
     } else {
@@ -304,10 +304,10 @@ const ModuleStudio = () => {
         
         const { data, error } = await supabase.functions.invoke("ask", {
           body: {
-            message: text,
+          message: text,
             conversationId: conversationId,
             userId: user?.id,
-            model: 'claude-opus-4-1-20250805'
+            model: 'gpt-4o'
           }
         });
 

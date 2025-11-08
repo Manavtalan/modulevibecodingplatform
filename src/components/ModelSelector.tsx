@@ -11,8 +11,8 @@ interface ModelSelectorProps {
 
 const models = [
   {
-    value: 'claude-opus-4-1-20250805',
-    label: 'Claude Opus 4',
+    value: 'gpt-4o',
+    label: 'GPT-4o',
     badge: 'Primary',
     description: 'Highly intelligent model - 200K context, 32K output tokens'
   },
@@ -45,7 +45,7 @@ export function ModelSelector({ value, onChange, disabled }: ModelSelectorProps)
             <TooltipContent className="max-w-xs">
               <p className="text-sm">
                 Different models offer different trade-offs between speed, quality, and cost.
-                Claude excels at complex reasoning, GPT-5 is well-balanced, and Gemini is fastest.
+                GPT-4o offers powerful reasoning with 200K context, GPT-4o Mini is faster and cheaper, Claude 3 Sonnet provides balanced performance.
               </p>
             </TooltipContent>
           </Tooltip>

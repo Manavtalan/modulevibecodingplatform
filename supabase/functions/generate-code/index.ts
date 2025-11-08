@@ -13,7 +13,7 @@ interface GenerateCodeRequest {
   codeType?: 'react' | 'vue' | 'javascript' | 'typescript' | 'css';
   framework?: string;
   conversation_id?: string;
-  model?: 'claude-opus-4-1-20250805';
+  model?: 'gpt-4o';
 }
 
 serve(async (req) => {
@@ -22,7 +22,7 @@ serve(async (req) => {
   }
 
   try {
-    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
 
@@ -30,8 +30,8 @@ serve(async (req) => {
       throw new Error('Missing required environment variables');
     }
     
-    if (!ANTHROPIC_API_KEY) {
-      throw new Error('Anthropic API key not configured');
+    if (!OPENAI_API_KEY) {
+      throw new Error('OpenAI API key not configured');
     }
 
     const authHeader = req.headers.get('Authorization');
@@ -55,7 +55,7 @@ serve(async (req) => {
       });
     }
 
-    const { prompt, codeType = 'react', framework, conversation_id, model = 'claude-opus-4-1-20250805' } = await req.json() as GenerateCodeRequest;
+    const { prompt, codeType = 'react', framework, conversation_id, model = 'gpt-4o' } = await req.json() as GenerateCodeRequest;
 
     if (!prompt || prompt.trim().length === 0) {
       return new Response(JSON.stringify({ error: 'Prompt is required' }), {
@@ -1397,11 +1397,11 @@ COMPONENT REQUIREMENTS:
     ];
 
     // Use Claude Opus 4 for code generation
-    if (!ANTHROPIC_API_KEY) {
-      throw new Error('ANTHROPIC_API_KEY not configured');
+    if (!OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY not configured');
     }
 
-    const modelUsed = 'claude-opus-4-1-20250805';
+    const modelUsed = 'gpt-4o';
 
     console.log('=== Code Generation Request ===');
     console.log('Model:', modelUsed);
@@ -1410,29 +1410,30 @@ COMPONENT REQUIREMENTS:
     console.log('Prompt length:', prompt.length);
     console.log('Expected files:', codeType === 'react' ? '25+ files' : 'multiple files');
 
-    const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
+    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'claude-opus-4-1-20250805',
+        model: 'gpt-4o',
         max_tokens: 32000, // 32K output tokens as specified
         temperature: 0.7,
-        messages: messages.filter(m => m.role !== 'system'),
-        system: systemPrompt,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: prompt }
+        ],
         stream: true,
       }),
     });
 
-    if (!anthropicResponse.ok) {
-      const errorText = await anthropicResponse.text();
-      console.error('Anthropic API error:', anthropicResponse.status, errorText);
+    if (!openaiResponse.ok) {
+      const errorText = await openaiResponse.text();
+      console.error('OpenAI API error:', openaiResponse.status, errorText);
       
       // Handle rate limiting
-      if (anthropicResponse.status === 429) {
+      if (openaiResponse.status === 429) {
         return new Response(JSON.stringify({ 
           error: 'Rate limit exceeded',
           details: 'Too many requests. Please try again later.' 
@@ -1451,7 +1452,7 @@ COMPONENT REQUIREMENTS:
       });
     }
 
-    const reader = anthropicResponse.body?.getReader();
+    const reader = openaiResponse.body?.getReader();
     if (!reader) {
       throw new Error('Failed to get response reader');
     }
@@ -1485,21 +1486,19 @@ COMPONENT REQUIREMENTS:
               try {
                 const parsed = JSON.parse(data);
                 
-                // Anthropic sends content in delta.text for content_block_delta events
-                if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
-                  const delta = parsed.delta.text;
+                // OpenAI sends content in choices[0].delta.content for streaming
+                if (parsed.choices?.[0]?.delta?.content) {
+                  const delta = parsed.choices[0].delta.content;
                   fullResponse += delta;
                   
                   // Send to frontend in simple format
                   controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: delta })}\n\n`));
                 }
                 
-                // Track token usage from message_start and message_delta
-                if (parsed.type === 'message_start' && parsed.message?.usage) {
-                  inputTokens = parsed.message.usage.input_tokens || 0;
-                }
-                if (parsed.type === 'message_delta' && parsed.usage) {
-                  outputTokens = parsed.usage.output_tokens || 0;
+                // Track token usage from usage object (sent at the end)
+                if (parsed.usage) {
+                  inputTokens = parsed.usage.prompt_tokens || 0;
+                  outputTokens = parsed.usage.completion_tokens || 0;
                 }
               } catch (e) {
                 console.error('Parse error:', e);
