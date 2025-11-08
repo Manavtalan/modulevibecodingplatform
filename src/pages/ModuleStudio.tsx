@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Settings } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { ChatPanel } from "@/components/studio/ChatPanel";
@@ -8,10 +8,11 @@ import { PreviewPanel } from "@/components/studio/PreviewPanel";
 import { TokenUsageDisplay } from "@/components/TokenUsageDisplay";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCodeGeneration } from "@/hooks/useCodeGeneration";
-import { CodeQualityValidator, ValidationResult } from "@/utils/codeQualityValidator";
-import { toast } from "@/hooks/use-toast";
-import QualitySettings from "@/components/QualitySettings";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+// DISABLED: Unused imports removed for raw output analysis
+// import { CodeQualityValidator, ValidationResult } from "@/utils/codeQualityValidator";
+// import { toast } from "@/hooks/use-toast";
+// import QualitySettings from "@/components/QualitySettings";
+// import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 export interface Message {
   id: string;
@@ -35,19 +36,10 @@ const ModuleStudio = () => {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(location.state?.conversationId || null);
-  const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview');
+  const [activeTab, setActiveTab] = useState<'preview' | 'code'>('code'); // Force code view
   const [projectName, setProjectName] = useState("Untitled Project");
-  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
-  const [isValidating, setIsValidating] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
-  const [originalPrompt, setOriginalPrompt] = useState<string>("");
+  // DISABLED: All validation state removed for raw output analysis
   const [currentCodeType, setCurrentCodeType] = useState<string>("react");
-  
-  // Quality settings state
-  const [showSettings, setShowSettings] = useState(false);
-  const [autoRetry, setAutoRetry] = useState(true);
-  const [minQualityScore, setMinQualityScore] = useState(80);
-  const [maxRetries, setMaxRetries] = useState(2);
 
   const {
     isGenerating,
@@ -182,128 +174,101 @@ const ModuleStudio = () => {
     });
   };
 
-  // Quality validation function
-  const runQualityValidation = async (files: CodeFile[], codeType: string): Promise<ValidationResult> => {
-    setIsValidating(true);
-    
-    try {
-      // Simulate brief validation delay for UX
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Convert CodeFile to the format expected by validator
-      const validatorFiles = files.map(f => ({
-        path: f.path,
-        content: f.content,
-        language: f.path.endsWith('.tsx') ? 'tsx' : 
-                 f.path.endsWith('.jsx') ? 'jsx' : 
-                 f.path.endsWith('.ts') ? 'ts' : 
-                 f.path.endsWith('.js') ? 'js' : 
-                 f.path.endsWith('.css') ? 'css' : 
-                 f.path.endsWith('.html') ? 'html' : 'text'
-      }));
-      
-      const result = CodeQualityValidator.validateCodebase(validatorFiles, codeType);
-      setValidationResult(result);
-      
-      // Log validation results for debugging
-      console.log('Quality Validation Results:', {
-        valid: result.valid,
-        score: result.score,
-        issuesCount: result.issues.length,
-        criticalIssues: result.issues.filter(i => i.severity === 1).length
-      });
-      
-      return result;
-    } finally {
-      setIsValidating(false);
-    }
-  };
+  // DISABLED: Quality validation function temporarily disabled for raw output analysis
+  // const runQualityValidation = async (files: CodeFile[], codeType: string): Promise<ValidationResult> => {
+  //   setIsValidating(true);
+  //   try {
+  //     await new Promise(resolve => setTimeout(resolve, 500));
+  //     const validatorFiles = files.map(f => ({
+  //       path: f.path,
+  //       content: f.content,
+  //       language: f.path.endsWith('.tsx') ? 'tsx' : 
+  //                f.path.endsWith('.jsx') ? 'jsx' : 
+  //                f.path.endsWith('.ts') ? 'ts' : 
+  //                f.path.endsWith('.js') ? 'js' : 
+  //                f.path.endsWith('.css') ? 'css' : 
+  //                f.path.endsWith('.html') ? 'html' : 'text'
+  //     }));
+  //     const result = CodeQualityValidator.validateCodebase(validatorFiles, codeType);
+  //     setValidationResult(result);
+  //     console.log('Quality Validation Results:', {
+  //       valid: result.valid,
+  //       score: result.score,
+  //       issuesCount: result.issues.length,
+  //       criticalIssues: result.issues.filter(i => i.severity === 1).length
+  //     });
+  //     return result;
+  //   } finally {
+  //     setIsValidating(false);
+  //   }
+  // };
 
-  // Auto-retry function with enhanced prompt
-  const autoRetryWithBetterSettings = async (
-    prompt: string, 
-    codeType: string, 
-    validationResult: ValidationResult
-  ): Promise<void> => {
-    // Check if auto-retry is enabled
-    if (!autoRetry) {
-      toast({
-        title: "Quality validation failed",
-        description: "Auto-retry is disabled. Enable it in settings to automatically improve code quality.",
-        variant: "destructive"
-      });
-      addStatusMessage(`⚠️ Quality validation failed (Score: ${validationResult.score}/100). Auto-retry is disabled.`, "error");
-      return;
-    }
-
-    // Check retry limit
-    if (retryCount >= maxRetries) {
-      toast({
-        title: "Maximum retry attempts reached",
-        description: `Reached ${maxRetries} retry attempts. Please try a different approach or adjust settings.`,
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Check if score meets minimum requirement
-    if (validationResult.score >= minQualityScore) {
-      // Score is acceptable, no retry needed
-      return;
-    }
-
-    setRetryCount(prev => prev + 1);
-    
-    // Build enhanced prompt based on validation issues
-    let enhancedPrompt = `${prompt}\n\nIMPORTANT QUALITY REQUIREMENTS:\n`;
-    
-    // Add specific fixes based on validation issues
-    if (validationResult.issues.some(i => i.category === 'structure')) {
-      enhancedPrompt += '- ENSURE PROPER FILE STRUCTURE: ';
-      if (codeType === 'react') {
-        enhancedPrompt += 'Generate 25+ files: App.tsx, multiple components (Navbar, Hero, Features, Footer), design-tokens.css, tailwind.config, utils\n';
-      } else if (codeType === 'vue') {
-        enhancedPrompt += 'Generate multiple .vue components with proper structure\n';
-      }
-    }
-
-    if (validationResult.issues.some(i => i.category === 'design')) {
-      enhancedPrompt += '- MODERN DESIGN PATTERNS: Use CSS Grid/Flexbox, smooth animations, gradients, hover effects, responsive design\n';
-    }
-
-    if (validationResult.issues.some(i => i.category === 'modern')) {
-      enhancedPrompt += '- MODERN DEVELOPMENT: Use semantic HTML, CSS custom properties, functional components\n';
-    }
-
-    if (validationResult.issues.some(i => i.category === 'accessibility')) {
-      enhancedPrompt += '- ACCESSIBILITY: Include alt attributes, proper labels, heading hierarchy\n';
-    }
-
-    enhancedPrompt += '\nEMPHASIZE MODERN PROFESSIONAL DESIGN with production-ready quality standards.';
-
-    toast({
-      title: `Quality validation failed (Score: ${validationResult.score}/100)`,
-      description: "Retrying with enhanced prompt...",
-    });
-
-    addStatusMessage(`🔄 Auto-retrying with quality improvements (Attempt ${retryCount + 1}/${maxRetries})...`, "status");
-
-    // Always retry with Claude for better results
-    await generateCode({
-      prompt: enhancedPrompt,
-      codeType,
-      model: 'claude-sonnet-4-5', // Force Claude for retry
-      conversationId: conversationId || undefined
-    });
-  };
+  // DISABLED: Auto-retry temporarily disabled for raw output analysis
+  // const autoRetryWithBetterSettings = async (
+  //   prompt: string, 
+  //   codeType: string, 
+  //   validationResult: ValidationResult
+  // ): Promise<void> => {
+  //   if (!autoRetry) {
+  //     toast({
+  //       title: "Quality validation failed",
+  //       description: "Auto-retry is disabled. Enable it in settings to automatically improve code quality.",
+  //       variant: "destructive"
+  //     });
+  //     addStatusMessage(`⚠️ Quality validation failed (Score: ${validationResult.score}/100). Auto-retry is disabled.`, "error");
+  //     return;
+  //   }
+  //   if (retryCount >= maxRetries) {
+  //     toast({
+  //       title: "Maximum retry attempts reached",
+  //       description: `Reached ${maxRetries} retry attempts. Please try a different approach or adjust settings.`,
+  //       variant: "destructive"
+  //     });
+  //     return;
+  //   }
+  //   if (validationResult.score >= minQualityScore) {
+  //     return;
+  //   }
+  //   setRetryCount(prev => prev + 1);
+  //   let enhancedPrompt = `${prompt}\n\nIMPORTANT QUALITY REQUIREMENTS:\n`;
+  //   if (validationResult.issues.some(i => i.category === 'structure')) {
+  //     enhancedPrompt += '- ENSURE PROPER FILE STRUCTURE: ';
+  //     if (codeType === 'react') {
+  //       enhancedPrompt += 'Generate 25+ files: App.tsx, multiple components (Navbar, Hero, Features, Footer), design-tokens.css, tailwind.config, utils\n';
+  //     } else if (codeType === 'vue') {
+  //       enhancedPrompt += 'Generate multiple .vue components with proper structure\n';
+  //     }
+  //   }
+  //   if (validationResult.issues.some(i => i.category === 'design')) {
+  //     enhancedPrompt += '- MODERN DESIGN PATTERNS: Use CSS Grid/Flexbox, smooth animations, gradients, hover effects, responsive design\n';
+  //   }
+  //   if (validationResult.issues.some(i => i.category === 'modern')) {
+  //     enhancedPrompt += '- MODERN DEVELOPMENT: Use semantic HTML, CSS custom properties, functional components\n';
+  //   }
+  //   if (validationResult.issues.some(i => i.category === 'accessibility')) {
+  //     enhancedPrompt += '- ACCESSIBILITY: Include alt attributes, proper labels, heading hierarchy\n';
+  //   }
+  //   enhancedPrompt += '\nEMPHASIZE MODERN PROFESSIONAL DESIGN with production-ready quality standards.';
+  //   toast({
+  //     title: `Quality validation failed (Score: ${validationResult.score}/100)`,
+  //     description: "Retrying with enhanced prompt...",
+  //   });
+  //   addStatusMessage(`🔄 Auto-retrying with quality improvements (Attempt ${retryCount + 1}/${maxRetries})...`, "status");
+  //   await generateCode({
+  //     prompt: enhancedPrompt,
+  //     codeType,
+  //     model: 'claude-sonnet-4-5',
+  //     conversationId: conversationId || undefined
+  //   });
+  // };
 
   const handleSendMessage = async (text: string, files?: File[]) => {
     if (!text.trim()) return;
 
-    // Reset validation state for new request
-    setValidationResult(null);
-    setRetryCount(0);
-    setOriginalPrompt(text);
+    // DISABLED: Validation reset disabled
+    // setValidationResult(null);
+    // setRetryCount(0);
+    // setOriginalPrompt(text);
 
     // Add user message
     const userMessage: Message = {
@@ -367,39 +332,32 @@ const ModuleStudio = () => {
     }
   };
 
-  // Run quality validation when generation completes
-  useEffect(() => {
-    const runValidationAfterGeneration = async () => {
-      if (generationPhase === 'complete' && generatedFiles.length > 0 && !isValidating) {
-        addStatusMessage("🔍 Running quality validation...", "status");
-        
-        const validation = await runQualityValidation(generatedFiles, currentCodeType);
-        
-        if (!validation.valid) {
-          // Auto-retry with enhanced prompt if validation fails
-          addStatusMessage(
-            `⚠️ Quality check failed (Score: ${validation.score}/100)\n\nIssues found:\n${validation.issues.slice(0, 3).map(i => `• ${i.message}`).join('\n')}${validation.issues.length > 3 ? `\n...and ${validation.issues.length - 3} more` : ''}`,
-            "error"
-          );
-          
-          await autoRetryWithBetterSettings(originalPrompt, currentCodeType, validation);
-        } else {
-          // Success message with score
-          toast({
-            title: "✅ Quality validation passed!",
-            description: `Score: ${validation.score}/100`,
-          });
-          
-          addStatusMessage(
-            `✅ Quality validation passed! Score: ${validation.score}/100\n\nFiles generated: ${generatedFiles.map(f => f.path).join(', ')}`,
-            "status"
-          );
-        }
-      }
-    };
-
-    runValidationAfterGeneration();
-  }, [generationPhase, generatedFiles.length]);
+  // DISABLED: Quality validation after generation temporarily disabled for raw output analysis
+  // useEffect(() => {
+  //   const runValidationAfterGeneration = async () => {
+  //     if (generationPhase === 'complete' && generatedFiles.length > 0 && !isValidating) {
+  //       addStatusMessage("🔍 Running quality validation...", "status");
+  //       const validation = await runQualityValidation(generatedFiles, currentCodeType);
+  //       if (!validation.valid) {
+  //         addStatusMessage(
+  //           `⚠️ Quality check failed (Score: ${validation.score}/100)\n\nIssues found:\n${validation.issues.slice(0, 3).map(i => `• ${i.message}`).join('\n')}${validation.issues.length > 3 ? `\n...and ${validation.issues.length - 3} more` : ''}`,
+  //           "error"
+  //         );
+  //         await autoRetryWithBetterSettings(originalPrompt, currentCodeType, validation);
+  //       } else {
+  //         toast({
+  //           title: "✅ Quality validation passed!",
+  //           description: `Score: ${validation.score}/100`,
+  //         });
+  //         addStatusMessage(
+  //           `✅ Quality validation passed! Score: ${validation.score}/100\n\nFiles generated: ${generatedFiles.map(f => f.path).join(', ')}`,
+  //           "status"
+  //         );
+  //       }
+  //     }
+  //   };
+  //   runValidationAfterGeneration();
+  // }, [generationPhase, generatedFiles.length]);
 
   const handleBack = () => {
     navigate("/");
@@ -424,42 +382,15 @@ const ModuleStudio = () => {
           </div>
           
           <div className="flex items-center gap-2">
-            <Button
-              variant={showSettings ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setShowSettings(!showSettings)}
-              title="Quality Settings"
-            >
-              <Settings className="h-4 w-4 mr-1" />
-              Settings
-            </Button>
+            {user && (
+              <div className="scale-75 origin-right">
+                <TokenUsageDisplay />
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Quality Settings Panel */}
-        <Collapsible open={showSettings}>
-          <CollapsibleContent className="px-4 pb-3 border-t border-border/50">
-            <div className="space-y-4">
-              {/* Token Usage in Settings */}
-              {user && (
-                <div className="pb-3 border-b border-border/50">
-                  <h3 className="text-sm font-medium mb-2">Token Usage</h3>
-                  <TokenUsageDisplay />
-                </div>
-              )}
-              
-              {/* Quality Settings */}
-              <QualitySettings
-                autoRetry={autoRetry}
-                setAutoRetry={setAutoRetry}
-                minQualityScore={minQualityScore}
-                setMinQualityScore={setMinQualityScore}
-                maxRetries={maxRetries}
-                setMaxRetries={setMaxRetries}
-              />
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
+        {/* DISABLED: Settings panel removed for raw output analysis */}
       </header>
 
       {/* Main Content - Resizable Split Layout */}
@@ -472,8 +403,6 @@ const ModuleStudio = () => {
               onSendMessage={handleSendMessage}
               isGenerating={isGenerating}
               messagesEndRef={messagesEndRef}
-              validationResult={validationResult}
-              isValidating={isValidating}
             />
           </ResizablePanel>
 
@@ -492,9 +421,8 @@ const ModuleStudio = () => {
               diagnosticInfo={diagnosticInfo}
               rawOutputAvailable={rawOutputAvailable}
               onRegenerate={() => {
-                if (originalPrompt) {
-                  handleSendMessage(originalPrompt);
-                }
+                // DISABLED: Regenerate disabled during raw output analysis
+                console.log("Regenerate disabled");
               }}
             />
           </ResizablePanel>

@@ -7,8 +7,9 @@ import { Card } from "@/components/ui/card";
 import { Message } from "@/pages/ModuleStudio";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import ValidationResults from "@/components/ValidationResults";
-import { ValidationResult } from "@/utils/codeQualityValidator";
+// DISABLED: ValidationResults removed for raw output analysis
+// import ValidationResults from "@/components/ValidationResults";
+// import { ValidationResult } from "@/utils/codeQualityValidator";
 import Logo from "@/components/Logo";
 
 interface ChatPanelProps {
@@ -16,17 +17,13 @@ interface ChatPanelProps {
   onSendMessage: (text: string, files?: File[]) => void;
   isGenerating: boolean;
   messagesEndRef: RefObject<HTMLDivElement>;
-  validationResult?: ValidationResult | null;
-  isValidating?: boolean;
 }
 
 export const ChatPanel = ({ 
   messages, 
   onSendMessage, 
   isGenerating, 
-  messagesEndRef,
-  validationResult,
-  isValidating 
+  messagesEndRef
 }: ChatPanelProps) => {
   const [inputValue, setInputValue] = useState("");
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
@@ -134,15 +131,7 @@ export const ChatPanel = ({
             </div>
           )}
 
-          {/* Quality Validation Results */}
-          {(validationResult || isValidating) && (
-            <div className="mt-4">
-              <ValidationResults 
-                validationResult={validationResult || null}
-                isValidating={isValidating || false}
-              />
-            </div>
-          )}
+          {/* DISABLED: Quality Validation Results removed for raw output analysis */}
 
           <div ref={messagesEndRef} />
         </div>

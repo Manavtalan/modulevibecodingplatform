@@ -204,76 +204,25 @@ export const PreviewPanel = ({
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Tab Header */}
+      {/* Tab Header - PREVIEW DISABLED */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-border">
-        <Tabs value={activeTab} onValueChange={(v) => onTabChange(v as any)}>
-          <TabsList>
-            <TabsTrigger value="preview">Preview</TabsTrigger>
-            <TabsTrigger value="code">Code</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-semibold">Raw Generated Code</h3>
+          <span className="text-xs text-muted-foreground">(Preview disabled for analysis)</span>
+        </div>
 
         <div className="flex items-center gap-2">
-          {activeTab === 'preview' && (
-            <div className="flex gap-1">
-              <Button
-                variant={deviceMode === 'mobile' ? 'default' : 'ghost'}
-                size="icon"
-                onClick={() => setDeviceMode('mobile')}
-              >
-                <Smartphone className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={deviceMode === 'tablet' ? 'default' : 'ghost'}
-                size="icon"
-                onClick={() => setDeviceMode('tablet')}
-              >
-                <Tablet className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={deviceMode === 'desktop' ? 'default' : 'ghost'}
-                size="icon"
-                onClick={() => setDeviceMode('desktop')}
-              >
-                <Monitor className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-
           {files.length > 0 && (
-            <>
-              <Button variant="ghost" size="icon" onClick={handleDownloadProject}>
-                <Download className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon">
-                <ExternalLink className="h-4 w-4" />
-              </Button>
-            </>
+            <Button variant="ghost" size="icon" onClick={handleDownloadProject}>
+              <Download className="h-4 w-4" />
+            </Button>
           )}
         </div>
       </div>
 
-      {/* Content Area */}
+      {/* Content Area - FORCE CODE VIEW */}
       <div className="flex-1 overflow-hidden">
-        {activeTab === 'preview' ? (
-          <div className="h-full bg-muted/30">
-            {isGenerating && generationPhase !== 'complete' ? (
-              <div className="flex items-center justify-center h-full">
-                <Card className="glass-card p-8 text-center space-y-4">
-                  <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto" />
-                  <p className="text-lg font-medium">Generating your project...</p>
-                  {currentFile && <p className="text-sm text-muted-foreground">Working on: {currentFile}</p>}
-                  {filePlan.length > 0 && (
-                    <p className="text-xs text-muted-foreground">{filePlan.length} files planned</p>
-                  )}
-                </Card>
-              </div>
-            ) : (
-              renderPreview()
-            )}
-          </div>
-        ) : (
-          <div className="flex h-full">
+        <div className="flex h-full">
             {/* File Tree */}
             <div className="w-64 border-r border-border bg-muted/30 p-4">
               <h3 className="text-sm font-semibold mb-3">Files</h3>
@@ -336,7 +285,6 @@ export const PreviewPanel = ({
               )}
             </div>
           </div>
-        )}
       </div>
     </div>
   );
