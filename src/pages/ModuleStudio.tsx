@@ -6,7 +6,6 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/componen
 import { ChatPanel } from "@/components/studio/ChatPanel";
 import { PreviewPanel } from "@/components/studio/PreviewPanel";
 import { TokenUsageDisplay } from "@/components/TokenUsageDisplay";
-import { ModelSelector } from "@/components/ModelSelector";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCodeGeneration } from "@/hooks/useCodeGeneration";
 import { CodeQualityValidator, ValidationResult } from "@/utils/codeQualityValidator";
@@ -36,7 +35,6 @@ const ModuleStudio = () => {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(location.state?.conversationId || null);
-  const [selectedModel, setSelectedModel] = useState("claude-sonnet-4-5");
   const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview');
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState(false);
@@ -112,26 +110,30 @@ const ModuleStudio = () => {
     }
   }, [generatedFiles, generationPhase, isGenerating]);
 
-  // Add status messages during generation
+  // Add detailed status messages during generation (like Lovable)
   useEffect(() => {
     if (generationPhase === 'planning') {
-      addStatusMessage("🎯 Planning file structure...", "status");
+      addStatusMessage("🎯 Analyzing your request and planning the project structure...", "status");
     } else if (generationPhase === 'generating' && filePlan.length > 0) {
-      addStatusMessage(`📝 Generating files... (${filePlan.length} files planned)`, "status");
+      addStatusMessage(`🏗️ Building your project with ${filePlan.length} files...\n📦 This includes: components, pages, styles, utilities, and configurations`, "status");
     } else if (generationPhase === 'complete') {
-      addStatusMessage("✅ Generation complete! Preview is ready.", "status");
+      addStatusMessage("✅ Generation complete! Your project is ready to preview.", "status");
     } else if (generationPhase === 'error' && generationError) {
       addStatusMessage(`❌ Error: ${generationError}`, "error");
     }
   }, [generationPhase, filePlan.length, generationError]);
 
-  // Update status when current file changes
+  // Update status when current file changes (detailed like Lovable)
   useEffect(() => {
     if (currentFile && generationPhase === 'generating') {
       const currentIndex = filePlan.findIndex(f => f.path === currentFile);
       if (currentIndex >= 0) {
+        const fileType = currentFile.includes('component') ? 'component' : 
+                        currentFile.includes('page') ? 'page' :
+                        currentFile.includes('style') ? 'styles' :
+                        currentFile.includes('util') ? 'utility' : 'file';
         addStatusMessage(
-          `📝 Generating ${currentFile}... (${currentIndex + 1}/${filePlan.length})`,
+          `✍️ Writing ${fileType}: ${currentFile}\n📊 Progress: ${currentIndex + 1} of ${filePlan.length} files`,
           "status"
         );
       }
@@ -320,13 +322,13 @@ const ModuleStudio = () => {
       const codeType = /vue/i.test(text) ? 'vue' : 'react';
       setCurrentCodeType(codeType);
 
-      // Trigger code generation
-      addStatusMessage("🔨 Module is working on your request...", "status");
+      // Trigger code generation with detailed status
+      addStatusMessage("🚀 Starting code generation...\n🤖 Using Claude Sonnet 4.5 for optimal quality", "status");
       
       await generateCode({
         prompt: text,
         codeType,
-        model: selectedModel,
+        model: 'claude-sonnet-4-5',
         conversationId: conversationId || undefined
       });
     } else {
@@ -339,7 +341,7 @@ const ModuleStudio = () => {
             message: text,
             conversationId: conversationId,
             userId: user?.id,
-            model: selectedModel
+            model: 'claude-sonnet-4-5'
           }
         });
 
@@ -404,33 +406,37 @@ const ModuleStudio = () => {
 
   return (
     <div className="flex flex-col h-screen bg-background">
-      {/* Header */}
+      {/* Header - Clean & Simple */}
       <header className="flex flex-col border-b border-border">
-        <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-between px-4 py-2">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={handleBack}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-semibold">Module Studio</h1>
+            <h1 className="text-lg font-semibold">Module Studio</h1>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Button
               variant={showSettings ? "default" : "ghost"}
-              size="icon"
+              size="sm"
               onClick={() => setShowSettings(!showSettings)}
               title="Quality Settings"
             >
-              <Settings className="h-5 w-5" />
+              <Settings className="h-4 w-4 mr-1" />
+              Settings
             </Button>
-            <ModelSelector value={selectedModel} onChange={setSelectedModel} />
-            {user && <TokenUsageDisplay />}
+            {user && (
+              <div className="scale-75 origin-right">
+                <TokenUsageDisplay />
+              </div>
+            )}
           </div>
         </div>
 
         {/* Quality Settings Panel */}
         <Collapsible open={showSettings}>
-          <CollapsibleContent className="px-4 pb-4">
+          <CollapsibleContent className="px-4 pb-3 border-t border-border/50">
             <QualitySettings
               autoRetry={autoRetry}
               setAutoRetry={setAutoRetry}

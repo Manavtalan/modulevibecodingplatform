@@ -205,7 +205,7 @@ export const PreviewPanel = ({
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Tab Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border">
         <Tabs value={activeTab} onValueChange={(v) => onTabChange(v as any)}>
           <TabsList>
             <TabsTrigger value="preview">Preview</TabsTrigger>
@@ -256,7 +256,7 @@ export const PreviewPanel = ({
       {/* Content Area */}
       <div className="flex-1 overflow-hidden">
         {activeTab === 'preview' ? (
-          <div className="h-full p-4 bg-muted/30">
+          <div className="h-full bg-muted/30">
             {isGenerating && generationPhase !== 'complete' ? (
               <div className="flex items-center justify-center h-full">
                 <Card className="glass-card p-8 text-center space-y-4">
