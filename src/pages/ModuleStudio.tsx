@@ -289,7 +289,7 @@ const ModuleStudio = () => {
       setCurrentCodeType(codeType);
 
       // Trigger code generation with detailed status
-      addStatusMessage("🚀 Starting code generation...\n🤖 Using GPT-4o with 200K context & 32K output for highly intelligent code generation", "status");
+      addStatusMessage("🚀 Starting code generation...\n🤖 Using GPT-4o with 128K context window for highly intelligent code generation", "status");
       
       await generateCode({
         prompt: text,

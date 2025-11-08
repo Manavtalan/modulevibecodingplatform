@@ -231,7 +231,6 @@ serve(async (req) => {
       
       const requestBody = {
         model: 'gpt-4o',
-        max_tokens: 32000, // 32K output tokens as specified
         temperature: 0.7,
         messages: messages.map(m => ({ role: m.role, content: m.content })),
         stream: true,

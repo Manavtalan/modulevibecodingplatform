@@ -14,7 +14,7 @@ const models = [
     value: 'gpt-4o',
     label: 'GPT-4o',
     badge: 'Primary',
-    description: 'Highly intelligent model - 200K context, 32K output tokens'
+    description: 'Highly intelligent model - 128K context window'
   },
   {
     value: 'gpt-4o-mini',

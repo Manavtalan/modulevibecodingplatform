@@ -1418,7 +1418,6 @@ COMPONENT REQUIREMENTS:
       },
       body: JSON.stringify({
         model: 'gpt-4o',
-        max_tokens: 32000, // 32K output tokens as specified
         temperature: 0.7,
         messages: [
           { role: 'system', content: systemPrompt },
