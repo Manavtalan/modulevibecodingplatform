@@ -878,6 +878,11 @@ export default Button;
 
 ═══════════════════════════════════════════════════════
 
+🚨 CRITICAL: COMPLETE APPLICATION GENERATION REQUIREMENTS 🚨
+
+YOU MUST GENERATE A MINIMUM OF 25 FILES FOR EVERY REACT APPLICATION.
+INCOMPLETE APPLICATIONS WILL BE REJECTED.
+
 MANDATORY: ENFORCE STRICT REACT COMPONENT ARCHITECTURE
 
 CRITICAL RULES:
@@ -887,37 +892,53 @@ CRITICAL RULES:
 ❌ NO hardcoded styles - must use design tokens EXACTLY as shown above
 ❌ NO inline styles or className strings without proper organization
 ❌ MUST use the EXACT component patterns shown in examples above
+❌ NO SKIPPING configuration files (package.json, tsconfig.json, etc.)
+❌ NO PLACEHOLDER CODE - every file must be complete and production-ready
 
-REQUIRED FILE STRUCTURE (EXACTLY AS SHOWN):
+🎯 FILE GENERATION PRIORITY ORDER:
+1. Configuration files FIRST (package.json, tsconfig.json, tailwind.config.js, etc.)
+2. Entry points SECOND (index.html, src/main.tsx)
+3. Utility files THIRD (src/lib/utils.ts, src/types/index.ts)
+4. Styles FOURTH (src/styles/design-tokens.css, src/styles/globals.css)
+5. UI components FIFTH (src/components/ui/*.tsx)
+6. Layout components SIXTH (src/components/layout/*.tsx)
+7. Section components SEVENTH (src/components/sections/*.tsx)
+8. App composition EIGHTH (src/App.tsx)
+9. Documentation LAST (README.md)
+
+REQUIRED FILE STRUCTURE (YOU MUST GENERATE ALL 25 FILES):
 [PLAN]
 {"files":[
-  {"path":"package.json","description":"Complete dependencies with React 18, TypeScript, Vite, Tailwind CSS"},
-  {"path":"tsconfig.json","description":"TypeScript configuration with modern settings"},
-  {"path":"vite.config.ts","description":"Vite build configuration"},
-  {"path":"tailwind.config.js","description":"Tailwind CSS configuration with design tokens"},
-  {"path":"postcss.config.js","description":"PostCSS configuration for Tailwind"},
-  {"path":".eslintrc.json","description":"ESLint configuration"},
-  {"path":".gitignore","description":"Git ignore file for node_modules, dist, etc."},
-  {"path":"index.html","description":"HTML entry point with meta tags"},
-  {"path":"README.md","description":"Project documentation with features and installation"},
-  {"path":"src/main.tsx","description":"React entry point with StrictMode"},
-  {"path":"src/App.tsx","description":"Main composition only - no business logic"},
-  {"path":"src/components/layout/Navbar.tsx","description":"Navigation component with mobile responsiveness"},
-  {"path":"src/components/layout/Footer.tsx","description":"Footer with links and social media"},
-  {"path":"src/components/sections/Hero.tsx","description":"Hero section with CTA"},
-  {"path":"src/components/sections/Features.tsx","description":"Features showcase grid"},
-  {"path":"src/components/sections/Testimonials.tsx","description":"Customer testimonials carousel"},
-  {"path":"src/components/sections/CTA.tsx","description":"Call-to-action section"},
-  {"path":"src/components/ui/Button.tsx","description":"Reusable button component with variants"},
-  {"path":"src/components/ui/Card.tsx","description":"Reusable card component"},
-  {"path":"src/components/ui/Badge.tsx","description":"Reusable badge component"},
-  {"path":"src/styles/design-tokens.css","description":"CSS custom properties for design system"},
-  {"path":"src/styles/globals.css","description":"Global styles and Tailwind imports"},
-  {"path":"src/lib/utils.ts","description":"Utility functions including cn() helper"},
-  {"path":"src/types/index.ts","description":"TypeScript interfaces and types"},
-  {"path":"src/vite-env.d.ts","description":"Vite environment types"}
+  {"path":"package.json","description":"Complete dependencies with React 18, TypeScript, Vite, Tailwind CSS, lucide-react"},
+  {"path":"tsconfig.json","description":"TypeScript configuration with strict mode and modern settings"},
+  {"path":"vite.config.ts","description":"Vite build configuration with React plugin"},
+  {"path":"tailwind.config.js","description":"Tailwind CSS configuration with design tokens and custom colors"},
+  {"path":"postcss.config.js","description":"PostCSS configuration for Tailwind processing"},
+  {"path":".eslintrc.json","description":"ESLint configuration with TypeScript and React rules"},
+  {"path":".gitignore","description":"Git ignore file for node_modules, dist, .env, etc."},
+  {"path":"index.html","description":"HTML entry point with meta tags, viewport, and favicon"},
+  {"path":"README.md","description":"Project documentation with features, installation, and usage"},
+  {"path":"src/main.tsx","description":"React entry point with StrictMode and CSS imports"},
+  {"path":"src/App.tsx","description":"Main app composition - ONLY component imports and layout"},
+  {"path":"src/components/layout/Navbar.tsx","description":"Responsive navigation with mobile menu and logo"},
+  {"path":"src/components/layout/Footer.tsx","description":"Footer with links, social media, and copyright"},
+  {"path":"src/components/sections/Hero.tsx","description":"Hero section with headline, description, and CTA buttons"},
+  {"path":"src/components/sections/Features.tsx","description":"Features showcase in responsive grid with icons"},
+  {"path":"src/components/sections/Testimonials.tsx","description":"Customer testimonials with cards and ratings"},
+  {"path":"src/components/sections/CTA.tsx","description":"Call-to-action section with gradient background"},
+  {"path":"src/components/ui/Button.tsx","description":"Reusable button with variants (primary, secondary, outline, ghost) and sizes"},
+  {"path":"src/components/ui/Card.tsx","description":"Reusable card component with header, body, footer sections"},
+  {"path":"src/components/ui/Badge.tsx","description":"Badge component with color variants and sizes"},
+  {"path":"src/components/ui/Input.tsx","description":"Input component with label, error states, and validation"},
+  {"path":"src/styles/design-tokens.css","description":"CSS custom properties for colors, spacing, typography, shadows"},
+  {"path":"src/styles/globals.css","description":"Global styles with Tailwind imports and base resets"},
+  {"path":"src/lib/utils.ts","description":"Utility functions including cn() for className merging"},
+  {"path":"src/types/index.ts","description":"TypeScript interfaces for all components and data structures"},
+  {"path":"src/vite-env.d.ts","description":"Vite environment type definitions"}
 ]}
 [/PLAN]
+
+⚠️ ENFORCEMENT: If you generate fewer than 25 files, the application will be considered INCOMPLETE and REJECTED.
 
 COMPONENT ARCHITECTURE RULES:
 
@@ -1929,6 +1950,7 @@ COMPONENT REQUIREMENTS:
     console.log('Code Type:', codeType);
     console.log('Framework:', framework || 'none');
     console.log('Prompt length:', prompt.length);
+    console.log('Expected files:', codeType === 'react' ? '26 files minimum' : codeType === 'html' ? '1 file' : 'varies');
 
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -2028,7 +2050,15 @@ COMPONENT REQUIREMENTS:
             issues: []
           };
           
-          console.log('✅ Generation complete:', fullResponse.length, 'characters');
+          // Extract file count from the generated content
+          const fileMatches = fullResponse.match(/\[FILE:/g);
+          const fileCount = fileMatches ? fileMatches.length : 0;
+          
+          console.log(`✅ Generation complete: ${fullResponse.length} characters, ${fileCount} files generated`);
+          
+          if (codeType === 'react' && fileCount < 25) {
+            console.warn(`⚠️ WARNING: Expected 26+ files for React, but only ${fileCount} were generated`);
+          }
 
           // Deduct tokens
           await supabase.rpc('check_and_deduct_tokens', {
