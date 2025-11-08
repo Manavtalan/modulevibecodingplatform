@@ -13,7 +13,7 @@ interface GenerateCodeRequest {
   codeType?: 'react' | 'vue' | 'javascript' | 'typescript' | 'css';
   framework?: string;
   conversation_id?: string;
-  model?: 'claude-sonnet-4-5' | 'gpt-5-mini' | 'gemini-flash';
+  model?: 'gpt-5-mini';
 }
 
 serve(async (req) => {
@@ -22,14 +22,16 @@ serve(async (req) => {
   }
 
   try {
-    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
 
     if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
       throw new Error('Missing required environment variables');
+    }
+    
+    if (!OPENAI_API_KEY) {
+      throw new Error('OpenAI API key not configured');
     }
 
     const authHeader = req.headers.get('Authorization');
@@ -53,7 +55,7 @@ serve(async (req) => {
       });
     }
 
-    const { prompt, codeType = 'react', framework, conversation_id, model = 'claude-sonnet-4-5' } = await req.json() as GenerateCodeRequest;
+    const { prompt, codeType = 'react', framework, conversation_id, model = 'gpt-5-mini' } = await req.json() as GenerateCodeRequest;
 
     if (!prompt || prompt.trim().length === 0) {
       return new Response(JSON.stringify({ error: 'Prompt is required' }), {
@@ -1394,12 +1396,12 @@ COMPONENT REQUIREMENTS:
       { role: 'user', content: enhancedPrompt }
     ];
 
-    // Use Claude by default for best results
-    if (!ANTHROPIC_API_KEY) {
-      throw new Error('ANTHROPIC_API_KEY not configured');
+    // Use OpenAI GPT-5 Mini for code generation
+    if (!OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY not configured');
     }
 
-    const modelUsed = 'claude-sonnet-4-5';
+    const modelUsed = 'gpt-5-mini';
 
     console.log('=== Code Generation Request ===');
     console.log('Model:', modelUsed);
@@ -1408,26 +1410,34 @@ COMPONENT REQUIREMENTS:
     console.log('Prompt length:', prompt.length);
     console.log('Expected files:', codeType === 'react' ? '25+ files' : 'multiple files');
 
-    const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
+    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 64000, // Claude Sonnet 4.5 maximum output capacity for extensive code generation
-        temperature: 0.7, // Balanced creativity and consistency
-        messages: messages.filter(m => m.role !== 'system'),
-        system: systemPrompt,
+        model: 'gpt-5-mini',
+        max_completion_tokens: 128000, // GPT-5 Mini maximum output tokens
+        messages: messages,
         stream: true,
       }),
     });
 
-    if (!claudeResponse.ok) {
-      const errorText = await claudeResponse.text();
-      console.error('Claude API error:', claudeResponse.status, errorText);
+    if (!openaiResponse.ok) {
+      const errorText = await openaiResponse.text();
+      console.error('OpenAI API error:', openaiResponse.status, errorText);
+      
+      // Handle rate limiting
+      if (openaiResponse.status === 429) {
+        return new Response(JSON.stringify({ 
+          error: 'Rate limit exceeded',
+          details: 'Too many requests. Please try again later.' 
+        }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
       
       return new Response(JSON.stringify({ 
         error: 'Failed to generate code',
@@ -1438,7 +1448,7 @@ COMPONENT REQUIREMENTS:
       });
     }
 
-    const reader = claudeResponse.body?.getReader();
+    const reader = openaiResponse.body?.getReader();
     if (!reader) {
       throw new Error('Failed to get response reader');
     }
@@ -1472,13 +1482,19 @@ COMPONENT REQUIREMENTS:
               try {
                 const parsed = JSON.parse(data);
                 
-                // Claude sends content in content_block_delta events
-                if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
-                  const text = parsed.delta.text;
-                  fullResponse += text;
+                // OpenAI sends content in delta.content
+                const delta = parsed.choices?.[0]?.delta?.content;
+                if (delta) {
+                  fullResponse += delta;
                   
                   // Send to frontend in simple format
-                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: text })}\n\n`));
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: delta })}\n\n`));
+                }
+                
+                // Track token usage if provided
+                if (parsed.usage) {
+                  inputTokens = parsed.usage.prompt_tokens || 0;
+                  outputTokens = parsed.usage.completion_tokens || 0;
                 }
               } catch (e) {
                 console.error('Parse error:', e);

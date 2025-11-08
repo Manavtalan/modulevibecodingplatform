@@ -257,7 +257,7 @@ const ModuleStudio = () => {
   //   await generateCode({
   //     prompt: enhancedPrompt,
   //     codeType,
-  //     model: 'claude-sonnet-4-5',
+  //     model: 'gpt-5-mini',
   //     conversationId: conversationId || undefined
   //   });
   // };
@@ -289,12 +289,12 @@ const ModuleStudio = () => {
       setCurrentCodeType(codeType);
 
       // Trigger code generation with detailed status
-      addStatusMessage("🚀 Starting code generation...\n🤖 Using Claude Sonnet 4.5 for optimal quality", "status");
+      addStatusMessage("🚀 Starting code generation...\n🤖 Using OpenAI GPT-5 Mini for optimal performance", "status");
       
       await generateCode({
         prompt: text,
         codeType,
-        model: 'claude-sonnet-4-5',
+        model: 'gpt-5-mini',
         conversationId: conversationId || undefined
       });
     } else {
@@ -307,7 +307,7 @@ const ModuleStudio = () => {
             message: text,
             conversationId: conversationId,
             userId: user?.id,
-            model: 'claude-sonnet-4-5'
+            model: 'gpt-5-mini'
           }
         });
 
