@@ -36,6 +36,7 @@ const ModuleStudio = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(location.state?.conversationId || null);
   const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview');
+  const [projectName, setProjectName] = useState("Untitled Project");
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
@@ -413,7 +414,13 @@ const ModuleStudio = () => {
             <Button variant="ghost" size="icon" onClick={handleBack}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-lg font-semibold">Module Studio</h1>
+            <input
+              type="text"
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
+              className="text-lg font-semibold bg-transparent border-none outline-none focus:border-b focus:border-primary px-2 py-1 transition-all"
+              placeholder="Project Name"
+            />
           </div>
           
           <div className="flex items-center gap-2">
@@ -426,25 +433,31 @@ const ModuleStudio = () => {
               <Settings className="h-4 w-4 mr-1" />
               Settings
             </Button>
-            {user && (
-              <div className="scale-75 origin-right">
-                <TokenUsageDisplay />
-              </div>
-            )}
           </div>
         </div>
 
         {/* Quality Settings Panel */}
         <Collapsible open={showSettings}>
           <CollapsibleContent className="px-4 pb-3 border-t border-border/50">
-            <QualitySettings
-              autoRetry={autoRetry}
-              setAutoRetry={setAutoRetry}
-              minQualityScore={minQualityScore}
-              setMinQualityScore={setMinQualityScore}
-              maxRetries={maxRetries}
-              setMaxRetries={setMaxRetries}
-            />
+            <div className="space-y-4">
+              {/* Token Usage in Settings */}
+              {user && (
+                <div className="pb-3 border-b border-border/50">
+                  <h3 className="text-sm font-medium mb-2">Token Usage</h3>
+                  <TokenUsageDisplay />
+                </div>
+              )}
+              
+              {/* Quality Settings */}
+              <QualitySettings
+                autoRetry={autoRetry}
+                setAutoRetry={setAutoRetry}
+                minQualityScore={minQualityScore}
+                setMinQualityScore={setMinQualityScore}
+                maxRetries={maxRetries}
+                setMaxRetries={setMaxRetries}
+              />
+            </div>
           </CollapsibleContent>
         </Collapsible>
       </header>
