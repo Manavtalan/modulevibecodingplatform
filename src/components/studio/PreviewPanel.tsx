@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -43,6 +43,13 @@ export const PreviewPanel = ({
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [deviceMode, setDeviceMode] = useState<DeviceMode>('desktop');
   const [showDiagnostics, setShowDiagnostics] = useState(false);
+
+  // Auto-select first file when files change
+  useEffect(() => {
+    if (files.length > 0 && !selectedFile) {
+      setSelectedFile(files[0].path);
+    }
+  }, [files, selectedFile]);
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -166,12 +173,85 @@ export const PreviewPanel = ({
       );
     }
 
-    // Find HTML file
+    // Check if it's a React/Vue app (has package.json or React/Vue files)
+    const hasReactFiles = files.some(f => 
+      f.path.includes('.tsx') || 
+      f.path.includes('.jsx') || 
+      f.content.includes('import React') ||
+      f.content.includes('from "react"')
+    );
+    
+    const hasVueFiles = files.some(f => 
+      f.path.includes('.vue') || 
+      f.content.includes('<script setup')
+    );
+
+    if (hasReactFiles || hasVueFiles) {
+      const framework = hasReactFiles ? 'React' : 'Vue';
+      return (
+        <div className="flex items-center justify-center h-full p-8">
+          <Card className="max-w-2xl p-6 space-y-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-6 w-6 text-blue-500 mt-1" />
+              <div className="space-y-3 flex-1">
+                <div>
+                  <h3 className="text-lg font-semibold">{framework} Application Generated</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {framework} applications require a build environment to preview. Use the Code tab to view and download the generated files.
+                  </p>
+                </div>
+                
+                <Alert>
+                  <FileText className="h-4 w-4" />
+                  <AlertTitle>Generated Files</AlertTitle>
+                  <AlertDescription className="mt-2">
+                    <div className="space-y-1 text-xs">
+                      {files.slice(0, 10).map((file, idx) => (
+                        <div key={idx}>✓ {file.path}</div>
+                      ))}
+                      {files.length > 10 && (
+                        <div className="text-muted-foreground">... and {files.length - 10} more files</div>
+                      )}
+                    </div>
+                  </AlertDescription>
+                </Alert>
+
+                <div className="flex gap-2 pt-2">
+                  <Button variant="default" size="sm" onClick={() => onTabChange('code')}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    View Code Files
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleDownloadProject}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Download Project
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      );
+    }
+
+    // Find HTML file for simple web pages
     const htmlFile = files.find(f => f.path.endsWith('.html'));
     if (!htmlFile) {
       return (
-        <div className="flex items-center justify-center h-full text-muted-foreground">
-          <p>No HTML file to preview</p>
+        <div className="flex items-center justify-center h-full p-8">
+          <Card className="max-w-lg p-6">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-6 w-6 text-yellow-500" />
+              <div>
+                <h3 className="font-semibold">No HTML File Found</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Switch to the Code tab to view the generated files.
+                </p>
+                <Button variant="outline" size="sm" className="mt-3" onClick={() => onTabChange('code')}>
+                  View Code Files
+                </Button>
+              </div>
+            </div>
+          </Card>
         </div>
       );
     }
@@ -194,7 +274,7 @@ export const PreviewPanel = ({
       <div className={`${getDeviceClass()} h-full transition-all duration-300`}>
         <iframe
           srcDoc={htmlContent}
-          className="w-full h-full border-0 bg-white"
+          className="w-full h-full border-0 bg-white rounded-lg shadow-sm"
           title="Preview"
           sandbox="allow-scripts"
         />
@@ -204,14 +284,44 @@ export const PreviewPanel = ({
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Tab Header - PREVIEW DISABLED */}
+      {/* Tab Header */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-border">
-        <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold">Raw Generated Code</h3>
-          <span className="text-xs text-muted-foreground">(Preview disabled for analysis)</span>
-        </div>
+        <Tabs value={activeTab} onValueChange={(v) => onTabChange(v as 'preview' | 'code')} className="w-auto">
+          <TabsList className="h-8">
+            <TabsTrigger value="preview" className="text-xs px-3">Preview</TabsTrigger>
+            <TabsTrigger value="code" className="text-xs px-3">Code</TabsTrigger>
+          </TabsList>
+        </Tabs>
 
         <div className="flex items-center gap-2">
+          {activeTab === 'preview' && files.length > 0 && (
+            <div className="flex items-center gap-1 border rounded-md p-1">
+              <Button
+                variant={deviceMode === 'mobile' ? 'secondary' : 'ghost'}
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => setDeviceMode('mobile')}
+              >
+                <Smartphone className="h-3 w-3" />
+              </Button>
+              <Button
+                variant={deviceMode === 'tablet' ? 'secondary' : 'ghost'}
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => setDeviceMode('tablet')}
+              >
+                <Tablet className="h-3 w-3" />
+              </Button>
+              <Button
+                variant={deviceMode === 'desktop' ? 'secondary' : 'ghost'}
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => setDeviceMode('desktop')}
+              >
+                <Monitor className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
           {files.length > 0 && (
             <Button variant="ghost" size="icon" onClick={handleDownloadProject}>
               <Download className="h-4 w-4" />
@@ -220,9 +330,14 @@ export const PreviewPanel = ({
         </div>
       </div>
 
-      {/* Content Area - FORCE CODE VIEW */}
+      {/* Content Area */}
       <div className="flex-1 overflow-hidden">
-        <div className="flex h-full">
+        {activeTab === 'preview' ? (
+          <div className="h-full overflow-auto bg-muted/30 p-4">
+            {renderPreview()}
+          </div>
+        ) : (
+          <div className="flex h-full">
             {/* File Tree */}
             <div className="w-64 border-r border-border bg-muted/30 p-4">
               <h3 className="text-sm font-semibold mb-3">Files</h3>
@@ -249,42 +364,43 @@ export const PreviewPanel = ({
               </ScrollArea>
             </div>
 
-            {/* Code Viewer */}
-            <div className="flex-1 overflow-hidden">
-              {selectedFile ? (
-                <div className="h-full flex flex-col">
-                  <div className="flex items-center justify-between px-4 py-2 border-b border-border">
-                    <span className="text-sm font-medium">{selectedFile}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        const file = files.find(f => f.path === selectedFile);
-                        if (file) handleCopyCode(file.content);
-                      }}
-                    >
-                      <Copy className="h-4 w-4 mr-2" />
-                      Copy
-                    </Button>
+              {/* Code Viewer */}
+              <div className="flex-1 overflow-hidden">
+                {selectedFile ? (
+                  <div className="h-full flex flex-col">
+                    <div className="flex items-center justify-between px-4 py-2 border-b border-border">
+                      <span className="text-sm font-medium">{selectedFile}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          const file = files.find(f => f.path === selectedFile);
+                          if (file) handleCopyCode(file.content);
+                        }}
+                      >
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copy
+                      </Button>
+                    </div>
+                    <ScrollArea className="flex-1">
+                      <SyntaxHighlighter
+                        language={getLanguage(selectedFile)}
+                        style={vscDarkPlus}
+                        showLineNumbers
+                        customStyle={{ margin: 0, borderRadius: 0 }}
+                      >
+                        {files.find(f => f.path === selectedFile)?.content || ''}
+                      </SyntaxHighlighter>
+                    </ScrollArea>
                   </div>
-                  <ScrollArea className="flex-1">
-                    <SyntaxHighlighter
-                      language={getLanguage(selectedFile)}
-                      style={vscDarkPlus}
-                      showLineNumbers
-                      customStyle={{ margin: 0, borderRadius: 0 }}
-                    >
-                      {files.find(f => f.path === selectedFile)?.content || ''}
-                    </SyntaxHighlighter>
-                  </ScrollArea>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-full text-muted-foreground">
-                  <p className="text-sm">Select a file to view its code</p>
-                </div>
-              )}
+                ) : (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    <p className="text-sm">Select a file to view its code</p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
       </div>
     </div>
   );

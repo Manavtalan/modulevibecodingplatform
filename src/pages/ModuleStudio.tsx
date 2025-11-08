@@ -36,7 +36,7 @@ const ModuleStudio = () => {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(location.state?.conversationId || null);
-  const [activeTab, setActiveTab] = useState<'preview' | 'code'>('code'); // Force code view
+  const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview'); // Default to preview
   const [projectName, setProjectName] = useState("Untitled Project");
   // DISABLED: All validation state removed for raw output analysis
   const [currentCodeType, setCurrentCodeType] = useState<string>("react");
