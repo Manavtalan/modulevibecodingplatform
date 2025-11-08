@@ -289,12 +289,12 @@ const ModuleStudio = () => {
       setCurrentCodeType(codeType);
 
       // Trigger code generation with detailed status
-      addStatusMessage("🚀 Starting code generation...\n🤖 Using OpenAI GPT-4o-mini for fast & reliable generation", "status");
+      addStatusMessage("🚀 Starting code generation...\n🤖 Using Claude Opus 4 for highly intelligent code generation", "status");
       
       await generateCode({
         prompt: text,
         codeType,
-        model: 'gpt-4o-mini',
+        model: 'claude-opus-4-1-20250805',
         conversationId: conversationId || undefined
       });
     } else {
@@ -307,7 +307,7 @@ const ModuleStudio = () => {
             message: text,
             conversationId: conversationId,
             userId: user?.id,
-            model: 'gpt-4o-mini'
+            model: 'claude-opus-4-1-20250805'
           }
         });
 
