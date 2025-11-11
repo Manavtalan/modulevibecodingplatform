@@ -1,14 +1,17 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Footer from '@/components/Footer';
+import { MyProjects } from '@/components/dashboard/MyProjects';
+import { ProjectCreationModal } from '@/components/project/ProjectCreationModal';
 import { Rocket, Code2, Zap, Sparkles, Globe } from 'lucide-react';
 
 const Dashboard: FC = () => {
   const navigate = useNavigate();
+  const [showCreateModal, setShowCreateModal] = useState(false);
   
   const handleTryDemo = () => {
-    navigate('/demo');
+    setShowCreateModal(true);
   };
 
   return (
@@ -121,6 +124,9 @@ const Dashboard: FC = () => {
             </div>
           </div>
 
+          {/* My Projects Section */}
+          <MyProjects onCreateNew={() => setShowCreateModal(true)} />
+
           {/* How Module Works Section */}
           <div className="relative z-10 py-16 sm:py-20 md:py-24 px-4 sm:px-6 md:px-8">
             <div className="max-w-6xl mx-auto">
@@ -203,6 +209,9 @@ const Dashboard: FC = () => {
       
       {/* Footer */}
       <Footer />
+
+      {/* Project Creation Modal */}
+      <ProjectCreationModal open={showCreateModal} onClose={() => setShowCreateModal(false)} />
     </div>
   );
 };
