@@ -5,8 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Message } from "@/pages/ModuleStudio";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 // DISABLED: ValidationResults removed for raw output analysis
 // import ValidationResults from "@/components/ValidationResults";
 // import { ValidationResult } from "@/utils/codeQualityValidator";
@@ -69,14 +68,16 @@ export const ChatPanel = ({
           {messages.length === 0 && (
             <div className="text-center text-muted-foreground py-12">
               <h3 className="text-lg font-semibold mb-2">Welcome to Module Studio</h3>
-              <p className="text-sm">Ask me to generate a website, app, or any web project!</p>
+              <p className="text-sm">Ask me to generate code or answer your questions!</p>
               <div className="mt-6 space-y-2">
-                <p className="text-xs font-medium">Quick examples:</p>
+                <p className="text-xs font-medium">Try asking:</p>
                 <div className="flex flex-wrap gap-2 justify-center">
                   {[
                     "Create a modern portfolio website",
+                    "What is React hooks?",
                     "Build a landing page for a SaaS product",
-                    "Make a responsive blog layout"
+                    "How do I fix CORS errors?",
+                    "Generate a responsive blog layout"
                   ].map((example) => (
                     <button
                       key={example}
@@ -102,12 +103,10 @@ export const ChatPanel = ({
                 )}
                 {msg.isUser ? (
                   <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
+                ) : msg.isMarkdown ? (
+                  <MarkdownRenderer content={msg.text} />
                 ) : (
-                  <div className="prose prose-sm dark:prose-invert max-w-none">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {msg.text}
-                    </ReactMarkdown>
-                  </div>
+                  <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
                 )}
                 <span className="text-xs opacity-60 mt-1 block">
                   {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

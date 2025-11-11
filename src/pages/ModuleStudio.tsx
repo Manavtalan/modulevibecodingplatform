@@ -9,6 +9,8 @@ import { useCodeGeneration } from "@/hooks/useCodeGeneration";
 import { useProjectGate } from "@/hooks/useProjectGate";
 import { ResumeOrNewModal } from "@/components/project/ResumeOrNewModal";
 import { ensureProject, updateCurrent, recordTokens, appendChat, logFileOpen } from "@/stores/projectStore";
+import { detectPromptType, getPromptTypeDescription } from "@/lib/promptTypeDetector";
+import { supabase } from "@/integrations/supabase/client";
 // DISABLED: Unused imports removed for raw output analysis
 // import { CodeQualityValidator, ValidationResult } from "@/utils/codeQualityValidator";
 // import { toast } from "@/hooks/use-toast";
@@ -20,8 +22,9 @@ export interface Message {
   text: string;
   isUser: boolean;
   timestamp: Date;
-  type?: 'user' | 'assistant' | 'status' | 'error';
+  type?: 'user' | 'assistant' | 'status' | 'error' | 'chat';
   statusIcon?: string;
+  isMarkdown?: boolean;
 }
 
 export interface CodeFile {
@@ -294,6 +297,10 @@ const ModuleStudio = () => {
     // setRetryCount(0);
     // setOriginalPrompt(text);
 
+    // Detect prompt intent
+    const promptType = detectPromptType(text);
+    console.log('🎯 Prompt type detected:', promptType, 'for message:', text);
+
     // Add user message
     const userMessage: Message = {
       id: `user-${Date.now()}`,
@@ -311,10 +318,8 @@ const ModuleStudio = () => {
       at: new Date().toISOString()
     });
 
-    // Check if this is a code generation request
-    const isCodeRequest = /generate|create|build|make|code|website|app|webpage|html|css|js|react|vue/i.test(text);
-
-    if (isCodeRequest) {
+    // Route based on detected intent
+    if (promptType === 'code_generation') {
       // Determine code type - default to React for comprehensive multi-file apps
       const codeType = /vue/i.test(text) ? 'vue' : 'react';
       setCurrentCodeType(codeType);
@@ -328,39 +333,39 @@ const ModuleStudio = () => {
         model: 'gpt-4o',
         conversationId: conversationId || undefined
       });
-    } else {
-      // Regular chat message - call the ask function
+    } else if (promptType === 'question' || promptType === 'chat') {
+      // Q&A or chat mode - call ask function
+      addStatusMessage(getPromptTypeDescription(promptType), "status");
+      
       try {
-        const { supabase } = await import("@/integrations/supabase/client");
-        
         const { data, error } = await supabase.functions.invoke("ask", {
           body: {
-          message: text,
-            conversationId: conversationId,
-            userId: user?.id,
-            model: 'gpt-4o'
+            user_message: text,
+            conversation_id: conversationId,
+            mode: promptType === 'question' ? 'explain' : 'project'
           }
         });
 
         if (error) throw error;
 
-        if (data?.conversationId && !conversationId) {
-          setConversationId(data.conversationId);
+        if (data?.conversation_id && !conversationId) {
+          setConversationId(data.conversation_id);
         }
 
         const assistantMessage: Message = {
           id: `assistant-${Date.now()}`,
-          text: data.response || "I'm here to help! Ask me to generate code or chat about your project.",
+          text: data.assistant_message || "I'm here to help! Ask me to generate code or chat about your project.",
           isUser: false,
           timestamp: new Date(),
-          type: 'assistant'
+          type: 'chat',
+          isMarkdown: true
         };
         setMessages(prev => [...prev, assistantMessage]);
 
         // Record assistant response
         appendChat({
           role: "assistant",
-          text: data.response || "Response received",
+          text: data.assistant_message || "Response received",
           at: new Date().toISOString()
         });
       } catch (err: any) {
