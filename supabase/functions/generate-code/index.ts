@@ -231,27 +231,51 @@ project-root/
 🎯 GENERATION PRIORITY ORDER (FOLLOW EXACTLY)
 ═══════════════════════════════════════════════════════
 
+⚠️ CRITICAL: Generate files in STRICT HIERARCHICAL ORDER to match professional IDE structure.
+Files MUST be generated in the exact order below - NO EXCEPTIONS.
+
 [PLAN]
 {"files":[
-  {"path":"package.json","description":"Complete dependencies with React 18, TypeScript, Vite 5, Tailwind CSS 3, lucide-react"},
-  {"path":"tsconfig.json","description":"TypeScript strict mode configuration"},
-  {"path":"tsconfig.node.json","description":"TypeScript config for Vite"},
-  {"path":"vite.config.ts","description":"Vite build config with React plugin and path aliases"},
-  {"path":"tailwind.config.ts","description":"Tailwind config mapping all design tokens"},
-  {"path":"postcss.config.js","description":"PostCSS configuration for Tailwind"},
-  {"path":".eslintrc.cjs","description":"ESLint with TypeScript and React rules"},
-  {"path":".gitignore","description":"Git ignore: node_modules, dist, .env, etc."},
-  {"path":"index.html","description":"HTML entry with meta tags, viewport, favicon"},
-  {"path":"README.md","description":"Project docs with features, installation, usage"},
+  {"path":"public/favicon.ico","description":"App favicon icon"},
+  {"path":"public/robots.txt","description":"Search engine crawling rules"},
+  {"path":"public/logo.svg","description":"App logo graphic"},
   
   {"path":"src/vite-env.d.ts","description":"Vite environment type definitions"},
   {"path":"src/main.tsx","description":"React entry point with StrictMode and CSS imports"},
+  {"path":"src/App.tsx","description":"Main app composition - imports and layout only (max 50 lines)"},
+  {"path":"src/App.css","description":"App-specific styles (if needed)"},
+  {"path":"src/index.css","description":"Global CSS imports: design-tokens, globals, Tailwind"},
   
-  {"path":"src/styles/design-tokens.css","description":"Complete design system: colors, spacing, typography, shadows"},
-  {"path":"src/styles/globals.css","description":"Global styles with Tailwind imports"},
+  {"path":"src/components/layout/Navbar.tsx","description":"Responsive navigation with mobile menu"},
+  {"path":"src/components/layout/Header.tsx","description":"Page header component"},
+  {"path":"src/components/layout/Footer.tsx","description":"Footer with links and social media"},
+  {"path":"src/components/layout/Sidebar.tsx","description":"Sidebar navigation (if needed)"},
+  
+  {"path":"src/components/sections/Hero.tsx","description":"Hero section with gradient and CTA"},
+  {"path":"src/components/sections/Features.tsx","description":"Features grid with icons"},
+  {"path":"src/components/sections/About.tsx","description":"About section"},
+  {"path":"src/components/sections/Testimonials.tsx","description":"Customer testimonials"},
+  {"path":"src/components/sections/CTA.tsx","description":"Call-to-action section"},
+  {"path":"src/components/sections/Contact.tsx","description":"Contact form section"},
+  
+  {"path":"src/components/ui/Button.tsx","description":"Button with variants (primary, secondary, outline) and sizes"},
+  {"path":"src/components/ui/Card.tsx","description":"Card component with header, body, footer"},
+  {"path":"src/components/ui/Badge.tsx","description":"Badge with color variants"},
+  {"path":"src/components/ui/Input.tsx","description":"Input with label and error states"},
+  {"path":"src/components/ui/Loading.tsx","description":"Loading spinner component"},
+  {"path":"src/components/ui/Alert.tsx","description":"Alert notification component"},
+  {"path":"src/components/ui/Modal.tsx","description":"Modal dialog component"},
+  
+  {"path":"src/hooks/useMediaQuery.ts","description":"Hook for responsive breakpoints"},
+  {"path":"src/hooks/useToggle.ts","description":"Hook for toggle state management"},
+  {"path":"src/hooks/useLocalStorage.ts","description":"Hook for localStorage persistence"},
+  {"path":"src/hooks/useDebounce.ts","description":"Hook for debouncing values"},
   
   {"path":"src/lib/utils.ts","description":"cn() utility for className merging with clsx and tailwind-merge"},
   {"path":"src/lib/constants.ts","description":"App-wide constants and configuration"},
+  
+  {"path":"src/styles/design-tokens.css","description":"Complete design system: colors, spacing, typography, shadows, dark mode"},
+  {"path":"src/styles/globals.css","description":"Global styles with Tailwind imports and custom CSS"},
   
   {"path":"src/types/index.ts","description":"TypeScript interfaces for all components and data"},
   
@@ -259,27 +283,17 @@ project-root/
   {"path":"src/utils/validators.ts","description":"Form validation helper functions"},
   {"path":"src/utils/helpers.ts","description":"General utility helper functions"},
   
-  {"path":"src/hooks/useMediaQuery.ts","description":"Hook for responsive breakpoints"},
-  {"path":"src/hooks/useToggle.ts","description":"Hook for toggle state management"},
-  {"path":"src/hooks/useLocalStorage.ts","description":"Hook for localStorage persistence"},
-  
-  {"path":"src/components/ui/Button.tsx","description":"Button with variants and sizes"},
-  {"path":"src/components/ui/Card.tsx","description":"Card component with header, body, footer"},
-  {"path":"src/components/ui/Badge.tsx","description":"Badge with color variants"},
-  {"path":"src/components/ui/Input.tsx","description":"Input with label and error states"},
-  {"path":"src/components/ui/Loading.tsx","description":"Loading spinner component"},
-  {"path":"src/components/ui/Alert.tsx","description":"Alert notification component"},
-  
-  {"path":"src/components/layout/Navbar.tsx","description":"Responsive navigation with mobile menu"},
-  {"path":"src/components/layout/Footer.tsx","description":"Footer with links and social media"},
-  
-  {"path":"src/components/sections/Hero.tsx","description":"Hero section with gradient and CTA"},
-  {"path":"src/components/sections/Features.tsx","description":"Features grid with icons"},
-  {"path":"src/components/sections/About.tsx","description":"About section"},
-  {"path":"src/components/sections/Testimonials.tsx","description":"Customer testimonials"},
-  {"path":"src/components/sections/CTA.tsx","description":"Call-to-action section"},
-  
-  {"path":"src/App.tsx","description":"Main app composition - imports and layout only"}
+  {"path":".eslintrc.cjs","description":"ESLint with TypeScript and React rules"},
+  {"path":".gitignore","description":"Git ignore: node_modules, dist, .env, coverage, etc."},
+  {"path":"components.json","description":"Component library configuration (if using shadcn/ui)"},
+  {"path":"index.html","description":"HTML entry with SEO meta tags, viewport, favicon, Open Graph"},
+  {"path":"package.json","description":"Complete dependencies: React 18, TypeScript, Vite 5, Tailwind CSS 3, lucide-react, clsx, tailwind-merge"},
+  {"path":"postcss.config.js","description":"PostCSS configuration for Tailwind"},
+  {"path":"README.md","description":"Comprehensive docs: features, installation, usage, scripts"},
+  {"path":"tailwind.config.ts","description":"Tailwind config mapping all design tokens from design-tokens.css"},
+  {"path":"tsconfig.json","description":"TypeScript strict mode configuration with path aliases"},
+  {"path":"tsconfig.node.json","description":"TypeScript config for Vite build tooling"},
+  {"path":"vite.config.ts","description":"Vite build config with React plugin, path aliases (@/), and optimization"}
 ]}
 [/PLAN]
 
