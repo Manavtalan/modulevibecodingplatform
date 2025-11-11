@@ -6,6 +6,9 @@ import { PreviewPanel } from "@/components/studio/PreviewPanel";
 import Header from "@/components/layout/Header";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCodeGeneration } from "@/hooks/useCodeGeneration";
+import { useProjectGate } from "@/hooks/useProjectGate";
+import { ResumeOrNewModal } from "@/components/project/ResumeOrNewModal";
+import { ensureProject, updateCurrent, recordTokens, appendChat, logFileOpen } from "@/stores/projectStore";
 // DISABLED: Unused imports removed for raw output analysis
 // import { CodeQualityValidator, ValidationResult } from "@/utils/codeQualityValidator";
 // import { toast } from "@/hooks/use-toast";
@@ -31,12 +34,14 @@ const ModuleStudio = () => {
   const location = useLocation();
   const { user } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { showModal, candidate, resume, startNew, dismiss } = useProjectGate();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(location.state?.conversationId || null);
   const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview'); // Default to preview
   // DISABLED: All validation state removed for raw output analysis
   const [currentCodeType, setCurrentCodeType] = useState<string>("react");
+  const [activeFile, setActiveFile] = useState<string | null>(null);
 
   const {
     isGenerating,
@@ -153,6 +158,28 @@ const ModuleStudio = () => {
       }
     }
   }, [generationPhase, tokenValidation]);
+
+  // Ensure project exists on mount
+  useEffect(() => {
+    ensureProject();
+  }, []);
+
+  // Record generation completion to project store
+  useEffect(() => {
+    if (generationPhase === 'complete' && generatedFiles.length > 0) {
+      updateCurrent({ updatedAt: new Date().toISOString() });
+      // Estimate tokens (rough estimate: ~4 chars per token)
+      const estimatedTokens = generatedFiles.reduce((sum, file) => sum + Math.ceil(file.content.length / 4), 0);
+      recordTokens(estimatedTokens);
+    }
+  }, [generationPhase, generatedFiles]);
+
+  // Log file opens
+  useEffect(() => {
+    if (activeFile) {
+      logFileOpen(activeFile);
+    }
+  }, [activeFile]);
 
   const addStatusMessage = (text: string, type: 'status' | 'error') => {
     setMessages(prev => {
@@ -277,6 +304,13 @@ const ModuleStudio = () => {
     };
     setMessages(prev => [...prev, userMessage]);
 
+    // Record chat to project
+    appendChat({
+      role: "user",
+      text,
+      at: new Date().toISOString()
+    });
+
     // Check if this is a code generation request
     const isCodeRequest = /generate|create|build|make|code|website|app|webpage|html|css|js|react|vue/i.test(text);
 
@@ -322,6 +356,13 @@ const ModuleStudio = () => {
           type: 'assistant'
         };
         setMessages(prev => [...prev, assistantMessage]);
+
+        // Record assistant response
+        appendChat({
+          role: "assistant",
+          text: data.response || "Response received",
+          at: new Date().toISOString()
+        });
       } catch (err: any) {
         console.error("Error sending message:", err);
         addStatusMessage(`❌ Error: ${err.message || "Failed to send message"}`, "error");
@@ -358,6 +399,15 @@ const ModuleStudio = () => {
 
   return (
     <div className="flex flex-col h-screen bg-background">
+      {/* Resume or New Project Modal */}
+      <ResumeOrNewModal
+        open={showModal}
+        project={candidate}
+        onResume={resume}
+        onStartNew={startNew}
+        onClose={dismiss}
+      />
+
       {/* Header - Lovable Style */}
       <Header />
 
@@ -392,6 +442,7 @@ const ModuleStudio = () => {
                 // DISABLED: Regenerate disabled during raw output analysis
                 console.log("Regenerate disabled");
               }}
+              onFileOpen={setActiveFile}
             />
           </ResizablePanel>
         </ResizablePanelGroup>

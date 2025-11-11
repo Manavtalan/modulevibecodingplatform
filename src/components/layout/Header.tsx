@@ -3,17 +3,17 @@ import { Home } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ProjectDropdown from "../ui/ProjectDropdown";
 import TokenBalance from "../ui/TokenBalance";
-import { getCurrentProject, updateProject, ProjectState } from "@/stores/projectStore";
+import { getCurrentProject, updateCurrent, ProjectMeta } from "@/stores/projectStore";
 
 export default function Header() {
   const navigate = useNavigate();
-  const [currentProject, setCurrentProject] = useState<ProjectState | null>(null);
+  const [currentProject, setCurrentProject] = useState<ProjectMeta | null>(null);
   const [projectName, setProjectName] = useState("");
 
   useEffect(() => {
     const project = getCurrentProject();
     setCurrentProject(project);
-    setProjectName(project.name);
+    setProjectName(project?.name || "");
   }, []);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -22,7 +22,7 @@ export default function Header() {
 
   const handleNameBlur = () => {
     if (projectName.trim() && currentProject) {
-      updateProject({ name: projectName.trim() });
+      updateCurrent({ name: projectName.trim() });
     } else if (!projectName.trim() && currentProject) {
       setProjectName(currentProject.name);
     }

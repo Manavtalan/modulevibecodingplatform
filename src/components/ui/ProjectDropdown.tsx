@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Settings, ChevronRight, ExternalLink, Sun, Moon, Monitor } from "lucide-react";
-import { getCurrentProject, updateProject } from "@/stores/projectStore";
+import { getCurrentProject, updateCurrent } from "@/stores/projectStore";
 import { supabase } from "@/integrations/supabase/client";
 
 interface TokenUsage {
@@ -52,7 +52,7 @@ export default function ProjectDropdown() {
   }, [open]);
 
   const handleThemeChange = (theme: "light" | "dark" | "system") => {
-    updateProject({ theme });
+    updateCurrent({ theme });
     
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
@@ -85,7 +85,7 @@ export default function ProjectDropdown() {
                   Current Plan
                 </div>
                 <div className="text-sm font-semibold text-neutral-100">
-                  {project.plan}
+                  {project?.plan || "Starter"}
                 </div>
               </div>
               <button className="text-xs px-3 py-1 rounded-md bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-medium transition-all">
@@ -121,19 +121,19 @@ export default function ProjectDropdown() {
             <div className="flex gap-1">
               <ThemeButton
                 icon={<Sun className="w-3.5 h-3.5" />}
-                active={project.theme === "light"}
+                active={project?.theme === "light"}
                 onClick={() => handleThemeChange("light")}
                 title="Light"
               />
               <ThemeButton
                 icon={<Moon className="w-3.5 h-3.5" />}
-                active={project.theme === "dark"}
+                active={project?.theme === "dark"}
                 onClick={() => handleThemeChange("dark")}
                 title="Dark"
               />
               <ThemeButton
                 icon={<Monitor className="w-3.5 h-3.5" />}
-                active={project.theme === "system"}
+                active={project?.theme === "system"}
                 onClick={() => handleThemeChange("system")}
                 title="System"
               />

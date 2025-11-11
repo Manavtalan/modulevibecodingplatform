@@ -26,6 +26,7 @@ interface PreviewPanelProps {
   diagnosticInfo?: DiagnosticInfo | null;
   rawOutputAvailable?: boolean;
   onRegenerate?: () => void;
+  onFileOpen?: (path: string) => void;
 }
 
 type DeviceMode = 'mobile' | 'tablet' | 'desktop';
@@ -40,7 +41,8 @@ export const PreviewPanel = ({
   filePlan,
   diagnosticInfo,
   rawOutputAvailable,
-  onRegenerate
+  onRegenerate,
+  onFileOpen
 }: PreviewPanelProps) => {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [deviceMode, setDeviceMode] = useState<DeviceMode>('desktop');
@@ -49,9 +51,11 @@ export const PreviewPanel = ({
   // Auto-select first file when files change
   useEffect(() => {
     if (files.length > 0 && !selectedFile) {
-      setSelectedFile(files[0].path);
+      const firstFile = files[0].path;
+      setSelectedFile(firstFile);
+      onFileOpen?.(firstFile);
     }
-  }, [files, selectedFile]);
+  }, [files, selectedFile, onFileOpen]);
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -339,7 +343,10 @@ export const PreviewPanel = ({
                 <FileExplorer
                   files={files}
                   activePath={selectedFile}
-                  onOpen={(path) => setSelectedFile(path)}
+                  onOpen={(path) => {
+                    setSelectedFile(path);
+                    onFileOpen?.(path);
+                  }}
                 />
               )}
             </div>
