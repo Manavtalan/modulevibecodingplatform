@@ -1,8 +1,8 @@
-import { useMemo } from "react";
-import { Sandpack } from "@codesandbox/sandpack-react";
+import { useMemo, useState, useEffect } from "react";
 import { CodeFile } from "@/pages/ModuleStudio";
 import { Card } from "@/components/ui/card";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
+import { bundleReactApp } from "@/lib/reactBundler";
 
 interface ReactPreviewProps {
   files: CodeFile[];
@@ -10,71 +10,42 @@ interface ReactPreviewProps {
 }
 
 export const ReactPreview = ({ files, deviceMode = 'desktop' }: ReactPreviewProps) => {
-  // Transform files to Sandpack format
-  const sandpackFiles = useMemo(() => {
-    const filesObj: Record<string, { code: string }> = {};
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [previewKey, setPreviewKey] = useState(0);
+
+  // Bundle the React app
+  const bundleResult = useMemo(() => {
+    setIsLoading(true);
+    setError(null);
     
-    files.forEach(file => {
-      // Map file paths to Sandpack expected paths
-      let sandpackPath = file.path;
+    try {
+      const result = bundleReactApp(files);
       
-      // Ensure paths start with /
-      if (!sandpackPath.startsWith('/')) {
-        sandpackPath = '/' + sandpackPath;
+      if (result.error) {
+        setError(result.error);
+        return null;
       }
       
-      filesObj[sandpackPath] = { code: file.content };
-    });
-    
-    return filesObj;
+      return result.html;
+    } catch (err: any) {
+      setError(err.message);
+      return null;
+    }
   }, [files]);
 
-  // Detect dependencies from package.json if present
-  const dependencies = useMemo(() => {
-    const packageJsonFile = files.find(f => 
-      f.path === 'package.json' || f.path === '/package.json'
-    );
-    
-    if (packageJsonFile) {
-      try {
-        const packageJson = JSON.parse(packageJsonFile.content);
-        return packageJson.dependencies || {};
-      } catch (e) {
-        console.error('Failed to parse package.json:', e);
-      }
+  // Handle loading state
+  useEffect(() => {
+    if (bundleResult || error) {
+      const timer = setTimeout(() => setIsLoading(false), 300);
+      return () => clearTimeout(timer);
     }
-    
-    // Default dependencies for React apps
-    return {
-      "react": "^18.2.0",
-      "react-dom": "^18.2.0"
-    };
-  }, [files]);
+  }, [bundleResult, error]);
 
-  // Detect entry point
-  const entryPoint = useMemo(() => {
-    const possibleEntries = [
-      '/src/index.tsx',
-      '/src/index.jsx',
-      '/src/main.tsx',
-      '/src/main.jsx',
-      '/index.tsx',
-      '/index.jsx'
-    ];
-    
-    for (const entry of possibleEntries) {
-      if (sandpackFiles[entry]) {
-        return entry;
-      }
-    }
-    
-    // If no standard entry found, use first tsx/jsx file
-    const firstReactFile = Object.keys(sandpackFiles).find(path => 
-      path.endsWith('.tsx') || path.endsWith('.jsx')
-    );
-    
-    return firstReactFile || '/src/App.tsx';
-  }, [sandpackFiles]);
+  // Force iframe reload when files change
+  useEffect(() => {
+    setPreviewKey(prev => prev + 1);
+  }, [files]);
 
   // Get device dimensions
   const getDeviceDimensions = () => {
@@ -90,8 +61,39 @@ export const ReactPreview = ({ files, deviceMode = 'desktop' }: ReactPreviewProp
 
   const dimensions = getDeviceDimensions();
 
-  // Check if we have valid files
-  if (Object.keys(sandpackFiles).length === 0) {
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Building preview...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !bundleResult) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Card className="max-w-lg p-6">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-6 w-6 text-destructive" />
+            <div>
+              <h3 className="font-semibold">Preview Error</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                {error || 'Failed to generate preview'}
+              </p>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  // No files state
+  if (files.length === 0) {
     return (
       <div className="flex items-center justify-center h-full">
         <Card className="max-w-lg p-6">
@@ -110,7 +112,7 @@ export const ReactPreview = ({ files, deviceMode = 'desktop' }: ReactPreviewProp
   }
 
   return (
-    <div className="h-full w-full flex items-center justify-center bg-muted/30">
+    <div className="h-full w-full flex items-center justify-center bg-muted/30 p-4">
       <div 
         style={{ 
           width: dimensions.width, 
@@ -118,27 +120,14 @@ export const ReactPreview = ({ files, deviceMode = 'desktop' }: ReactPreviewProp
           maxWidth: '100%',
           maxHeight: '100%'
         }}
-        className="transition-all duration-300"
+        className="transition-all duration-300 rounded-lg overflow-hidden shadow-lg"
       >
-        <Sandpack
-          template="react-ts"
-          files={sandpackFiles}
-          customSetup={{
-            dependencies,
-            entry: entryPoint
-          }}
-          options={{
-            showNavigator: false,
-            showTabs: false,
-            showLineNumbers: true,
-            showInlineErrors: true,
-            wrapContent: true,
-            editorHeight: "100%",
-            editorWidthPercentage: 0, // Hide editor, only show preview
-            autorun: true,
-            autoReload: true,
-          }}
-          theme="dark"
+        <iframe
+          key={previewKey}
+          srcDoc={bundleResult}
+          className="w-full h-full border-0 bg-white"
+          title="React Preview"
+          sandbox="allow-scripts allow-same-origin allow-forms"
         />
       </div>
     </div>
