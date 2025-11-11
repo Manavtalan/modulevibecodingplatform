@@ -19,25 +19,25 @@ const Footer: FC = () => {
     {
       name: 'Twitter',
       icon: Twitter,
-      url: 'https://twitter.com/module',
+      url: 'https://x.com/Modulelabsdotio',
       hoverColor: 'hover:text-[#1DA1F2]'
     },
     {
       name: 'LinkedIn',
       icon: Linkedin,
-      url: 'https://linkedin.com/company/module',
+      url: 'https://www.linkedin.com/company/module-labs-ai/?viewAsMember=true',
       hoverColor: 'hover:text-[#0077B5]'
     },
     {
       name: 'Instagram',
       icon: Instagram,
-      url: 'https://instagram.com/module',
+      url: 'https://www.instagram.com/modulelabs/',
       hoverColor: 'hover:text-[#E4405F]'
     },
     {
       name: 'GitHub',
       icon: Github,
-      url: 'https://github.com/module',
+      url: 'https://github.com/Manavtalan/modulevibecodingplatform.git',
       hoverColor: 'hover:text-foreground'
     }
   ];
