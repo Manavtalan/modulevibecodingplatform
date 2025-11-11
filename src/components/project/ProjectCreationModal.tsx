@@ -48,7 +48,7 @@ export function ProjectCreationModal({ open, onClose }: ProjectCreationModalProp
   return (
     <Dialog open={open} onOpenChange={onClose} modal>
       <DialogContent 
-        className="sm:max-w-[500px] glass-card border-primary/20 fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] z-[100]"
+        className="sm:max-w-[500px] bg-[#1A1A1A] border-2 border-primary/30 shadow-2xl"
       >
         <DialogHeader>
           <DialogTitle className="text-2xl">Create a New Project</DialogTitle>
@@ -67,7 +67,7 @@ export function ProjectCreationModal({ open, onClose }: ProjectCreationModalProp
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-              className="glass-card border-primary/30"
+              className="bg-[#0D0D0D] border-2 border-border/50 focus:border-primary text-foreground"
               autoFocus
             />
           </div>
