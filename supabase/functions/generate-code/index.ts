@@ -1246,10 +1246,7 @@ COMPONENT REQUIREMENTS:
       body: JSON.stringify({
         model: 'gpt-4o',
         temperature: 0.7,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: prompt }
-        ],
+        messages: messages,
         stream: true,
       }),
     });
