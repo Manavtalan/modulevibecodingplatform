@@ -1,11 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { ChatPanel } from "@/components/studio/ChatPanel";
 import { PreviewPanel } from "@/components/studio/PreviewPanel";
-import { TokenUsageDisplay } from "@/components/TokenUsageDisplay";
+import Header from "@/components/layout/Header";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCodeGeneration } from "@/hooks/useCodeGeneration";
 // DISABLED: Unused imports removed for raw output analysis
@@ -37,7 +35,6 @@ const ModuleStudio = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(location.state?.conversationId || null);
   const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview'); // Default to preview
-  const [projectName, setProjectName] = useState("Untitled Project");
   // DISABLED: All validation state removed for raw output analysis
   const [currentCodeType, setCurrentCodeType] = useState<string>("react");
 
@@ -359,39 +356,10 @@ const ModuleStudio = () => {
   //   runValidationAfterGeneration();
   // }, [generationPhase, generatedFiles.length]);
 
-  const handleBack = () => {
-    navigate("/");
-  };
-
   return (
     <div className="flex flex-col h-screen bg-background">
-      {/* Header - Clean & Simple */}
-      <header className="flex flex-col border-b border-border">
-        <div className="flex items-center justify-between px-4 py-2">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={handleBack}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <input
-              type="text"
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-              className="text-lg font-semibold bg-transparent border-none outline-none focus:border-b focus:border-primary px-2 py-1 transition-all"
-              placeholder="Project Name"
-            />
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {user && (
-              <div className="scale-75 origin-right">
-                <TokenUsageDisplay />
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* DISABLED: Settings panel removed for raw output analysis */}
-      </header>
+      {/* Header - Lovable Style */}
+      <Header />
 
       {/* Main Content - Resizable Split Layout */}
       <div className="flex-1 overflow-hidden">

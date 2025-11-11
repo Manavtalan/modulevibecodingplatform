@@ -14,6 +14,7 @@ import ChatHistory from "./pages/ChatHistory";
 import Demo from "./pages/Demo";
 import CodeGenerator from "./pages/CodeGenerator";
 import ModuleStudio from "./pages/ModuleStudio";
+import History from "./pages/History";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/demo" element={<ModuleStudio />} />
             <Route path="/code-generator" element={<ModuleStudio />} />
             <Route path="/studio" element={<ModuleStudio />} />
+            <Route path="/projects" element={<History />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
