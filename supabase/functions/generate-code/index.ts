@@ -136,532 +136,371 @@ RULES:
       case 'react':
         systemPrompt = `${baseFormat}
 
-🎯 REACT COMPONENT EXAMPLES - FOLLOW THESE EXACTLY:
+🚨 CRITICAL: GENERATE COMPLETE, PROFESSIONAL REACT + VITE CODEBASE 🚨
+
+YOU MUST GENERATE A MINIMUM OF 30-35 FILES FOR EVERY REACT APPLICATION.
+INCOMPLETE APPLICATIONS WITH FEWER FILES WILL BE REJECTED.
 
 ═══════════════════════════════════════════════════════
-HERO COMPONENT EXAMPLE (Modern Gradient Background):
-═══════════════════════════════════════════════════════
-\`\`\`tsx
-import React from 'react';
-import { ArrowRight, Play } from 'lucide-react';
-
-const Hero: React.FC = () => {
-  return (
-    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--primary-500)] to-[var(--accent-500)] overflow-hidden">
-      {/* Gradient overlay for depth */}
-      <div className="absolute inset-0 bg-black/20"></div>
-      
-      {/* Floating background elements with animation */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-white/3 rounded-full blur-3xl animate-pulse" 
-           style={{ animationDelay: '1000ms' }}></div>
-      
-      <div className="relative z-10 max-w-7xl mx-auto px-[var(--space-4)] text-center">
-        <h1 className="text-[var(--text-5xl)] md:text-[var(--text-6xl)] font-bold text-white mb-[var(--space-6)] leading-tight animate-fade-in">
-          Build Amazing Products with{' '}
-          <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
-            Modern Technology
-          </span>
-        </h1>
-        
-        <p className="text-[var(--text-xl)] text-white/90 mb-[var(--space-8)] max-w-3xl mx-auto leading-relaxed"
-           style={{ animationDelay: '200ms' }}>
-          Create beautiful, scalable applications with our cutting-edge platform. 
-          Transform your ideas into reality with professional-grade tools.
-        </p>
-        
-        <div className="flex flex-col sm:flex-row gap-[var(--space-4)] justify-center"
-             style={{ animationDelay: '400ms' }}>
-          <button className="group bg-gradient-to-r from-[var(--primary-600)] to-[var(--primary-500)] 
-                           text-white px-[var(--space-8)] py-[var(--space-4)] rounded-[var(--radius-xl)] 
-                           font-semibold text-[var(--text-lg)] transition-all duration-300
-                           hover:scale-105 hover:shadow-[0_20px_40px_rgba(99,102,241,0.3)]
-                           focus:outline-none focus:ring-4 focus:ring-[var(--primary-500)]/30
-                           active:scale-95">
-            Get Started
-            <ArrowRight className="ml-2 h-5 w-5 inline transition-transform group-hover:translate-x-1" />
-          </button>
-          
-          <button className="group bg-white/10 backdrop-blur-md border border-white/20 
-                           text-white px-[var(--space-8)] py-[var(--space-4)] rounded-[var(--radius-xl)]
-                           font-semibold text-[var(--text-lg)] transition-all duration-300
-                           hover:bg-white/15 hover:scale-105 hover:shadow-[0_20px_40px_rgba(255,255,255,0.1)]
-                           focus:outline-none focus:ring-4 focus:ring-white/20 active:scale-95">
-            <Play className="mr-2 h-5 w-5 inline" />
-            Watch Demo
-          </button>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-export default Hero;
-\`\`\`
-
-═══════════════════════════════════════════════════════
-GLASSMORPHISM CARD COMPONENT EXAMPLE:
-═══════════════════════════════════════════════════════
-\`\`\`tsx
-import React from 'react';
-import { LucideIcon } from 'lucide-react';
-
-interface FeatureCardProps {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-  delay?: number;
-}
-
-const FeatureCard: React.FC<FeatureCardProps> = ({ 
-  icon: Icon, 
-  title, 
-  description, 
-  delay = 0 
-}) => {
-  return (
-    <div 
-      className="group relative bg-white/10 backdrop-blur-xl border border-white/20 
-                 rounded-[var(--radius-2xl)] p-[var(--space-8)] 
-                 transition-all duration-500 hover:bg-white/15 hover:scale-105 
-                 hover:shadow-[0_25px_50px_rgba(0,0,0,0.15)] hover:-translate-y-2
-                 before:absolute before:inset-0 before:bg-gradient-to-br 
-                 before:from-white/10 before:to-transparent before:rounded-[var(--radius-2xl)]
-                 before:opacity-0 before:transition-opacity before:duration-500 
-                 hover:before:opacity-100"
-      style={{ animationDelay: \`\${delay}ms\` }}
-    >
-      {/* Gradient border glow effect on hover */}
-      <div className="absolute -inset-0.5 bg-gradient-to-br from-[var(--primary-500)] to-[var(--accent-500)] 
-                      rounded-[var(--radius-2xl)] opacity-0 blur transition-opacity duration-500 
-                      group-hover:opacity-30 -z-10"></div>
-      
-      <div className="relative">
-        {/* Icon container with gradient background */}
-        <div className="w-16 h-16 bg-gradient-to-br from-[var(--primary-500)] to-[var(--accent-500)] 
-                        rounded-[var(--radius-xl)] flex items-center justify-center mb-[var(--space-6)]
-                        shadow-[0_8px_32px_rgba(99,102,241,0.3)] transition-all duration-300
-                        group-hover:scale-110 group-hover:shadow-[0_12px_40px_rgba(99,102,241,0.4)]">
-          <Icon className="w-8 h-8 text-white" strokeWidth={1.5} />
-        </div>
-        
-        <h3 className="text-[var(--text-2xl)] font-semibold text-white mb-[var(--space-4)] 
-                       tracking-tight transition-colors duration-300">
-          {title}
-        </h3>
-        
-        <p className="text-white/80 leading-relaxed text-[var(--text-base)]
-                      transition-colors duration-300 group-hover:text-white/90">
-          {description}
-        </p>
-      </div>
-    </div>
-  );
-};
-
-export default FeatureCard;
-\`\`\`
-
-═══════════════════════════════════════════════════════
-BUTTON COMPONENT WITH MODERN VARIANTS:
-═══════════════════════════════════════════════════════
-\`\`\`tsx
-import React from 'react';
-import { LucideIcon } from 'lucide-react';
-import { cn } from '../../lib/utils';
-
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'gradient';
-  size?: 'sm' | 'md' | 'lg';
-  loading?: boolean;
-  icon?: LucideIcon;
-  iconPosition?: 'left' | 'right';
-  children: React.ReactNode;
-  className?: string;
-}
-
-const Button: React.FC<ButtonProps> = ({
-  variant = 'primary',
-  size = 'md',
-  loading = false,
-  icon: Icon,
-  iconPosition = 'left',
-  children,
-  className,
-  disabled,
-  ...props
-}) => {
-  const baseStyles = \`
-    inline-flex items-center justify-center font-semibold rounded-[var(--radius-lg)]
-    transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-offset-2
-    disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden
-    transform-gpu will-change-transform
-  \`;
-
-  const variants = {
-    primary: \`
-      bg-[var(--primary-600)] text-white hover:bg-[var(--primary-700)]
-      shadow-[0_4px_12px_rgba(99,102,241,0.3)] hover:shadow-[0_8px_25px_rgba(99,102,241,0.4)]
-      focus:ring-[var(--primary-500)]/30 hover:scale-105 active:scale-95
-    \`,
-    secondary: \`
-      bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)]
-      hover:bg-[var(--surface-secondary)] hover:border-[var(--border-secondary)]
-      shadow-[0_2px_8px_rgba(0,0,0,0.1)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.15)]
-      focus:ring-[var(--primary-500)]/20 hover:scale-105 active:scale-95
-    \`,
-    outline: \`
-      border-2 border-[var(--primary-500)] text-[var(--primary-500)]
-      hover:bg-[var(--primary-500)] hover:text-white
-      focus:ring-[var(--primary-500)]/30 hover:scale-105 active:scale-95
-      shadow-[0_2px_8px_rgba(99,102,241,0.2)] hover:shadow-[0_4px_16px_rgba(99,102,241,0.3)]
-    \`,
-    ghost: \`
-      text-[var(--primary-500)] hover:bg-[var(--primary-50)]
-      focus:ring-[var(--primary-500)]/20 hover:scale-105 active:scale-95
-    \`,
-    gradient: \`
-      bg-gradient-to-r from-[var(--primary-600)] via-[var(--primary-500)] to-[var(--accent-500)]
-      text-white shadow-[0_4px_12px_rgba(99,102,241,0.3)] 
-      hover:shadow-[0_8px_25px_rgba(99,102,241,0.4)] hover:scale-105 active:scale-95
-      focus:ring-[var(--primary-500)]/30
-      before:absolute before:inset-0 before:bg-gradient-to-r 
-      before:from-white/20 before:to-transparent before:opacity-0 
-      before:transition-opacity before:duration-300 hover:before:opacity-100
-    \`
-  };
-
-  const sizes = {
-    sm: 'px-[var(--space-3)] py-[var(--space-1-5)] text-[var(--text-sm)]',
-    md: 'px-[var(--space-6)] py-[var(--space-3)] text-[var(--text-base)]',
-    lg: 'px-[var(--space-8)] py-[var(--space-4)] text-[var(--text-lg)]'
-  };
-
-  const iconSize = size === 'sm' ? 'w-4 h-4' : size === 'lg' ? 'w-6 h-6' : 'w-5 h-5';
-
-  return (
-    <button
-      className={cn(baseStyles, variants[variant], sizes[size], className)}
-      disabled={disabled || loading}
-      {...props}
-    >
-      {loading && (
-        <div className={\`mr-2 \${iconSize} animate-spin rounded-full border-2 border-current border-t-transparent\`} />
-      )}
-      
-      {Icon && iconPosition === 'left' && !loading && (
-        <Icon className={\`mr-2 \${iconSize} transition-transform duration-200 group-hover:scale-110\`} />
-      )}
-      
-      <span className="relative z-10">{children}</span>
-      
-      {Icon && iconPosition === 'right' && !loading && (
-        <Icon className={\`ml-2 \${iconSize} transition-transform duration-200 group-hover:translate-x-1\`} />
-      )}
-    </button>
-  );
-};
-
-export default Button;
-\`\`\`
-
+📁 MANDATORY PROJECT STRUCTURE (30-35+ FILES)
 ═══════════════════════════════════════════════════════
 
-🚨 CRITICAL: COMPLETE APPLICATION GENERATION REQUIREMENTS 🚨
+project-root/
+├── index.html                          # HTML entry point with meta tags
+├── package.json                        # Complete dependencies (React 18, TypeScript, Vite, Tailwind)
+├── tsconfig.json                       # TypeScript configuration
+├── tsconfig.node.json                  # TypeScript config for Vite
+├── vite.config.ts                      # Vite build configuration
+├── tailwind.config.ts                  # Tailwind with design token mappings
+├── postcss.config.js                   # PostCSS for Tailwind
+├── .eslintrc.cjs                       # ESLint configuration
+├── .gitignore                          # Git ignore file
+├── README.md                           # Project documentation
+│
+├── public/                             # Static assets
+│   ├── favicon.ico
+│   └── logo.svg
+│
+└── src/
+    ├── main.tsx                        # React entry point
+    ├── App.tsx                         # Main app composition (MAX 50 LINES)
+    ├── vite-env.d.ts                   # Vite type definitions
+    │
+    ├── components/
+    │   ├── layout/                     # Layout components (150 lines max each)
+    │   │   ├── Navbar.tsx             # Navigation with mobile menu
+    │   │   ├── Header.tsx             # Page header
+    │   │   ├── Footer.tsx             # Footer with links
+    │   │   └── Sidebar.tsx            # Sidebar (if needed)
+    │   │
+    │   ├── sections/                   # Page sections (200 lines max each)
+    │   │   ├── Hero.tsx               # Hero section with CTA
+    │   │   ├── Features.tsx           # Features grid
+    │   │   ├── About.tsx              # About section
+    │   │   ├── Services.tsx           # Services showcase
+    │   │   ├── Testimonials.tsx       # Customer testimonials
+    │   │   ├── Pricing.tsx            # Pricing tables
+    │   │   ├── Team.tsx               # Team members
+    │   │   ├── FAQ.tsx                # FAQ accordion
+    │   │   ├── Contact.tsx            # Contact form
+    │   │   ├── CTA.tsx                # Call-to-action section
+    │   │   └── Newsletter.tsx         # Newsletter signup
+    │   │
+    │   └── ui/                         # Reusable UI components (100 lines max each)
+    │       ├── Button.tsx             # Button with variants (primary, secondary, outline, ghost)
+    │       ├── Card.tsx               # Card component with variants
+    │       ├── Badge.tsx              # Badge with color variants
+    │       ├── Input.tsx              # Input with validation states
+    │       ├── Textarea.tsx           # Textarea component
+    │       ├── Select.tsx             # Select dropdown
+    │       ├── Checkbox.tsx           # Checkbox component
+    │       ├── Radio.tsx              # Radio button
+    │       ├── Switch.tsx             # Toggle switch
+    │       ├── Modal.tsx              # Modal dialog
+    │       ├── Tooltip.tsx            # Tooltip component
+    │       ├── Loading.tsx            # Loading spinner
+    │       └── Alert.tsx              # Alert notifications
+    │
+    ├── hooks/                          # Custom React hooks
+    │   ├── useLocalStorage.ts         # Local storage hook
+    │   ├── useMediaQuery.ts           # Media query hook
+    │   ├── useToggle.ts               # Toggle state hook
+    │   ├── useDebounce.ts             # Debounce hook
+    │   └── useClickOutside.ts         # Click outside detection
+    │
+    ├── utils/                          # Utility functions
+    │   ├── formatters.ts              # Date, number, string formatters
+    │   ├── validators.ts              # Form validation utilities
+    │   └── helpers.ts                 # General helper functions
+    │
+    ├── lib/                            # Core utilities
+    │   ├── utils.ts                   # cn() function for className merging
+    │   └── constants.ts               # App constants
+    │
+    ├── types/                          # TypeScript type definitions
+    │   └── index.ts                   # All TypeScript interfaces
+    │
+    ├── styles/                         # Styling files
+    │   ├── design-tokens.css          # Design system variables
+    │   └── globals.css                # Global styles and Tailwind imports
+    │
+    └── contexts/                       # React Context providers (if needed)
+        └── ThemeContext.tsx           # Theme provider for dark mode
 
-YOU MUST GENERATE A MINIMUM OF 25 FILES FOR EVERY REACT APPLICATION.
-INCOMPLETE APPLICATIONS WILL BE REJECTED.
+═══════════════════════════════════════════════════════
+🎯 GENERATION PRIORITY ORDER (FOLLOW EXACTLY)
+═══════════════════════════════════════════════════════
 
-MANDATORY: ENFORCE STRICT REACT COMPONENT ARCHITECTURE
-
-CRITICAL RULES:
-❌ NO flat component structure
-❌ NO components over 200 lines  
-❌ NO mixing layout, section, and UI components in same folder
-❌ NO hardcoded styles - must use design tokens EXACTLY as shown above
-❌ NO inline styles or className strings without proper organization
-❌ MUST use the EXACT component patterns shown in examples above
-❌ NO SKIPPING configuration files (package.json, tsconfig.json, etc.)
-❌ NO PLACEHOLDER CODE - every file must be complete and production-ready
-
-🎯 FILE GENERATION PRIORITY ORDER:
-1. Configuration files FIRST (package.json, tsconfig.json, tailwind.config.js, etc.)
-2. Entry points SECOND (index.html, src/main.tsx)
-3. Utility files THIRD (src/lib/utils.ts, src/types/index.ts)
-4. Styles FOURTH (src/styles/design-tokens.css, src/styles/globals.css)
-5. UI components FIFTH (src/components/ui/*.tsx)
-6. Layout components SIXTH (src/components/layout/*.tsx)
-7. Section components SEVENTH (src/components/sections/*.tsx)
-8. App composition EIGHTH (src/App.tsx)
-9. Documentation LAST (README.md)
-
-REQUIRED FILE STRUCTURE (YOU MUST GENERATE ALL 25 FILES):
 [PLAN]
 {"files":[
-  {"path":"package.json","description":"Complete dependencies with React 18, TypeScript, Vite, Tailwind CSS, lucide-react"},
-  {"path":"tsconfig.json","description":"TypeScript configuration with strict mode and modern settings"},
-  {"path":"vite.config.ts","description":"Vite build configuration with React plugin"},
-  {"path":"tailwind.config.js","description":"Tailwind CSS configuration with design tokens and custom colors"},
-  {"path":"postcss.config.js","description":"PostCSS configuration for Tailwind processing"},
-  {"path":".eslintrc.json","description":"ESLint configuration with TypeScript and React rules"},
-  {"path":".gitignore","description":"Git ignore file for node_modules, dist, .env, etc."},
-  {"path":"index.html","description":"HTML entry point with meta tags, viewport, and favicon"},
-  {"path":"README.md","description":"Project documentation with features, installation, and usage"},
+  {"path":"package.json","description":"Complete dependencies with React 18, TypeScript, Vite 5, Tailwind CSS 3, lucide-react"},
+  {"path":"tsconfig.json","description":"TypeScript strict mode configuration"},
+  {"path":"tsconfig.node.json","description":"TypeScript config for Vite"},
+  {"path":"vite.config.ts","description":"Vite build config with React plugin and path aliases"},
+  {"path":"tailwind.config.ts","description":"Tailwind config mapping all design tokens"},
+  {"path":"postcss.config.js","description":"PostCSS configuration for Tailwind"},
+  {"path":".eslintrc.cjs","description":"ESLint with TypeScript and React rules"},
+  {"path":".gitignore","description":"Git ignore: node_modules, dist, .env, etc."},
+  {"path":"index.html","description":"HTML entry with meta tags, viewport, favicon"},
+  {"path":"README.md","description":"Project docs with features, installation, usage"},
+  
+  {"path":"src/vite-env.d.ts","description":"Vite environment type definitions"},
   {"path":"src/main.tsx","description":"React entry point with StrictMode and CSS imports"},
-  {"path":"src/App.tsx","description":"Main app composition - ONLY component imports and layout"},
-  {"path":"src/components/layout/Navbar.tsx","description":"Responsive navigation with mobile menu and logo"},
-  {"path":"src/components/layout/Footer.tsx","description":"Footer with links, social media, and copyright"},
-  {"path":"src/components/sections/Hero.tsx","description":"Hero section with headline, description, and CTA buttons"},
-  {"path":"src/components/sections/Features.tsx","description":"Features showcase in responsive grid with icons"},
-  {"path":"src/components/sections/Testimonials.tsx","description":"Customer testimonials with cards and ratings"},
-  {"path":"src/components/sections/CTA.tsx","description":"Call-to-action section with gradient background"},
-  {"path":"src/components/ui/Button.tsx","description":"Reusable button with variants (primary, secondary, outline, ghost) and sizes"},
-  {"path":"src/components/ui/Card.tsx","description":"Reusable card component with header, body, footer sections"},
-  {"path":"src/components/ui/Badge.tsx","description":"Badge component with color variants and sizes"},
-  {"path":"src/components/ui/Input.tsx","description":"Input component with label, error states, and validation"},
-  {"path":"src/styles/design-tokens.css","description":"CSS custom properties for colors, spacing, typography, shadows"},
-  {"path":"src/styles/globals.css","description":"Global styles with Tailwind imports and base resets"},
-  {"path":"src/lib/utils.ts","description":"Utility functions including cn() for className merging"},
-  {"path":"src/types/index.ts","description":"TypeScript interfaces for all components and data structures"},
-  {"path":"src/vite-env.d.ts","description":"Vite environment type definitions"}
+  
+  {"path":"src/styles/design-tokens.css","description":"Complete design system: colors, spacing, typography, shadows"},
+  {"path":"src/styles/globals.css","description":"Global styles with Tailwind imports"},
+  
+  {"path":"src/lib/utils.ts","description":"cn() utility for className merging with clsx and tailwind-merge"},
+  {"path":"src/lib/constants.ts","description":"App-wide constants and configuration"},
+  
+  {"path":"src/types/index.ts","description":"TypeScript interfaces for all components and data"},
+  
+  {"path":"src/utils/formatters.ts","description":"Date, number, string formatting utilities"},
+  {"path":"src/utils/validators.ts","description":"Form validation helper functions"},
+  {"path":"src/utils/helpers.ts","description":"General utility helper functions"},
+  
+  {"path":"src/hooks/useMediaQuery.ts","description":"Hook for responsive breakpoints"},
+  {"path":"src/hooks/useToggle.ts","description":"Hook for toggle state management"},
+  {"path":"src/hooks/useLocalStorage.ts","description":"Hook for localStorage persistence"},
+  
+  {"path":"src/components/ui/Button.tsx","description":"Button with variants and sizes"},
+  {"path":"src/components/ui/Card.tsx","description":"Card component with header, body, footer"},
+  {"path":"src/components/ui/Badge.tsx","description":"Badge with color variants"},
+  {"path":"src/components/ui/Input.tsx","description":"Input with label and error states"},
+  {"path":"src/components/ui/Loading.tsx","description":"Loading spinner component"},
+  {"path":"src/components/ui/Alert.tsx","description":"Alert notification component"},
+  
+  {"path":"src/components/layout/Navbar.tsx","description":"Responsive navigation with mobile menu"},
+  {"path":"src/components/layout/Footer.tsx","description":"Footer with links and social media"},
+  
+  {"path":"src/components/sections/Hero.tsx","description":"Hero section with gradient and CTA"},
+  {"path":"src/components/sections/Features.tsx","description":"Features grid with icons"},
+  {"path":"src/components/sections/About.tsx","description":"About section"},
+  {"path":"src/components/sections/Testimonials.tsx","description":"Customer testimonials"},
+  {"path":"src/components/sections/CTA.tsx","description":"Call-to-action section"},
+  
+  {"path":"src/App.tsx","description":"Main app composition - imports and layout only"}
 ]}
 [/PLAN]
 
-⚠️ ENFORCEMENT: If you generate fewer than 25 files, the application will be considered INCOMPLETE and REJECTED.
+⚠️ ENFORCEMENT: Generate ALL 35+ files above. Incomplete codebases will be REJECTED.
 
-COMPONENT ARCHITECTURE RULES:
+═══════════════════════════════════════════════════════
+📦 MANDATORY package.json STRUCTURE
+═══════════════════════════════════════════════════════
 
-1. APP COMPOSITION (App.tsx):
-✅ ONLY imports and composes other components
-✅ NO business logic or state management
-✅ Maximum 50 lines
-✅ Clean component composition only
-
-Example App.tsx structure:
-import Navbar from './components/layout/Navbar';
-import Hero from './components/sections/Hero';
-import Features from './components/sections/Features';
-import Testimonials from './components/sections/Testimonials';
-import CTA from './components/sections/CTA';
-import Footer from './components/layout/Footer';
-
-function App() {
-  return (
-    <div className="min-h-screen bg-[var(--background)]">
-      <Navbar />
-      <main>
-        <Hero />
-        <Features />
-        <Testimonials />
-        <CTA />
-      </main>
-      <Footer />
-    </div>
-  );
-}
-
-export default App;
-
-2. LAYOUT COMPONENTS (components/layout/):
-✅ Handle page structure and navigation
-✅ Responsive design with mobile-first approach
-✅ Proper semantic HTML (nav, footer, header)
-✅ Maximum 150 lines each
-✅ Use design tokens for all styling
-
-3. SECTION COMPONENTS (components/sections/):
-✅ Self-contained page sections
-✅ Import and use UI components
-✅ Handle their own local state if needed
-✅ Maximum 200 lines each
-✅ Use design tokens and UI components
-
-4. UI COMPONENTS (components/ui/):
-✅ Reusable, atomic components
-✅ Accept props for customization
-✅ Include proper TypeScript interfaces
-✅ Maximum 100 lines each
-✅ Support multiple variants/sizes
-
-COMPONENT REQUIREMENTS:
-
-Button Component MUST include:
-- Multiple variants (primary, secondary, outline, ghost)
-- Size options (sm, md, lg)
-- Loading and disabled states
-- Proper TypeScript interface
-- Design token usage
-
-Card Component MUST include:
-- Different card styles (default, elevated, flat)
-- Optional header, body, footer sections
-- Responsive design
-- Hover effects using design tokens
-
-Badge Component MUST include:
-- Color variants (success, warning, error, info)
-- Size options (sm, md, lg)
-- Icon support
-- Proper contrast ratios
-
-TYPESCRIPT REQUIREMENTS:
-✅ EVERY component must have proper interface definitions
-✅ Props must be typed with interfaces
-✅ Export interfaces for reuse
-✅ Use generic types where appropriate
-
-Example TypeScript interfaces:
-// In src/types/index.ts
-export interface ButtonProps {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
-  loading?: boolean;
-  disabled?: boolean;
-  children: React.ReactNode;
-  onClick?: () => void;
-  className?: string;
-}
-
-export interface CardProps {
-  variant?: 'default' | 'elevated' | 'flat';
-  children: React.ReactNode;
-  className?: string;
-  header?: React.ReactNode;
-  footer?: React.ReactNode;
-}
-
-DESIGN TOKEN USAGE:
-✅ ALL components MUST use design tokens from design-tokens.css
-✅ NO hardcoded colors, spacing, or typography
-✅ Use CSS custom properties: var(--token-name)
-✅ Import tokens in each component file
-
-COMPONENT BEST PRACTICES:
-✅ Single Responsibility Principle - one purpose per component
-✅ Pure functions where possible
-✅ Proper error boundaries
-✅ Accessible markup with ARIA labels
-✅ Semantic HTML elements
-✅ Mobile-first responsive design
-✅ Proper focus management
-
-FOLDER STRUCTURE ENFORCEMENT:
-src/
-├── App.tsx                    (Composition only, max 50 lines)
-├── components/
-│   ├── layout/               (Page structure components)
-│   │   ├── Navbar.tsx        (Navigation, max 150 lines)
-│   │   └── Footer.tsx        (Footer, max 150 lines)
-│   ├── sections/             (Page section components)
-│   │   ├── Hero.tsx          (Hero section, max 200 lines)
-│   │   ├── Features.tsx      (Features grid, max 200 lines)
-│   │   ├── Testimonials.tsx  (Testimonials, max 200 lines)
-│   │   └── CTA.tsx           (Call-to-action, max 200 lines)
-│   └── ui/                   (Reusable UI components)
-│       ├── Button.tsx        (Button variants, max 100 lines)
-│       ├── Card.tsx          (Card component, max 100 lines)
-│       └── Badge.tsx         (Badge variants, max 100 lines)
-├── styles/
-│   ├── design-tokens.css     (Design system variables)
-│   └── globals.css           (Global styles)
-├── lib/
-│   └── utils.ts             (Utility functions)
-├── types/
-│   └── index.ts             (TypeScript interfaces)
-└── package.json
-
-PACKAGE.JSON REQUIREMENTS:
-Include these essential dependencies:
+[FILE:package.json]
 {
-  "name": "generated-react-app",
+  "name": "modern-react-app",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "lucide-react": "^0.263.1",
-    "clsx": "^2.0.0",
-    "tailwind-merge": "^1.14.0"
+    "clsx": "^2.1.0",
+    "tailwind-merge": "^2.2.0"
   },
   "devDependencies": {
-    "@types/react": "^18.2.15",
-    "@types/react-dom": "^18.2.7",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "@vitejs/plugin-react": "^4.0.3",
-    "autoprefixer": "^10.4.14",
-    "eslint": "^8.45.0",
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "@vitejs/plugin-react-swc": "^3.5.0",
+    "autoprefixer": "^10.4.18",
+    "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.3",
-    "postcss": "^8.4.27",
-    "tailwindcss": "^3.3.0",
-    "typescript": "^5.0.2",
-    "vite": "^4.4.5"
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.4.2",
+    "vite": "^5.1.6"
   }
 }
+[/FILE]
 
-MANDATORY design-tokens.css STRUCTURE:
+═══════════════════════════════════════════════════════
+⚙️ CONFIGURATION FILES (CRITICAL)
+═══════════════════════════════════════════════════════
+
+[FILE:vite.config.ts]
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react-swc'
+import path from 'path'
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+})
+[/FILE]
+
+[FILE:tsconfig.json]
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
+[/FILE]
+
+[FILE:tsconfig.node.json]
+{
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["vite.config.ts"]
+}
+[/FILE]
+
+[FILE:tailwind.config.ts]
+import type { Config } from 'tailwindcss'
+
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: 'rgb(var(--primary-50) / <alpha-value>)',
+          100: 'rgb(var(--primary-100) / <alpha-value>)',
+          200: 'rgb(var(--primary-200) / <alpha-value>)',
+          300: 'rgb(var(--primary-300) / <alpha-value>)',
+          400: 'rgb(var(--primary-400) / <alpha-value>)',
+          500: 'rgb(var(--primary-500) / <alpha-value>)',
+          600: 'rgb(var(--primary-600) / <alpha-value>)',
+          700: 'rgb(var(--primary-700) / <alpha-value>)',
+          800: 'rgb(var(--primary-800) / <alpha-value>)',
+          900: 'rgb(var(--primary-900) / <alpha-value>)',
+        },
+        accent: {
+          50: 'rgb(var(--accent-50) / <alpha-value>)',
+          100: 'rgb(var(--accent-100) / <alpha-value>)',
+          200: 'rgb(var(--accent-200) / <alpha-value>)',
+          300: 'rgb(var(--accent-300) / <alpha-value>)',
+          400: 'rgb(var(--accent-400) / <alpha-value>)',
+          500: 'rgb(var(--accent-500) / <alpha-value>)',
+          600: 'rgb(var(--accent-600) / <alpha-value>)',
+          700: 'rgb(var(--accent-700) / <alpha-value>)',
+        },
+      },
+    },
+  },
+  plugins: [],
+} satisfies Config
+[/FILE]
+
+[FILE:postcss.config.js]
+export default {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+[/FILE]
+
+═══════════════════════════════════════════════════════
+🎨 DESIGN SYSTEM (MANDATORY)
+═══════════════════════════════════════════════════════
+
 [FILE:src/styles/design-tokens.css]
 :root {
-  /* === COLORS - Modern Purple/Blue Professional Theme === */
-  --primary-50: #ede9fe;
-  --primary-100: #ddd6fe;
-  --primary-200: #c4b5fd;
-  --primary-300: #a78bfa;
-  --primary-400: #8b5cf6;
-  --primary-500: #6366f1;
-  --primary-600: #4f46e5;
-  --primary-700: #4338ca;
-  --primary-800: #3730a3;
-  --primary-900: #312e81;
+  /* === COLOR SYSTEM - Professional Purple/Blue Theme === */
+  --primary-50: 237 233 254;
+  --primary-100: 221 214 254;
+  --primary-200: 196 181 253;
+  --primary-300: 167 139 250;
+  --primary-400: 139 92 246;
+  --primary-500: 99 102 241;
+  --primary-600: 79 70 229;
+  --primary-700: 67 56 202;
+  --primary-800: 55 48 163;
+  --primary-900: 49 46 129;
   
-  --accent-50: #fdf2f8;
-  --accent-100: #fce7f3;
-  --accent-200: #fbcfe8;
-  --accent-300: #f9a8d4;
-  --accent-400: #f472b6;
-  --accent-500: #ec4899;
-  --accent-600: #db2777;
-  --accent-700: #be185d;
+  --accent-50: 253 242 248;
+  --accent-100: 252 231 243;
+  --accent-200: 251 207 232;
+  --accent-300: 249 168 212;
+  --accent-400: 244 114 182;
+  --accent-500: 236 72 153;
+  --accent-600: 219 39 119;
+  --accent-700: 190 24 93;
   
-  --neutral-50: #f8fafc;
-  --neutral-100: #f1f5f9;
-  --neutral-200: #e2e8f0;
-  --neutral-300: #cbd5e1;
-  --neutral-400: #94a3b8;
-  --neutral-500: #64748b;
-  --neutral-600: #475569;
-  --neutral-700: #334155;
-  --neutral-800: #1e293b;
-  --neutral-900: #0f172a;
+  --neutral-50: 248 250 252;
+  --neutral-100: 241 245 249;
+  --neutral-200: 226 232 240;
+  --neutral-300: 203 213 225;
+  --neutral-400: 148 163 184;
+  --neutral-500: 100 116 139;
+  --neutral-600: 71 85 105;
+  --neutral-700: 51 65 85;
+  --neutral-800: 30 41 59;
+  --neutral-900: 15 23 42;
   
-  --success: #10b981;
-  --warning: #f59e0b;
-  --error: #ef4444;
-  --info: #3b82f6;
+  --success: 16 185 129;
+  --warning: 245 158 11;
+  --error: 239 68 68;
+  --info: 59 130 246;
   
-  --background: var(--neutral-50);
-  --surface: var(--neutral-100);
-  --text-primary: var(--neutral-900);
-  --text-secondary: var(--neutral-700);
-  --text-tertiary: var(--neutral-500);
-  --border: var(--neutral-200);
+  --background: rgb(var(--neutral-50));
+  --surface: rgb(var(--neutral-100));
+  --surface-secondary: rgb(var(--neutral-200));
+  --text-primary: rgb(var(--neutral-900));
+  --text-secondary: rgb(var(--neutral-700));
+  --text-tertiary: rgb(var(--neutral-500));
+  --border: rgb(var(--neutral-200));
+  --border-secondary: rgb(var(--neutral-300));
   
   /* === SPACING SCALE === */
   --space-1: 0.25rem;
+  --space-1-5: 0.375rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
   --space-4: 1rem;
+  --space-5: 1.25rem;
   --space-6: 1.5rem;
   --space-8: 2rem;
+  --space-10: 2.5rem;
   --space-12: 3rem;
   --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
   
   /* === TYPOGRAPHY === */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -674,6 +513,7 @@ MANDATORY design-tokens.css STRUCTURE:
   --text-3xl: 1.875rem;
   --text-4xl: 2.25rem;
   --text-5xl: 3rem;
+  --text-6xl: 3.75rem;
   --font-normal: 400;
   --font-medium: 500;
   --font-semibold: 600;
@@ -684,6 +524,7 @@ MANDATORY design-tokens.css STRUCTURE:
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   
   /* === BORDER RADIUS === */
   --radius-sm: 0.125rem;
@@ -691,91 +532,42 @@ MANDATORY design-tokens.css STRUCTURE:
   --radius-lg: 0.5rem;
   --radius-xl: 0.75rem;
   --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-full: 9999px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: var(--neutral-900);
-    --surface: var(--neutral-800);
-    --text-primary: var(--neutral-50);
-    --text-secondary: var(--neutral-300);
-    --text-tertiary: var(--neutral-400);
-    --border: var(--neutral-700);
+    --background: rgb(var(--neutral-900));
+    --surface: rgb(var(--neutral-800));
+    --surface-secondary: rgb(var(--neutral-700));
+    --text-primary: rgb(var(--neutral-50));
+    --text-secondary: rgb(var(--neutral-300));
+    --text-tertiary: rgb(var(--neutral-400));
+    --border: rgb(var(--neutral-700));
+    --border-secondary: rgb(var(--neutral-600));
   }
 }
 [/FILE]
 
-MANDATORY globals.css CONTENT:
 [FILE:src/styles/globals.css]
 @import './design-tokens.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  font-family: var(--font-sans);
-  line-height: 1.5;
-  color: var(--text-primary);
-  background-color: var(--background);
-}
-
-body {
-  min-height: 100vh;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-text-primary;
+    font-family: var(--font-sans);
+  }
 }
 [/FILE]
 
-MANDATORY tailwind.config.js:
-[FILE:tailwind.config.js]
-export default {
-  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
-  theme: {
-    extend: {
-      colors: {
-        primary: {
-          50: 'var(--primary-50)',
-          100: 'var(--primary-100)',
-          200: 'var(--primary-200)',
-          300: 'var(--primary-300)',
-          400: 'var(--primary-400)',
-          500: 'var(--primary-500)',
-          600: 'var(--primary-600)',
-          700: 'var(--primary-700)',
-          800: 'var(--primary-800)',
-          900: 'var(--primary-900)',
-        },
-        accent: {
-          50: 'var(--accent-50)',
-          100: 'var(--accent-100)',
-          200: 'var(--accent-200)',
-          300: 'var(--accent-300)',
-          400: 'var(--accent-400)',
-          500: 'var(--accent-500)',
-          600: 'var(--accent-600)',
-          700: 'var(--accent-700)',
-        },
-        neutral: {
-          50: 'var(--neutral-50)',
-          100: 'var(--neutral-100)',
-          200: 'var(--neutral-200)',
-          300: 'var(--neutral-300)',
-          400: 'var(--neutral-400)',
-          500: 'var(--neutral-500)',
-          600: 'var(--neutral-600)',
-          700: 'var(--neutral-700)',
-          800: 'var(--neutral-800)',
-          900: 'var(--neutral-900)',
-        },
-      },
-    },
-  },
-  plugins: [],
-}
-[/FILE]
-
-MANDATORY src/lib/utils.ts:
 [FILE:src/lib/utils.ts]
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -785,24 +577,32 @@ export function cn(...inputs: ClassValue[]) {
 }
 [/FILE]
 
-COMPONENT TEMPLATES (MUST FOLLOW THESE PATTERNS):
+═══════════════════════════════════════════════════════
+🧩 COMPONENT ARCHITECTURE (STRICTLY ENFORCE)
+═══════════════════════════════════════════════════════
+
+✅ App.tsx RULES (MAX 50 LINES):
+- ONLY component imports and layout composition
+- NO business logic, state, or handlers
+- Clean component tree structure
 
 [FILE:src/App.tsx]
-// App.tsx Template (Max 50 lines - COMPOSITION ONLY)
-import Navbar from './components/layout/Navbar';
-import Hero from './components/sections/Hero';
-import Features from './components/sections/Features';
-import Testimonials from './components/sections/Testimonials';
-import CTA from './components/sections/CTA';
-import Footer from './components/layout/Footer';
+import Navbar from '@/components/layout/Navbar';
+import Hero from '@/components/sections/Hero';
+import Features from '@/components/sections/Features';
+import About from '@/components/sections/About';
+import Testimonials from '@/components/sections/Testimonials';
+import CTA from '@/components/sections/CTA';
+import Footer from '@/components/layout/Footer';
 
 function App() {
   return (
-    <div className="min-h-screen bg-[var(--background)]">
+    <div className="min-h-screen bg-background">
       <Navbar />
       <main>
         <Hero />
         <Features />
+        <About />
         <Testimonials />
         <CTA />
       </main>
@@ -814,88 +614,88 @@ function App() {
 export default App;
 [/FILE]
 
+✅ UI COMPONENTS (MAX 100 LINES EACH):
+- Reusable, atomic components
+- Multiple variants and sizes
+- TypeScript interfaces
+- Design token usage only
+
 [FILE:src/components/ui/Button.tsx]
-// Button.tsx Template (UI Component - Max 100 lines)
 import React from 'react';
-import { ButtonProps } from '../../types';
-import { cn } from '../../lib/utils';
+import { cn } from '@/lib/utils';
+import type { ButtonProps } from '@/types';
 
-const Button: React.FC<ButtonProps> = ({ 
-  variant = 'primary', 
-  size = 'md', 
-  loading = false,
-  disabled = false,
-  children, 
-  className,
-  ...props 
-}) => {
-  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
-  
-  const variants = {
-    primary: 'bg-[var(--primary-500)] text-[var(--text-inverse)] hover:bg-[var(--primary-600)] focus:ring-[var(--primary-500)]',
-    secondary: 'bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] hover:bg-[var(--surface-secondary)]',
-    outline: 'border-2 border-[var(--primary-500)] text-[var(--primary-500)] hover:bg-[var(--primary-500)] hover:text-[var(--text-inverse)]',
-    ghost: 'text-[var(--primary-500)] hover:bg-[var(--primary-50)]'
-  };
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant = 'primary', size = 'md', children, ...props }, ref) => {
+    const baseStyles = "inline-flex items-center justify-center font-semibold rounded-[var(--radius-lg)] transition-all duration-300 focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed";
+    
+    const variants = {
+      primary: "bg-primary-600 text-white hover:bg-primary-700 shadow-[var(--shadow-md)] hover:shadow-[var(--shadow-lg)] focus:ring-primary-500/30 hover:scale-105 active:scale-95",
+      secondary: "bg-surface text-text-primary border border-border hover:bg-surface-secondary hover:border-border-secondary shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-md)] focus:ring-primary-500/20 hover:scale-105 active:scale-95",
+      outline: "border-2 border-primary-500 text-primary-500 hover:bg-primary-500 hover:text-white focus:ring-primary-500/30 hover:scale-105 active:scale-95",
+      ghost: "text-primary-500 hover:bg-primary-50 focus:ring-primary-500/20 hover:scale-105 active:scale-95",
+    };
+    
+    const sizes = {
+      sm: 'px-[var(--space-3)] py-[var(--space-1-5)] text-[var(--text-sm)]',
+      md: 'px-[var(--space-6)] py-[var(--space-3)] text-[var(--text-base)]',
+      lg: 'px-[var(--space-8)] py-[var(--space-4)] text-[var(--text-lg)]'
+    };
+    
+    return (
+      <button
+        ref={ref}
+        className={cn(baseStyles, variants[variant], sizes[size], className)}
+        {...props}
+      >
+        {children}
+      </button>
+    );
+  }
+);
 
-  const sizes = {
-    sm: 'px-[var(--space-3)] py-[var(--space-1-5)] text-[var(--text-sm)]',
-    md: 'px-[var(--space-4)] py-[var(--space-2)] text-[var(--text-base)]',
-    lg: 'px-[var(--space-6)] py-[var(--space-3)] text-[var(--text-lg)]'
-  };
-
-  return (
-    <button
-      className={cn(
-        baseStyles,
-        variants[variant],
-        sizes[size],
-        className
-      )}
-      disabled={disabled || loading}
-      {...props}
-    >
-      {loading && <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />}
-      {children}
-    </button>
-  );
-};
-
+Button.displayName = 'Button';
 export default Button;
 [/FILE]
 
 [FILE:src/components/ui/Card.tsx]
-// Card.tsx Template (UI Component - Max 100 lines)
 import React from 'react';
-import { CardProps } from '../../types';
-import { cn } from '../../lib/utils';
+import { cn } from '@/lib/utils';
+import type { CardProps } from '@/types';
 
 const Card: React.FC<CardProps> = ({ 
-  variant = 'default',
+  className, 
+  variant = 'default', 
   children, 
-  className,
-  header,
+  header, 
   footer,
   ...props 
 }) => {
   const variants = {
-    default: 'bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-xl)] shadow-[var(--shadow-lg)]',
-    elevated: 'bg-[var(--surface)] border border-[var(--border)] rounded-[var(--radius-xl)] shadow-[var(--shadow-xl)]',
-    flat: 'bg-[var(--surface-secondary)] rounded-[var(--radius-lg)]'
+    default: 'bg-surface border border-border shadow-[var(--shadow-md)]',
+    elevated: 'bg-surface shadow-[var(--shadow-xl)] border-0',
+    flat: 'bg-surface border border-border shadow-none',
   };
-
+  
   return (
-    <div className={cn(variants[variant], className)} {...props}>
+    <div
+      className={cn(
+        'rounded-[var(--radius-xl)] overflow-hidden transition-all duration-300',
+        variants[variant],
+        className
+      )}
+      {...props}
+    >
       {header && (
-        <div className="border-b border-[var(--border)] px-[var(--space-6)] py-[var(--space-4)]">
+        <div className="px-[var(--space-6)] py-[var(--space-4)] border-b border-border">
           {header}
         </div>
       )}
-      <div className="p-[var(--space-6)]">
+      <div className="px-[var(--space-6)] py-[var(--space-4)]">
         {children}
       </div>
       {footer && (
-        <div className="border-t border-[var(--border)] px-[var(--space-6)] py-[var(--space-4)]">
+        <div className="px-[var(--space-6)] py-[var(--space-4)] border-t border-border bg-surface-secondary">
           {footer}
         </div>
       )}
@@ -906,69 +706,63 @@ const Card: React.FC<CardProps> = ({
 export default Card;
 [/FILE]
 
-[FILE:src/components/sections/Hero.tsx]
-// Hero.tsx Template (Section Component - Max 200 lines)
-import React from 'react';
-import Button from '../ui/Button';
-import { ArrowRight, Play } from 'lucide-react';
+✅ LAYOUT COMPONENTS (MAX 150 LINES EACH):
+- Page structure and navigation
+- Responsive with mobile-first
+- Semantic HTML
 
-const Hero: React.FC = () => {
-  return (
-    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--primary-500)] to-[var(--accent-500)] overflow-hidden">
-      <div className="absolute inset-0 bg-black/20"></div>
-      
-      <div className="relative z-10 max-w-7xl mx-auto px-[var(--space-4)] text-center">
-        <h1 className="text-[var(--text-5xl)] md:text-[var(--text-6xl)] font-bold text-white mb-[var(--space-6)] leading-tight">
-          Build Amazing Products with{' '}
-          <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
-            Modern Technology
-          </span>
-        </h1>
-        
-        <p className="text-[var(--text-xl)] text-white/90 mb-[var(--space-8)] max-w-3xl mx-auto leading-relaxed">
-          Create beautiful, scalable applications with our cutting-edge platform. 
-          Transform your ideas into reality with professional-grade tools.
-        </p>
-        
-        <div className="flex flex-col sm:flex-row gap-[var(--space-4)] justify-center">
-          <Button size="lg" className="group">
-            Get Started
-            <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-          </Button>
-          
-          <Button variant="outline" size="lg" className="bg-white/10 backdrop-blur-sm">
-            <Play className="mr-2 h-5 w-5" />
-            Watch Demo
-          </Button>
-        </div>
-      </div>
-      
-      {/* Background decoration */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-white/5 to-transparent rounded-full blur-3xl"></div>
-    </section>
-  );
-};
+✅ SECTION COMPONENTS (MAX 200 LINES EACH):
+- Self-contained page sections
+- Use UI components
+- Handle local state if needed
 
-export default Hero;
+✅ CUSTOM HOOKS:
+[FILE:src/hooks/useMediaQuery.ts]
+import { useState, useEffect } from 'react';
+
+export function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    if (media.matches !== matches) {
+      setMatches(media.matches);
+    }
+    
+    const listener = () => setMatches(media.matches);
+    media.addEventListener('change', listener);
+    
+    return () => media.removeEventListener('change', listener);
+  }, [matches, query]);
+
+  return matches;
+}
 [/FILE]
 
+[FILE:src/hooks/useToggle.ts]
+import { useState, useCallback } from 'react';
+
+export function useToggle(initialValue: boolean = false): [boolean, () => void] {
+  const [value, setValue] = useState(initialValue);
+  const toggle = useCallback(() => setValue(v => !v), []);
+  return [value, toggle];
+}
+[/FILE]
+
+✅ TYPESCRIPT INTERFACES:
 [FILE:src/types/index.ts]
-// Types Template - TypeScript Interfaces
 import React from 'react';
 
-// Component Props Interfaces
+// UI Component Props
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
-  loading?: boolean;
   children: React.ReactNode;
-  className?: string;
 }
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'default' | 'elevated' | 'flat';
   children: React.ReactNode;
-  className?: string;
   header?: React.ReactNode;
   footer?: React.ReactNode;
 }
@@ -985,7 +779,7 @@ export interface Feature {
   id: string;
   title: string;
   description: string;
-  icon: React.ComponentType;
+  icon: React.ComponentType<{ className?: string }>;
 }
 
 export interface Testimonial {
@@ -994,55 +788,74 @@ export interface Testimonial {
   role: string;
   company: string;
   content: string;
-  avatar: string;
+  avatar?: string;
+  rating: number;
+}
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  role: string;
+  bio: string;
+  image?: string;
+  social?: {
+    twitter?: string;
+    linkedin?: string;
+    github?: string;
+  };
 }
 [/FILE]
 
-COMPONENT LINE LIMITS (STRICTLY ENFORCED):
-- App.tsx: Maximum 50 lines (composition only, no business logic)
-- Layout components (Navbar, Footer): Maximum 150 lines each
-- Section components (Hero, Features, Testimonials, CTA): Maximum 200 lines each
-- UI components (Button, Card, Badge): Maximum 100 lines each
-- Types file: No limit (interfaces only)
+═══════════════════════════════════════════════════════
+🔒 VALIDATION REQUIREMENTS (AUTO-ENFORCED)
+═══════════════════════════════════════════════════════
 
-VALIDATION REQUIREMENTS:
-✅ Verify ALL files follow the exact structure above
-✅ Check that App.tsx is under 50 lines
-✅ Ensure layout components are under 150 lines
-✅ Ensure section components are under 200 lines
-✅ Ensure UI components are under 100 lines
-✅ Verify design tokens are used everywhere
-✅ Confirm NO hardcoded colors or spacing
-✅ Check TypeScript interfaces are defined in types/index.ts
-✅ Verify proper semantic HTML
-✅ Confirm proper imports with @ alias
-✅ Verify all components have proper TypeScript typing
-✅ Check that cn() utility is used for className merging
+✅ File Structure: All required directories present
+✅ File Count: Minimum 30-35 files generated
+✅ App.tsx: Under 50 lines, composition only
+✅ Layout Components: Under 150 lines each
+✅ Section Components: Under 200 lines each
+✅ UI Components: Under 100 lines each
+✅ Design Tokens: Used everywhere, no hardcoded values
+✅ TypeScript: All components properly typed
+✅ Imports: Using @ alias for all imports
+✅ Semantic HTML: Proper tags (nav, main, section, article)
+✅ Accessibility: ARIA labels, focus states, keyboard nav
+✅ Responsive: Mobile-first, works 320px-1920px
 
-ARCHITECTURE VALIDATION (AUTOMATIC):
-Every React project will be validated for:
-✅ Correct folder structure (layout/, sections/, ui/)
-✅ Component size limits strictly enforced
-✅ Design token usage (no hardcoded values)
-✅ TypeScript interfaces exported from types/
-✅ Modern React patterns (functional components)
-✅ Proper imports and exports
-✅ Single Responsibility Principle per component
-✅ Reusable UI components with variants
+═══════════════════════════════════════════════════════
+🚫 CRITICAL MISTAKES TO AVOID
+═══════════════════════════════════════════════════════
 
-ACCESSIBILITY REQUIREMENTS:
-- Proper heading hierarchy
-- Alt text for images
-- ARIA labels where needed
-- Keyboard navigation
-- Focus states
-- Color contrast ≥4.5:1
+❌ NEVER generate fewer than 30 files
+❌ NEVER put all code in App.tsx (must be under 50 lines)
+❌ NEVER use hardcoded colors (text-white, bg-blue-500, etc.)
+❌ NEVER use hardcoded spacing (p-4, m-8, etc.)
+❌ NEVER skip configuration files
+❌ NEVER use inline styles
+❌ NEVER exceed component line limits
+❌ NEVER skip TypeScript interfaces
+❌ NEVER forget responsive design
+❌ NEVER ignore accessibility
 
-RESPONSIVENESS:
-- Mobile-first design
-- Tailwind breakpoints (sm:, md:, lg:)
-- No horizontal scroll
-- Touch-friendly targets (44px min)`;
+═══════════════════════════════════════════════════════
+✨ MODERN DESIGN PATTERNS (MANDATORY)
+═══════════════════════════════════════════════════════
+
+✅ Glassmorphism: backdrop-blur-xl bg-white/10
+✅ Gradient backgrounds: from-primary-600 to-accent-600
+✅ Smooth animations: transition-all duration-300
+✅ Hover effects: hover:scale-105 hover:shadow-xl
+✅ Focus states: focus:ring-4 focus:ring-primary-500/30
+✅ Modern shadows: Using design token shadows
+✅ Rounded corners: Using design token radius
+✅ Icon usage: lucide-react icons throughout
+✅ Typography hierarchy: Proper heading structure
+✅ Color contrast: WCAG AA compliant (4.5:1)
+✅ Touch targets: Minimum 44x44px for mobile
+✅ Loading states: Spinners and skeletons
+✅ Error states: Proper validation feedback
+✅ Empty states: Helpful placeholder content`;
         break;
       case 'vue':
         systemPrompt = `${baseFormat}
