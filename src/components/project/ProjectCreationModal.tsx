@@ -47,7 +47,11 @@ export function ProjectCreationModal({ open, onClose }: ProjectCreationModalProp
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] glass-card border-primary/20">
+      <DialogContent 
+        className="sm:max-w-[500px] glass-card border-primary/20"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle className="text-2xl">Create a New Project</DialogTitle>
           <DialogDescription>
