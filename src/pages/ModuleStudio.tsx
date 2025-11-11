@@ -38,7 +38,7 @@ const ModuleStudio = () => {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(location.state?.conversationId || null);
-  const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview'); // Default to preview
+  const [activeTab, setActiveTab] = useState<'preview' | 'code' | 'history'>('preview'); // Default to preview
   // DISABLED: All validation state removed for raw output analysis
   const [currentCodeType, setCurrentCodeType] = useState<string>("react");
   const [activeFile, setActiveFile] = useState<string | null>(null);
@@ -426,7 +426,7 @@ const ModuleStudio = () => {
 
           <ResizableHandle withHandle />
 
-          {/* Right Panel - Preview/Code */}
+          {/* Right Panel - Preview/Code/History */}
           <ResizablePanel defaultSize={60} minSize={40}>
             <PreviewPanel
               files={generatedFiles}

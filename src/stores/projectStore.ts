@@ -347,3 +347,24 @@ export function createNewProject(name?: string): ProjectMeta {
   
   return project;
 }
+
+// Get chat history for a project
+export function getChatHistory(projectId: string): ChatEntry[] {
+  const state = getProjectState();
+  const project = state.projects[projectId];
+  return project?.chat || [];
+}
+
+// Clear chat history for current project
+export function clearChatHistory(): void {
+  const state = getProjectState();
+  if (!state.currentId) return;
+  
+  const current = state.projects[state.currentId];
+  if (!current) return;
+  
+  current.chat = [];
+  current.updatedAt = new Date().toISOString();
+  state.projects[state.currentId] = current;
+  saveProjectState(state);
+}

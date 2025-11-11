@@ -14,11 +14,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ReactPreview } from "./ReactPreview";
 import FileExplorer from "@/components/FileExplorer";
+import { ProjectChatHistory } from "@/components/project/ProjectChatHistory";
 
 interface PreviewPanelProps {
   files: CodeFile[];
-  activeTab: 'preview' | 'code';
-  onTabChange: (tab: 'preview' | 'code') => void;
+  activeTab: 'preview' | 'code' | 'history';
+  onTabChange: (tab: 'preview' | 'code' | 'history') => void;
   isGenerating: boolean;
   generationPhase: string;
   currentFile: string | null;
@@ -282,10 +283,11 @@ export const PreviewPanel = ({
     <div className="flex flex-col h-full bg-background">
       {/* Tab Header */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-border">
-        <Tabs value={activeTab} onValueChange={(v) => onTabChange(v as 'preview' | 'code')} className="w-auto">
+        <Tabs value={activeTab} onValueChange={(v) => onTabChange(v as 'preview' | 'code' | 'history')} className="w-auto">
           <TabsList className="h-8">
             <TabsTrigger value="preview" className="text-xs px-3">Preview</TabsTrigger>
             <TabsTrigger value="code" className="text-xs px-3">Code</TabsTrigger>
+            <TabsTrigger value="history" className="text-xs px-3">History</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -332,6 +334,8 @@ export const PreviewPanel = ({
           <div className="h-full overflow-auto bg-muted/30 p-4">
             {renderPreview()}
           </div>
+        ) : activeTab === 'history' ? (
+          <ProjectChatHistory />
         ) : (
           <div className="flex h-full">
             {/* File Tree */}
