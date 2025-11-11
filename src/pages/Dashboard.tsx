@@ -1,9 +1,9 @@
 import { FC, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Sidebar from '@/components/Sidebar/Sidebar';
 import Footer from '@/components/Footer';
 import { MyProjects } from '@/components/dashboard/MyProjects';
 import { ProjectCreationModal } from '@/components/project/ProjectCreationModal';
+import { TopNavbar } from '@/components/dashboard/TopNavbar';
 import { Rocket, Code2, Zap, Sparkles, Globe } from 'lucide-react';
 
 const Dashboard: FC = () => {
@@ -16,14 +16,12 @@ const Dashboard: FC = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex flex-col w-full" style={{ background: 'linear-gradient(180deg, #0A0A0A 0%, #1C1C1C 100%)' }}>
+      {/* Top Navigation Bar */}
+      <TopNavbar onNewChat={() => navigate('/studio')} />
+
       <div className="flex flex-1">
-        {/* Sidebar */}
-        <Sidebar initialCollapsed={true} />
-        
-        {/* Main Content Area */}
-        <div 
-          className="flex-1 min-h-screen pb-20 sm:pb-4 transition-[margin-left] duration-[260ms] ease-[cubic-bezier(0.2,0.9,0.2,1)] ml-0 sm:ml-[72px]"
-        >
+        {/* Main Content Area - Full Width */}
+        <div className="flex-1 min-h-screen pb-20 sm:pb-4 w-full">
           {/* Background Graphics */}
           <div className="fixed inset-0 pointer-events-none overflow-hidden">
             {/* Grid Pattern */}
