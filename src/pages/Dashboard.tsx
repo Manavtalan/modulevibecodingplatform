@@ -4,6 +4,7 @@ import Footer from '@/components/Footer';
 import { MyProjects } from '@/components/dashboard/MyProjects';
 import { ProjectCreationModal } from '@/components/project/ProjectCreationModal';
 import { TopNavbar } from '@/components/dashboard/TopNavbar';
+import { CenterNavigation } from '@/components/dashboard/CenterNavigation';
 import { Rocket, Code2, Zap, Sparkles, Globe } from 'lucide-react';
 
 const Dashboard: FC = () => {
@@ -16,8 +17,8 @@ const Dashboard: FC = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden flex flex-col w-full" style={{ background: 'linear-gradient(180deg, #0A0A0A 0%, #1C1C1C 100%)' }}>
-      {/* Top Navigation Bar */}
-      <TopNavbar onNewChat={() => navigate('/studio')} />
+      {/* Top Right Profile Icon */}
+      <TopNavbar />
 
       <div className="flex flex-1">
         {/* Main Content Area - Full Width */}
@@ -48,11 +49,16 @@ const Dashboard: FC = () => {
 
 
           {/* Hero Section - Centered */}
-          <div className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-4 sm:px-6 md:px-8">
+          <div className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-4 sm:px-6 md:px-8 pt-12">
             
+            {/* Center Navigation - Above Launching Soon */}
+            <div className="animate-fade-in">
+              <CenterNavigation />
+            </div>
+
             {/* Launching Soon Badge */}
             <div 
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 sm:mb-8 animate-fade-in"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 animate-fade-in"
               style={{ 
                 background: 'linear-gradient(90deg, rgba(255,122,24,0.1) 0%, rgba(255,179,71,0.1) 100%)',
                 border: '1px solid rgba(255,122,24,0.3)',
