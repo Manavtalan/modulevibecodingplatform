@@ -13,6 +13,7 @@ import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ReactPreview } from "./ReactPreview";
+import FileExplorer from "@/components/FileExplorer";
 
 interface PreviewPanelProps {
   files: CodeFile[];
@@ -332,27 +333,15 @@ export const PreviewPanel = ({
             {/* File Tree */}
             <div className="w-64 border-r border-border bg-muted/30 p-4">
               <h3 className="text-sm font-semibold mb-3">Files</h3>
-              <ScrollArea className="h-[calc(100%-2rem)]">
-                {files.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No files generated yet</p>
-                ) : (
-                  <div className="space-y-1">
-                    {files.map((file) => (
-                      <button
-                        key={file.path}
-                        onClick={() => setSelectedFile(file.path)}
-                        className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
-                          selectedFile === file.path
-                            ? 'bg-primary text-primary-foreground'
-                            : 'hover:bg-muted'
-                        }`}
-                      >
-                        {file.path}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </ScrollArea>
+              {files.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No files generated yet</p>
+              ) : (
+                <FileExplorer
+                  files={files}
+                  activePath={selectedFile}
+                  onOpen={(path) => setSelectedFile(path)}
+                />
+              )}
             </div>
 
               {/* Code Viewer */}
