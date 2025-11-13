@@ -14,3 +14,7 @@ verify_jwt = false
 
 [functions.generate-code]
 verify_jwt = true
+
+[functions.push-to-github]
+verify_jwt = true
+
