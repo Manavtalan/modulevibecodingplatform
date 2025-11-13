@@ -10,6 +10,7 @@ import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 // import ValidationResults from "@/components/ValidationResults";
 // import { ValidationResult } from "@/utils/codeQualityValidator";
 import Logo from "@/components/Logo";
+import { TokenUsageDisplay } from "@/components/TokenUsageDisplay";
 
 interface ChatPanelProps {
   messages: Message[];
@@ -61,7 +62,10 @@ export const ChatPanel = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-muted/30">
+    <div className="flex flex-col h-full bg-muted/30 relative">
+      {/* Token Usage Display */}
+      <TokenUsageDisplay />
+      
       {/* Messages Area */}
       <ScrollArea className="flex-1 px-4 py-2">
         <div className="space-y-4">

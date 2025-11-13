@@ -95,7 +95,7 @@ export type Database = {
           action: Database["public"]["Enums"]["audit_action"]
           created_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_values: Json | null
           old_values: Json | null
           record_id: string | null
@@ -107,7 +107,7 @@ export type Database = {
           action: Database["public"]["Enums"]["audit_action"]
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           record_id?: string | null
@@ -119,7 +119,7 @@ export type Database = {
           action?: Database["public"]["Enums"]["audit_action"]
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_values?: Json | null
           old_values?: Json | null
           record_id?: string | null
@@ -751,10 +751,7 @@ export type Database = {
         Args: { _tokens_to_use: number; _user_id: string }
         Returns: Json
       }
-      get_token_usage: {
-        Args: { _user_id: string }
-        Returns: Json
-      }
+      get_token_usage: { Args: { _user_id: string }; Returns: Json }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["user_role"]

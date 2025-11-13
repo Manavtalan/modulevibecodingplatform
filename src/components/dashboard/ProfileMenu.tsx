@@ -2,12 +2,38 @@ import { FC, useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Settings, LogOut, Zap, LogIn } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+
+interface TokenUsage {
+  quota: number;
+  used: number;
+  remaining: number;
+  percentage: number;
+}
 
 export const ProfileMenu: FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [tokenUsage, setTokenUsage] = useState<TokenUsage | null>(null);
   const { user, signOut } = useAuth();
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  // Fetch token usage when menu opens
+  useEffect(() => {
+    const fetchTokenUsage = async () => {
+      if (!user || !isOpen) return;
+      
+      const { data, error } = await supabase.rpc('get_token_usage', {
+        _user_id: user.id
+      });
+
+      if (!error && data) {
+        setTokenUsage(data as unknown as TokenUsage);
+      }
+    };
+
+    fetchTokenUsage();
+  }, [user, isOpen]);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -100,21 +126,29 @@ export const ProfileMenu: FC = () => {
               </div>
 
               {/* Token Usage Bar */}
-              <div className="mb-2">
-                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255, 255, 255, 0.1)' }}>
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: '54.6%',
-                      background: 'linear-gradient(90deg, #FF7A18 0%, #FFB347 100%)',
-                    }}
-                  />
-                </div>
-              </div>
+              {tokenUsage && (
+                <>
+                  <div className="mb-2">
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255, 255, 255, 0.1)' }}>
+                      <div
+                        className="h-full rounded-full transition-all duration-300"
+                        style={{
+                          width: `${Math.min(tokenUsage.percentage, 100)}%`,
+                          background: tokenUsage.percentage >= 80 
+                            ? 'linear-gradient(90deg, #ff6b6b 0%, #ff8787 100%)'
+                            : 'linear-gradient(90deg, #FF7A18 0%, #FFB347 100%)',
+                        }}
+                      />
+                    </div>
+                  </div>
 
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs text-gray-400">546.0K / 1M tokens</span>
-              </div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs text-gray-400">
+                      {(tokenUsage.used / 1000).toFixed(1)}K / {(tokenUsage.quota / 1000).toFixed(0)}K tokens
+                    </span>
+                  </div>
+                </>
+              )}
 
               <button
                 onClick={() => {

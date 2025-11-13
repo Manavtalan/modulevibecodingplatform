@@ -71,7 +71,7 @@ serve(async (req) => {
 
     if (tokenCheck && !tokenCheck.allowed) {
       return new Response(JSON.stringify({ 
-        error: 'Token quota exceeded',
+        error: '🚫 You have reached your 500,000 token usage limit. Please upgrade or contact support to continue using Module.',
         remaining: tokenCheck.remaining 
       }), {
         status: 403,
