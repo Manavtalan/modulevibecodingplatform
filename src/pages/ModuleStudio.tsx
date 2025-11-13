@@ -333,12 +333,12 @@ const ModuleStudio = () => {
       setCurrentCodeType(codeType);
 
       // Trigger code generation with detailed status
-      addStatusMessage("🚀 Starting code generation...\n🤖 Using GPT-4o with 128K context window for highly intelligent code generation", "status");
+      addStatusMessage("🚀 Starting code generation...\n🤖 Using Claude Sonnet 4.5 with 200K context window for highly intelligent code generation", "status");
       
       await generateCode({
         prompt: text,
         codeType,
-        model: 'gpt-4o',
+        model: 'claude-sonnet-4-5',
         conversationId: conversationId || undefined
       });
     } else if (promptType === 'question' || promptType === 'chat') {
