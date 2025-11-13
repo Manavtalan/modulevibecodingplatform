@@ -22,88 +22,58 @@ interface GenerateCodeResponse {
   files: FileMap;
 }
 
-// Build system prompt with design system injected
+// Build system prompt with design system reference
 function buildSystemPrompt(): string {
-  const designContext = JSON.stringify(
-    {
-      tokens: MODERN_DESIGN_EXAMPLES.tokens,
-      components: MODERN_DESIGN_EXAMPLES.components,
-    },
-    null,
-    2
-  );
-
   return `You are the UI code generator for Module, an AI-powered vibe coding platform.
 
 Stack:
 - React + TypeScript + Vite + Tailwind CSS.
 
-Important:
-- The project template (Vite config, Tailwind config, index.html, main.tsx, etc.) is already correctly set up.
-- You must NOT generate or modify any config files, HTML entry files, or package definitions.
+Important context:
+- The project template (Vite config, Tailwind config, index.html, main.tsx, etc.) already exists and is correct.
+- You MUST NOT generate or modify any config files, entrypoint HTML, or tooling files.
 - Your ONLY job is to generate UI code for files inside \`src/\`, specifically:
   - \`src/App.tsx\`
   - \`src/components/*.tsx\`
 
 Design language:
-- Dark UI, slate background (bg-slate-950), indigo accents, subtle glassmorphism.
-- Highly modern SaaS style, similar to Linear, Vercel, and Lovable.
-- Use Tailwind utility classes extensively.
-- Always make layouts fully responsive (mobile-first, then tablet, then desktop).
-- Use the following design system for colors, spacing, layout, and component patterns:
+- Dark UI with a slate background (bg-slate-950) and indigo accents.
+- Modern SaaS aesthetic similar to Linear, Vercel, and Lovable.
+- Subtle glassmorphism: soft borders, soft shadows, glow accents.
+- Use Tailwind CSS utility classes heavily.
+- Always build fully responsive layouts (mobile-first, then tablet, then desktop).
+- Use consistent spacing, typography, colors, and layout structure inspired by the design system provided in the user message.
 
-<DESIGN_SYSTEM>
-${designContext}
-</DESIGN_SYSTEM>
+VERY IMPORTANT OUTPUT RULES:
 
-STRICT OUTPUT RULES:
-
-1. You MUST return a single JSON object of the form:
+1. You MUST respond with a single JSON object of the exact shape:
 
 {
   "files": {
     "src/App.tsx": "TSX CODE HERE",
-    "src/components/SomeComponent.tsx": "TSX CODE HERE",
+    "src/components/ComponentName.tsx": "TSX CODE HERE",
     "src/components/AnotherComponent.tsx": "TSX CODE HERE"
   }
 }
 
-2. Do NOT wrap code in backticks or markdown.
-3. Do NOT include markdown, comments, prose, or any text outside the JSON object.
-4. All file contents must be valid TypeScript React (TSX):
+2. Do NOT wrap code in backticks.
+3. Do NOT include markdown, comments, or any descriptive text outside the JSON.
+4. Every file's value must be valid TypeScript React (TSX) code.
    - Example: \`export default function App() { ... }\`
 5. You may ONLY import from:
    - "react"
-   - relative paths such as "./components/Hero" or "./components/Features"
-6. You MUST NOT import from any external UI libraries or packages such as:
-   - lucide-react
-   - shadcn/ui
-   - framer-motion
-   - @/components
-   - @radix-ui
-   - clsx
-   - tailwind-merge
-7. Do NOT generate or reference:
+   - Relative paths such as "./components/Hero" or "./components/Features"
+6. You MUST NOT import from any external UI or icon libraries, e.g.:
+   - lucide-react, shadcn/ui, framer-motion, "@/components", @radix-ui, clsx, tailwind-merge, etc.
+7. You MUST NOT generate or reference:
    - package.json
    - tsconfig.json
    - vite.config.*
    - tailwind.config.*
    - index.html
    - src/main.tsx
-   They already exist and are managed separately.
 
-If the user prompt is ambiguous, make sensible assumptions and still respond with a valid JSON file map.
-
-Examples of VALID imports:
-- import { useState } from "react";
-- import Hero from "./components/Hero";
-- import { Features } from "./components/Features";
-
-Examples of INVALID imports (DO NOT USE):
-- import { Button } from "@/components/ui/button"; ❌
-- import { ArrowRight } from "lucide-react"; ❌
-- import { motion } from "framer-motion"; ❌
-- import clsx from "clsx"; ❌
+If the user request is ambiguous, make reasonable assumptions and still produce a valid JSON object of the described shape.
 `;
 }
 
@@ -114,7 +84,22 @@ async function callModelForFiles(
   anthropicKey?: string,
   openaiKey?: string
 ): Promise<FileMap> {
-  const systemPrompt = buildSystemPrompt();
+  const system = buildSystemPrompt();
+  
+  // Build structured user prompt with design examples
+  const userRequestMessage = `User wants: ${userPrompt}
+
+Generate a single-page UI (or appropriate layout) using React + TypeScript + Tailwind with:
+- A clear structure.
+- At least a navbar, a hero section, and some supporting sections (features / stats / CTA) when it's a landing page.
+- The design language and patterns from the provided design system.
+
+Remember: You only output the JSON { "files": { ... } } object, nothing else.`;
+
+  const designExamples = {
+    tokens: MODERN_DESIGN_EXAMPLES.tokens,
+    components: MODERN_DESIGN_EXAMPLES.components,
+  };
 
   // Use Claude by default
   if (model === 'claude-sonnet-4-5' && anthropicKey) {
@@ -128,14 +113,14 @@ async function callModelForFiles(
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 4096,
-        system: systemPrompt,
+        system,
         messages: [
           {
             role: 'user',
-            content: `User request: ${userPrompt}
-
-Generate a complete UI based on the request.
-Return ONLY the JSON object described in the system prompt (no markdown, no comments).`,
+            content: JSON.stringify({
+              designExamples,
+              request: userRequestMessage,
+            }),
           },
         ],
       }),
@@ -170,13 +155,13 @@ Return ONLY the JSON object described in the system prompt (no markdown, no comm
       body: JSON.stringify({
         model: model === 'gpt-4o' ? 'gpt-4o' : 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: systemPrompt },
+          { role: 'system', content: system },
           {
             role: 'user',
-            content: `User request: ${userPrompt}
-
-Generate a complete UI based on the request.
-Return ONLY the JSON object described in the system prompt (no markdown, no comments).`,
+            content: JSON.stringify({
+              designExamples,
+              request: userRequestMessage,
+            }),
           },
         ],
         max_tokens: 4096,
