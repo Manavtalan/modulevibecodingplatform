@@ -63,6 +63,23 @@ DESIGN LANGUAGE:
 - Use Tailwind CSS classes heavily.
 - Use spacing, typography, colors, and layout patterns inspired by this design system:
 
+LAYOUT REQUIREMENTS:
+- For a "portfolio" request, always build:
+  - A sticky navbar with logo + nav links.
+  - A full-screen hero section with headline, subheadline, and primary CTA.
+  - A 3–6 card "Projects" or "Highlights" grid.
+  - At least one supporting section (e.g. "About", "Skills", "Testimonials", or "Contact").
+- Use multiple components under src/components/*:
+  - Example: Hero, Navbar, ProjectsGrid, AboutSection, ContactSection.
+  - src/App.tsx should compose these components into a full page.
+
+VISUAL STYLE:
+- Use Tailwind classes to create modern, well-spaced, responsive layouts.
+- Use dark background (slate-950), soft borders, rounded corners, and subtle shadows.
+- Make it visually closer to polished SaaS/portfolio sites (e.g. Linear, Vercel) rather than raw HTML.
+- NO plain HTML pages or unstyled text allowed.
+- All UI must be React + TSX with Tailwind classes for layout and styling.
+
 <DESIGN_SYSTEM>
 ${designContext}
 </DESIGN_SYSTEM>
