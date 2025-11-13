@@ -37,6 +37,22 @@ const BASE_TEMPLATE_FILES: Record<string, string> = {
     <meta charset="UTF-8" />
     <title>Module Preview</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Tailwind CDN for preview (no build step needed) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              slate: {
+                950: "#020617",
+              },
+            },
+          },
+        },
+      };
+    </script>
   </head>
   <body class="bg-slate-950">
     <div id="root"></div>
@@ -123,12 +139,19 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   </React.StrictMode>
 );`,
 
-  "/src/index.css": `@tailwind base;
-@tailwind components;
-@tailwind utilities;
+  "/src/index.css": `/* Tailwind is loaded via CDN in index.html.
+   This file is only for tiny overrides. */
+
+html,
+body,
+#root {
+  height: 100%;
+}
 
 body {
-  @apply bg-slate-950 text-slate-50 antialiased;
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Inter", sans-serif;
 }`,
 };
 
