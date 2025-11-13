@@ -11,22 +11,22 @@ interface ModelSelectorProps {
 
 const models = [
   {
+    value: 'claude-sonnet-4-5',
+    label: 'Claude Sonnet 4.5',
+    badge: 'Primary',
+    description: 'Most capable model - 200K context window'
+  },
+  {
     value: 'gpt-4o',
     label: 'GPT-4o',
-    badge: 'Primary',
-    description: 'Highly intelligent model - 128K context window'
+    badge: 'Secondary',
+    description: 'Highly intelligent model - 128K context'
   },
   {
     value: 'gpt-4o-mini',
     label: 'GPT-4o Mini',
-    badge: 'Secondary',
-    description: 'Fast and efficient for most tasks'
-  },
-  {
-    value: 'claude-3-sonnet',
-    label: 'Claude 3 Sonnet',
     badge: 'Fallback',
-    description: 'Balanced performance and quality'
+    description: 'Fast and efficient for most tasks'
   }
 ] as const;
 
@@ -45,7 +45,7 @@ export function ModelSelector({ value, onChange, disabled }: ModelSelectorProps)
             <TooltipContent className="max-w-xs">
               <p className="text-sm">
                 Different models offer different trade-offs between speed, quality, and cost.
-                GPT-4o offers powerful reasoning with 200K context, GPT-4o Mini is faster and cheaper, Claude 3 Sonnet provides balanced performance.
+                Claude Sonnet 4.5 offers superior reasoning with 200K context, GPT-4o is highly capable, GPT-4o Mini is faster and cheaper.
               </p>
             </TooltipContent>
           </Tooltip>

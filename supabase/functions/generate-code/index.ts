@@ -12,7 +12,7 @@ interface GenerateCodeRequest {
   codeType?: 'react' | 'vue' | 'javascript' | 'typescript' | 'css';
   framework?: string;
   conversation_id?: string;
-  model?: 'gpt-4o';
+  model?: 'claude-sonnet-4-5' | 'gpt-4o' | 'gpt-4o-mini';
 }
 
 serve(async (req) => {
@@ -21,6 +21,7 @@ serve(async (req) => {
   }
 
   try {
+    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
@@ -29,8 +30,8 @@ serve(async (req) => {
       throw new Error('Missing required environment variables');
     }
     
-    if (!OPENAI_API_KEY) {
-      throw new Error('OpenAI API key not configured');
+    if (!ANTHROPIC_API_KEY && !OPENAI_API_KEY) {
+      throw new Error('No AI API keys configured');
     }
 
     const authHeader = req.headers.get('Authorization');
@@ -54,7 +55,7 @@ serve(async (req) => {
       });
     }
 
-    const { prompt, codeType = 'react', framework, conversation_id, model = 'gpt-4o' } = await req.json() as GenerateCodeRequest;
+    const { prompt, codeType = 'react', framework, conversation_id, model = 'claude-sonnet-4-5' } = await req.json() as GenerateCodeRequest;
 
     if (!prompt || prompt.trim().length === 0) {
       return new Response(JSON.stringify({ error: 'Prompt is required' }), {
@@ -155,34 +156,64 @@ STRICT REQUIREMENTS:
       { role: 'user', content: enhancedPrompt }
     ];
 
-    const modelUsed = 'gpt-4o';
-
     console.log('=== Code Generation Request ===');
-    console.log('Model:', modelUsed);
+    console.log('Model:', model);
     console.log('Code Type:', codeType);
     console.log('Framework:', framework || 'none');
     console.log('Prompt length:', prompt.length);
     console.log('Expected files:', codeType === 'react' ? '30+ files' : 'multiple files');
 
-    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        max_tokens: 16000, // Increased for more files
-        messages: messages,
-        stream: true,
-      }),
-    });
+    let apiResponse: Response;
+    let reader: ReadableStreamDefaultReader<Uint8Array>;
 
-    if (!openaiResponse.ok) {
-      const errorText = await openaiResponse.text();
-      console.error('OpenAI API error:', openaiResponse.status, errorText);
+    if (model.startsWith('claude')) {
+      // Use Anthropic API
+      if (!ANTHROPIC_API_KEY) {
+        throw new Error('Anthropic API key not configured');
+      }
+
+      apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: model,
+          max_tokens: 16000,
+          temperature: 0.7,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: enhancedPrompt }],
+          stream: true,
+        }),
+      });
+    } else {
+      // Use OpenAI API
+      if (!OPENAI_API_KEY) {
+        throw new Error('OpenAI API key not configured');
+      }
+
+      apiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: model,
+          max_tokens: 16000,
+          messages: messages,
+          stream: true,
+        }),
+      });
+    }
+
+    if (!apiResponse.ok) {
+      const errorText = await apiResponse.text();
+      console.error('API error:', apiResponse.status, errorText);
       
-      if (openaiResponse.status === 429) {
+      if (apiResponse.status === 429) {
         return new Response(JSON.stringify({ 
           error: 'Rate limit exceeded',
           details: 'Too many requests. Please try again later.' 
@@ -201,7 +232,7 @@ STRICT REQUIREMENTS:
       });
     }
 
-    const reader = openaiResponse.body?.getReader();
+    reader = apiResponse.body?.getReader()!;
     if (!reader) {
       throw new Error('Failed to get response reader');
     }
@@ -235,16 +266,29 @@ STRICT REQUIREMENTS:
               try {
                 const parsed = JSON.parse(data);
                 
+                // Handle both OpenAI and Anthropic formats
+                let delta = '';
                 if (parsed.choices?.[0]?.delta?.content) {
-                  const delta = parsed.choices[0].delta.content;
+                  // OpenAI format
+                  delta = parsed.choices[0].delta.content;
+                } else if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+                  // Anthropic format
+                  delta = parsed.delta.text;
+                }
+                
+                if (delta) {
                   fullResponse += delta;
-                  
                   controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: delta })}\n\n`));
                 }
                 
+                // Handle token usage from both providers
                 if (parsed.usage) {
-                  inputTokens = parsed.usage.prompt_tokens || 0;
-                  outputTokens = parsed.usage.completion_tokens || 0;
+                  inputTokens = parsed.usage.prompt_tokens || parsed.usage.input_tokens || 0;
+                  outputTokens = parsed.usage.completion_tokens || parsed.usage.output_tokens || 0;
+                } else if (parsed.type === 'message_start' && parsed.message?.usage) {
+                  inputTokens = parsed.message.usage.input_tokens || 0;
+                } else if (parsed.type === 'message_delta' && parsed.usage) {
+                  outputTokens = parsed.usage.output_tokens || 0;
                 }
               } catch (e) {
                 console.error('Parse error:', e);
@@ -327,7 +371,7 @@ STRICT REQUIREMENTS:
                 role: 'assistant',
                 content: fullResponse,
                 token_est: outputTokens,
-                model_used: modelUsed,
+                model_used: model,
                 metadata: { code_type: codeType, framework, file_count: fileCount }
               }
             ]);
@@ -342,7 +386,7 @@ STRICT REQUIREMENTS:
           await supabase.from('requests_log').insert({
             user_id: user.id,
             tokens_est: totalTokens,
-            model: modelUsed
+            model: model
           });
 
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 

@@ -36,6 +36,7 @@ serve(async (req) => {
 
   try {
     // Get environment variables
+    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
@@ -48,10 +49,10 @@ serve(async (req) => {
       );
     }
 
-    if (!OPENAI_API_KEY) {
-      console.error('OpenAI API key not configured');
+    if (!ANTHROPIC_API_KEY && !OPENAI_API_KEY) {
+      console.error('No AI API keys configured');
       return new Response(
-        JSON.stringify({ code: 'SERVER_ERROR', message: 'OpenAI API not configured' }),
+        JSON.stringify({ code: 'SERVER_ERROR', message: 'AI API not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -98,6 +99,9 @@ serve(async (req) => {
     // Parse request body
     const body: AskRequest = await req.json();
     let { user_message, conversation_id, mode = 'explain', template_id } = body;
+    
+    // Get model from request or default to Claude Sonnet 4.5
+    const model = (body as any).model || 'claude-sonnet-4-5';
 
     if (!user_message || typeof user_message !== 'string') {
       return new Response(
@@ -210,125 +214,188 @@ serve(async (req) => {
 
     messages.push({ role: 'user', content: user_message });
 
-    // Use GPT-4o as primary model
+    // Use selected model (Claude Sonnet 4.5 as primary)
     let assistantReply = '';
-    let modelUsed = 'openai:gpt-4o';
+    let modelUsed = model;
     let tokensUsed = 0;
     let inputTokens = 0;
     let outputTokens = 0;
 
-    if (!OPENAI_API_KEY) {
-      return new Response(
-        JSON.stringify({ code: 'SERVER_ERROR', message: 'OpenAI API not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     try {
-      console.log('=== GPT-4o Request ===');
-      console.log('Model: gpt-4o');
-      console.log('Messages count:', messages.length);
-      
-      const requestBody = {
-        model: 'gpt-4o',
-        temperature: 0.7,
-        messages: messages.map(m => ({ role: m.role, content: m.content })),
-        stream: true,
-      };
-      console.log('Request body:', JSON.stringify(requestBody, null, 2));
-      
-      const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      console.log('=== OpenAI Response Debug ===');
-      console.log('Status:', openaiResponse.status);
-
-      if (!openaiResponse.ok) {
-        const errorText = await openaiResponse.text();
-        console.error('OpenAI API error response:', errorText);
-        
-        if (openaiResponse.status === 429) {
-          return new Response(
-            JSON.stringify({ 
-              code: 'RATE_LIMIT_EXCEEDED', 
-              message: 'Rate limit exceeded. Please try again later.' 
-            }),
-            { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-        
-        throw new Error(`OpenAI API failed with status ${openaiResponse.status}: ${errorText}`);
-      }
-
-      if (!openaiResponse.body) {
-        throw new Error('No response body');
-      }
-
-      const reader = openaiResponse.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      console.log('Starting to read streaming response...');
-
-      while (true) {
-        const { done, value } = await reader.read();
-        
-        if (done) {
-          console.log('Stream complete');
-          break;
+      if (model.startsWith('claude')) {
+        // Use Anthropic API for Claude models
+        if (!ANTHROPIC_API_KEY) {
+          throw new Error('Anthropic API key not configured');
         }
 
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
+        console.log('=== Claude Request ===');
+        console.log('Model:', model);
+        console.log('Messages count:', messages.length);
 
-        for (const line of lines) {
-          const trimmedLine = line.trim();
-          
-          if (!trimmedLine || !trimmedLine.startsWith('data: ')) {
-            continue;
-          }
+        // Convert messages format for Anthropic (system is separate)
+        const systemMessage = messages.find(m => m.role === 'system');
+        const conversationMessages = messages.filter(m => m.role !== 'system');
 
-          const jsonStr = trimmedLine.slice(6);
-          
-          if (jsonStr === '[DONE]') {
-            continue;
-          }
+        const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'x-api-key': ANTHROPIC_API_KEY,
+            'anthropic-version': '2023-06-01',
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: model,
+            max_tokens: 4096,
+            temperature: 0.7,
+            system: systemMessage?.content || '',
+            messages: conversationMessages.map(m => ({
+              role: m.role,
+              content: m.content
+            })),
+            stream: true,
+          }),
+        });
 
-          try {
-            const data = JSON.parse(jsonStr);
+        if (!anthropicResponse.ok) {
+          const errorText = await anthropicResponse.text();
+          console.error('Anthropic API error:', anthropicResponse.status, errorText);
+          throw new Error(`Anthropic API failed: ${anthropicResponse.status}`);
+        }
+
+        if (!anthropicResponse.body) {
+          throw new Error('No response body');
+        }
+
+        const reader = anthropicResponse.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (!line.trim() || !line.startsWith('data: ')) continue;
             
-            // Handle content from OpenAI streaming format
-            if (data.choices?.[0]?.delta?.content) {
-              assistantReply += data.choices[0].delta.content;
+            const jsonStr = line.slice(6).trim();
+            if (!jsonStr) continue;
+
+            try {
+              const data = JSON.parse(jsonStr);
+              
+              if (data.type === 'content_block_delta' && data.delta?.text) {
+                assistantReply += data.delta.text;
+              }
+              
+              if (data.type === 'message_start' && data.message?.usage) {
+                inputTokens = data.message.usage.input_tokens || 0;
+              }
+              
+              if (data.type === 'message_delta' && data.usage) {
+                outputTokens = data.usage.output_tokens || 0;
+              }
+            } catch (e) {
+              console.error('Error parsing Claude SSE:', e);
             }
-            
-            // Handle usage stats (sent at the end in OpenAI)
-            if (data.usage) {
-              inputTokens = data.usage.prompt_tokens || 0;
-              outputTokens = data.usage.completion_tokens || 0;
-            }
-          } catch (e) {
-            console.error('Error parsing SSE line:', trimmedLine, e);
           }
         }
-      }
 
-      tokensUsed = inputTokens + outputTokens;
-      console.log(`Token usage - Input: ${inputTokens}, Output: ${outputTokens}, Total: ${tokensUsed}`);
-      console.log('✓ GPT-4o succeeded, length:', assistantReply.length);
+        tokensUsed = inputTokens + outputTokens;
+        console.log('✓ Claude succeeded, length:', assistantReply.length);
+        
+      } else {
+        // Use OpenAI API for GPT models
+        if (!OPENAI_API_KEY) {
+          throw new Error('OpenAI API key not configured');
+        }
+
+        console.log('=== OpenAI Request ===');
+        console.log('Model:', model);
+        console.log('Messages count:', messages.length);
+
+        const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${OPENAI_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: model,
+            temperature: 0.7,
+            messages: messages.map(m => ({ role: m.role, content: m.content })),
+            stream: true,
+          }),
+        });
+
+        if (!openaiResponse.ok) {
+          const errorText = await openaiResponse.text();
+          console.error('OpenAI API error:', openaiResponse.status, errorText);
+          
+          if (openaiResponse.status === 429) {
+            return new Response(
+              JSON.stringify({ 
+                code: 'RATE_LIMIT_EXCEEDED', 
+                message: 'Rate limit exceeded. Please try again later.' 
+              }),
+              { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+          
+          throw new Error(`OpenAI API failed: ${openaiResponse.status}`);
+        }
+
+        if (!openaiResponse.body) {
+          throw new Error('No response body');
+        }
+
+        const reader = openaiResponse.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (!line.trim() || !line.startsWith('data: ')) continue;
+            
+            const jsonStr = line.slice(6);
+            if (jsonStr === '[DONE]') continue;
+
+            try {
+              const data = JSON.parse(jsonStr);
+              
+              if (data.choices?.[0]?.delta?.content) {
+                assistantReply += data.choices[0].delta.content;
+              }
+              
+              if (data.usage) {
+                inputTokens = data.usage.prompt_tokens || 0;
+                outputTokens = data.usage.completion_tokens || 0;
+              }
+            } catch (e) {
+              console.error('Error parsing OpenAI SSE:', e);
+            }
+          }
+        }
+
+        tokensUsed = inputTokens + outputTokens;
+        console.log('✓ OpenAI succeeded, length:', assistantReply.length);
+      }
       
       if (!assistantReply.trim()) {
-        throw new Error('GPT-4o returned empty content');
+        throw new Error('AI returned empty content');
       }
     } catch (error) {
-      console.error('=== GPT-4o Failed ===');
+      console.error('=== AI Request Failed ===');
       console.error('Error:', error?.message);
       throw error;
     }
