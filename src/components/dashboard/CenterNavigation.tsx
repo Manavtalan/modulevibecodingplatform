@@ -9,7 +9,7 @@ export const CenterNavigation: FC = () => {
     <div className="flex items-center justify-center gap-3 mb-8">
       {/* My Projects */}
       <button
-        onClick={() => navigate('/history')}
+        onClick={() => navigate('/projects')}
         className="px-5 py-2.5 rounded-xl backdrop-blur-md shadow-lg border transition-all duration-300 hover:scale-105 flex items-center gap-2"
         style={{
           background: 'rgba(255, 255, 255, 0.05)',

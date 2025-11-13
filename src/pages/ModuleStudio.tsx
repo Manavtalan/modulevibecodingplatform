@@ -11,6 +11,7 @@ import { ResumeOrNewModal } from "@/components/project/ResumeOrNewModal";
 import { ensureProject, updateCurrent, recordTokens, appendChat, logFileOpen } from "@/stores/projectStore";
 import { detectPromptType, getPromptTypeDescription } from "@/lib/promptTypeDetector";
 import { supabase } from "@/integrations/supabase/client";
+import { ArrowLeft } from "lucide-react";
 // DISABLED: Unused imports removed for raw output analysis
 // import { CodeQualityValidator, ValidationResult } from "@/utils/codeQualityValidator";
 // import { toast } from "@/hooks/use-toast";
@@ -35,9 +36,16 @@ export interface CodeFile {
 const ModuleStudio = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { showModal, candidate, resume, startNew, dismiss } = useProjectGate();
+
+  // Force login check
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth', { state: { from: location.pathname } });
+    }
+  }, [user, loading, navigate, location]);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(location.state?.conversationId || null);
@@ -402,6 +410,22 @@ const ModuleStudio = () => {
   //   runValidationAfterGeneration();
   // }, [generationPhase, generatedFiles.length]);
 
+  // Show loading or redirect if not authenticated
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect via useEffect
+  }
+
   return (
     <div className="flex flex-col h-screen bg-background">
       {/* Resume or New Project Modal */}
@@ -412,6 +436,17 @@ const ModuleStudio = () => {
         onStartNew={startNew}
         onClose={dismiss}
       />
+
+      {/* Back Button */}
+      <div className="absolute top-4 left-4 z-50">
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg glass-nav-btn hover:scale-105 transition-transform"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="hidden sm:inline">Back to Dashboard</span>
+        </button>
+      </div>
 
       {/* Header - Lovable Style */}
       <Header />

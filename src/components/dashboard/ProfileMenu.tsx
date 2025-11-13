@@ -1,7 +1,7 @@
 import { FC, useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, Settings, Palette, LogOut, FileText, Zap } from 'lucide-react';
+import { Settings, LogOut, Zap, LogIn } from 'lucide-react';
 
 export const ProfileMenu: FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -134,109 +134,71 @@ export const ProfileMenu: FC = () => {
 
           {/* Menu Links */}
           <div className="p-2">
-            <button
-              onClick={() => {
-                navigate('/prompts');
-                setIsOpen(false);
-              }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-300 hover:text-white transition-all duration-200"
-              style={{
-                background: 'transparent',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
-              }}
-            >
-              <FileText className="w-4 h-4" />
-              Templates
-            </button>
-
-            <button
-              onClick={() => {
-                navigate('/profile');
-                setIsOpen(false);
-              }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-300 hover:text-white transition-all duration-200"
-              style={{
-                background: 'transparent',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
-              }}
-            >
-              <Settings className="w-4 h-4" />
-              Account Settings
-            </button>
-
-            {/* Appearance Section */}
-            <div className="px-4 py-2.5">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2 text-sm text-gray-300">
-                  <Palette className="w-4 h-4" />
-                  Appearance
-                </div>
-              </div>
-              <div className="flex items-center gap-2 ml-6">
-                <button
-                  className="w-8 h-8 rounded-md border flex items-center justify-center transition-all hover:scale-110"
-                  style={{
-                    background: 'white',
-                    borderColor: 'rgba(255, 255, 255, 0.2)',
-                  }}
-                  title="Light mode"
-                >
-                  <span className="text-xs">☀️</span>
-                </button>
-                <button
-                  className="w-8 h-8 rounded-md border flex items-center justify-center transition-all hover:scale-110"
-                  style={{
-                    background: '#1a1a1a',
-                    borderColor: 'rgba(255, 122, 24, 0.4)',
-                  }}
-                  title="Dark mode (active)"
-                >
-                  <span className="text-xs">🌙</span>
-                </button>
-                <button
-                  className="w-8 h-8 rounded-md border flex items-center justify-center transition-all hover:scale-110"
-                  style={{
-                    background: 'linear-gradient(135deg, white 0%, #1a1a1a 100%)',
-                    borderColor: 'rgba(255, 255, 255, 0.2)',
-                  }}
-                  title="System"
-                >
-                  <span className="text-xs">💻</span>
-                </button>
-              </div>
-            </div>
+            {user && (
+              <button
+                onClick={() => {
+                  navigate('/profile');
+                  setIsOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-300 hover:text-white transition-all duration-200"
+                style={{
+                  background: 'transparent',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                <Settings className="w-4 h-4" />
+                Account Settings
+              </button>
+            )}
 
             {/* Divider */}
             <div className="my-2 h-px" style={{ background: 'rgba(255, 255, 255, 0.05)' }} />
 
-            {/* Sign Out */}
-            <button
-              onClick={handleSignOut}
-              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-all duration-200"
-              style={{
-                background: 'transparent',
-                color: '#ff6b6b',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 107, 107, 0.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent';
-              }}
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </button>
+            {/* Sign In / Sign Out */}
+            {user ? (
+              <button
+                onClick={handleSignOut}
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-all duration-200"
+                style={{
+                  background: 'transparent',
+                  color: '#ff6b6b',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 107, 107, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                <LogOut className="w-4 h-4" />
+                Sign Out
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  navigate('/auth');
+                  setIsOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-300 hover:text-white transition-all duration-200"
+                style={{
+                  background: 'transparent',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                <LogIn className="w-4 h-4" />
+                Sign In
+              </button>
+            )}
           </div>
         </div>
       )}
