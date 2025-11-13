@@ -82,16 +82,34 @@ export const SandpackPreview = ({
 
   // Error adapting files
   if (!sandpackData || 'error' in sandpackData) {
+    const errorMessage = 'error' in sandpackData 
+      ? sandpackData.error 
+      : 'Failed to prepare preview. Check the generated files.';
+    
     return (
-      <div className="flex items-center justify-center h-full">
-        <Card className="max-w-lg p-6">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="h-6 w-6 text-destructive" />
-            <div>
-              <h3 className="font-semibold">Preview Error</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                {'error' in sandpackData ? sandpackData.error : 'Failed to prepare preview. Check the generated files.'}
+      <div className="flex items-center justify-center h-full p-6">
+        <Card className="max-w-2xl p-8 bg-red-500/5 border-red-400/20">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0">
+              <AlertCircle className="h-8 w-8 text-red-400" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-red-300 mb-2">
+                Code Generation Failed
+              </h3>
+              <p className="text-sm text-red-200/90 mb-3">
+                {errorMessage}
               </p>
+              <div className="mt-4 p-3 bg-red-900/20 border border-red-400/20 rounded">
+                <p className="text-xs text-red-300/80">
+                  💡 <strong>Suggestions:</strong>
+                </p>
+                <ul className="text-xs text-red-300/70 mt-2 space-y-1 list-disc list-inside">
+                  <li>Try regenerating with a clearer, more specific prompt</li>
+                  <li>Break down complex requests into smaller steps</li>
+                  <li>Ensure your prompt describes a valid React UI component</li>
+                </ul>
+              </div>
             </div>
           </div>
         </Card>

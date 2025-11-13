@@ -216,7 +216,8 @@ function parseAndValidateFileMap(rawText: string): FileMap {
     throw new Error('Model JSON missing "files" object');
   }
 
-  if (typeof parsed.files['src/App.tsx'] !== 'string') {
+  // BACKEND GUARD: Must have src/App.tsx
+  if (typeof parsed.files['src/App.tsx'] !== 'string' && typeof parsed.files['/src/App.tsx'] !== 'string') {
     console.error('[generate-code] Missing src/App.tsx in:', Object.keys(parsed.files));
     throw new Error('Model did not include "src/App.tsx"');
   }
@@ -225,7 +226,15 @@ function parseAndValidateFileMap(rawText: string): FileMap {
   const sanitized: FileMap = {};
   for (const [path, content] of Object.entries(parsed.files)) {
     if (typeof content === 'string') {
+      // BACKEND GUARD: Check content is not empty
+      if (content.trim().length === 0) {
+        console.error(`[generate-code] Empty file content in ${path}`);
+        throw new Error(`Generated file is empty: ${path}`);
+      }
       sanitized[path] = content;
+    } else {
+      console.error(`[generate-code] Invalid content type in ${path}:`, typeof content);
+      throw new Error(`Invalid file content type in ${path}`);
     }
   }
 
@@ -242,6 +251,12 @@ function parseAndValidateFileMap(rawText: string): FileMap {
     ) {
       console.error(`[generate-code] Invalid empty import in ${path}`);
       throw new Error(`Invalid imports in generated code: ${path}`);
+    }
+
+    // Check for markdown fences (AI forgot to extract)
+    if (content.includes('```tsx') || content.includes('```typescript') || content.includes('```jsx')) {
+      console.error(`[generate-code] Markdown fences in ${path}`);
+      throw new Error(`Markdown code fences found in ${path} - model formatting error`);
     }
 
     // Check for forbidden third-party imports

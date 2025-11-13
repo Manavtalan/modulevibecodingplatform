@@ -1,4 +1,5 @@
 import type { SandpackFiles } from "@codesandbox/sandpack-react";
+import { validateGeneratedFiles, ValidationResult } from "./validateGeneratedFiles";
 
 export interface GenFile {
   path: string;
@@ -11,6 +12,7 @@ export interface PreviewAdapterResult {
   template: SandpackTemplate;
   files: SandpackFiles;
   dependencies: Record<string, string>;
+  validation?: ValidationResult;
 }
 
 /**
@@ -167,6 +169,7 @@ export function buildSandpackFiles(aiFiles: Record<string, string>): SandpackFil
 /**
  * Convert Module's API response to Sandpack format
  * Expects files in format: { "src/App.tsx": "...", "src/components/Hero.tsx": "..." }
+ * Performs validation before merging with base template
  */
 export function adaptFilesToSandpack(files: GenFile[]): PreviewAdapterResult {
   // Convert GenFile[] to Record<string, string>
@@ -175,46 +178,59 @@ export function adaptFilesToSandpack(files: GenFile[]): PreviewAdapterResult {
     aiFilesMap[file.path] = file.content;
   }
 
-  // Validate: Must have src/App.tsx
-  if (!aiFilesMap['src/App.tsx'] && !aiFilesMap['/src/App.tsx']) {
-    throw new Error('Generated code missing src/App.tsx');
+  // STEP 1: Validate generated files BEFORE merging
+  console.log('[preview] Validating generated files...');
+  const validation = validateGeneratedFiles(aiFilesMap);
+  
+  if (!validation.ok) {
+    console.error('[preview] Validation failed:', validation.error);
+    throw new Error(validation.error || 'File validation failed');
   }
 
-  // Build final file map with base template + AI files
+  // STEP 2: Build final file map with base template + AI files
   const sandpackFiles = buildSandpackFiles(aiFilesMap);
 
   console.debug('[preview] Sandpack files prepared:', {
     totalFiles: Object.keys(sandpackFiles).length,
     aiFiles: files.length,
+    validation: 'passed',
   });
 
   return {
     template: "react-ts",
     files: sandpackFiles,
     dependencies: FIXED_SANDPACK_DEPS,
+    validation,
   };
 }
 
 /**
  * Convert API response (files map) directly to Sandpack format
+ * Performs validation before merging with base template
  */
 export function adaptFileMapToSandpack(filesMap: Record<string, string>): PreviewAdapterResult {
-  // Validate: Must have src/App.tsx
-  if (!filesMap['src/App.tsx'] && !filesMap['/src/App.tsx']) {
-    throw new Error('Generated code missing src/App.tsx');
+  // STEP 1: Validate generated files BEFORE merging
+  console.log('[preview] Validating file map...');
+  const validation = validateGeneratedFiles(filesMap);
+  
+  if (!validation.ok) {
+    console.error('[preview] Validation failed:', validation.error);
+    throw new Error(validation.error || 'File validation failed');
   }
 
-  // Build final file map with base template + AI files
+  // STEP 2: Build final file map with base template + AI files
   const sandpackFiles = buildSandpackFiles(filesMap);
 
   console.debug('[preview] Sandpack files prepared from map:', {
     totalFiles: Object.keys(sandpackFiles).length,
     aiFileKeys: Object.keys(filesMap),
+    validation: 'passed',
   });
 
   return {
     template: "react-ts",
     files: sandpackFiles,
     dependencies: FIXED_SANDPACK_DEPS,
+    validation,
   };
 }
