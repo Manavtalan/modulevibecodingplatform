@@ -169,147 +169,54 @@ export const useCodeGeneration = () => {
     diagnostic.extractionMethod = 'fallback-raw';
     diagnostic.parsingErrors.push('Using fallback: raw content as single file');
     
-    return { files, diagnostic };
   };
 
-  const parseSSEStream = async (reader: ReadableStreamDefaultReader<Uint8Array>) => {
-    const decoder = new TextDecoder();
-    let buffer = '';
-    let accumulatedContent = ''; // NEW: Accumulate ALL content here
-    let messageCount = 0;
-    let planContent = '';
-
-    console.log('\n🚀 === STARTING SSE STREAM PARSING (v3.0) ===');
-    console.log('Strategy: Accumulate all content first, then parse for files at the end\n');
-
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        
-        if (done) {
-          console.log('\n🏁 Stream reading complete');
-          console.log(`📊 Total messages received: ${messageCount}`);
-          console.log(`📊 Total accumulated content: ${accumulatedContent.length} characters`);
-          break;
-        }
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (!line.trim() || line.startsWith(':')) continue;
-          
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6).trim();
-            messageCount++;
-            
-            // Try to parse as JSON
-            try {
-              const parsed = JSON.parse(data);
-              
-              // Accumulate content from JSON-wrapped messages
-              if (parsed.content) {
-                accumulatedContent += parsed.content;
-                
-                // Log every 10 messages to track progress
-                if (messageCount % 10 === 0) {
-                  console.log(`📦 Message #${messageCount}: Accumulated ${accumulatedContent.length} chars total`);
-                }
-                
-                // Update UI state for planning/generating phases
-                if (accumulatedContent.includes('[PLAN]') && !planContent) {
-                  setGenerationPhase('planning');
-                  console.log('📋 Detected [PLAN] marker - entering planning phase');
-                }
-                if (accumulatedContent.includes('[FILE:')) {
-                  setGenerationPhase('generating');
-                  // Extract current file name for UI feedback
-                  const fileMatch = accumulatedContent.match(/\[FILE:([^\]]+)\][^\[]*$/);
-                  if (fileMatch) {
-                    setCurrentFile(fileMatch[1].trim());
-                  }
-                }
-              }
-              
-              // Handle completion signal
-              if (parsed.done === true) {
-                console.log('\n✅ Received completion signal (done: true)');
-                
-                // Handle quality check if present
-                if (parsed.quality_check) {
-                  setQualityCheck(parsed.quality_check);
-                  console.log('✨ Quality check received:', parsed.quality_check);
-                }
-                
-                // Handle token validation if present
-                if (parsed.token_validation) {
-                  setTokenValidation(parsed.token_validation);
-                  console.log('🔍 Token validation received:', parsed.token_validation);
-                }
-                
-                break;
-              }
-            } catch (e) {
-              // Not JSON - accumulate raw content
-              accumulatedContent += data;
-              
-              if (messageCount % 10 === 0) {
-                console.log(`📝 Message #${messageCount}: Raw data accumulated (${data.length} chars)`);
-              }
-              
-              // Check for legacy markers
-              if (data === '[DONE]' || data === '[COMPLETE]') {
-                console.log(`\n✅ Received completion marker: ${data}`);
-                break;
-              }
-            }
-          }
-        }
-      }
-
-      console.log('\n📊 === STREAM ACCUMULATION SUMMARY ===');
-      console.log(`Messages processed: ${messageCount}`);
-      console.log(`Total content accumulated: ${accumulatedContent.length} characters`);
-      console.log(`Content starts with: ${accumulatedContent.substring(0, 100)}`);
-      console.log(`Content ends with: ${accumulatedContent.substring(Math.max(0, accumulatedContent.length - 100))}`);
-
-      // NOW parse the complete accumulated content for files
-      console.log('\n🔍 Starting file extraction from accumulated content...');
-      const { files: extractedFiles, diagnostic } = extractFilesFromContent(accumulatedContent);
-      
-      console.log(`✅ File extraction complete: ${extractedFiles.length} files`);
-      console.log('📊 Diagnostic Info:', diagnostic);
-      
-      setGeneratedFiles(extractedFiles);
-      setDiagnosticInfo(diagnostic);
-      setRawOutputAvailable(true);
-      
-      if (extractedFiles.length > 0 && diagnostic.extractionMethod === 'file-markers') {
-        console.log(`\n✅ SUCCESS: Extracted ${extractedFiles.length} files via standard markers`);
-        extractedFiles.forEach((file, index) => {
-          console.log(`   ${index + 1}. ${file.path} (${file.content.length} characters)`);
-        });
-        setGenerationPhase('complete');
-        setCurrentFile(null);
-      } else if (extractedFiles.length > 0) {
-        console.warn(`\n⚠️ PARTIAL SUCCESS: Extracted ${extractedFiles.length} files using fallback method: ${diagnostic.extractionMethod}`);
-        setGenerationPhase('complete');
-        setCurrentFile(null);
-      } else {
-        console.error('\n❌ FAILURE: No files were extracted');
-        setGenerationPhase('error');
-        setError('No files were generated. The AI response may not have contained the expected file markers.');
-      }
-
-    } catch (error) {
-      console.error('\n❌ SSE STREAM PARSING ERROR:', error);
-      console.error('Error details:', error instanceof Error ? error.stack : error);
-      setGenerationPhase('error');
-      setError(error instanceof Error ? error.message : 'Stream parsing failed');
-    }
+  // Parse JSON response from generate-code edge function
+  const parseJSONResponse = async (response: Response): Promise<CodeFile[]> => {
+    console.log('%c📦 PARSING JSON RESPONSE', 'background: #0066ff; color: #ffffff; font-size: 14px; padding: 5px;');
     
-    console.log('\n🏁 === PARSING COMPLETE ===\n');
+    try {
+      const data = await response.json();
+      console.log('📥 Received data:', data);
+      
+      // Validate response structure
+      if (!data.files || typeof data.files !== 'object') {
+        console.error('❌ Invalid response structure:', data);
+        throw new Error('Invalid response: missing files object');
+      }
+      
+      // Convert files object to CodeFile array
+      const files: CodeFile[] = [];
+      for (const [path, content] of Object.entries(data.files)) {
+        if (typeof content !== 'string') {
+          console.error(`❌ Invalid content type for ${path}:`, typeof content);
+          throw new Error(`Invalid file content type for ${path}`);
+        }
+        
+        if (content.trim().length === 0) {
+          console.error(`❌ Empty file content for ${path}`);
+          throw new Error(`Empty file: ${path}`);
+        }
+        
+        console.log(`✅ Parsed file: ${path} (${content.length} bytes)`);
+        files.push({ path, content });
+      }
+      
+      // Validate that src/App.tsx exists
+      const hasAppTsx = files.some(f => f.path === 'src/App.tsx' || f.path === '/src/App.tsx');
+      if (!hasAppTsx) {
+        console.error('❌ Missing required file: src/App.tsx');
+        console.error('Available files:', files.map(f => f.path));
+        throw new Error('Missing required file: src/App.tsx');
+      }
+      
+      console.log(`✅ Successfully parsed ${files.length} files`);
+      return files;
+      
+    } catch (error) {
+      console.error('❌ JSON parsing error:', error);
+      throw error;
+    }
   };
 
   const generateCode = async (params: GenerateCodeParams) => {
@@ -363,16 +270,12 @@ export const useCodeGeneration = () => {
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
-      if (!response.body) {
-        console.error('❌ No response body');
-        throw new Error("No response body");
-      }
-
-      console.log('📖 Starting to read response stream...');
-      const reader = response.body.getReader();
-      await parseSSEStream(reader);
+      console.log('📖 Parsing JSON response...');
+      const files = await parseJSONResponse(response);
       
-      console.log('✅ Stream parsing completed');
+      console.log('✅ Files parsed successfully:', files.length);
+      setGeneratedFiles(files);
+      setGenerationPhase('complete');
 
     } catch (err: any) {
       console.error("❌ Code generation error:", err);
