@@ -34,7 +34,7 @@ export const SandpackPreview = ({
       const result = adaptFilesToSandpack(files);
       
       // Validate the result
-      if (!result.template || !result.files) {
+      if (!result.template || !result.files || !result.dependencies) {
         console.error('Invalid adapter result:', result);
         return null;
       }
@@ -42,7 +42,8 @@ export const SandpackPreview = ({
       return result;
     } catch (error) {
       console.error('Error adapting files for Sandpack:', error);
-      return null;
+      // Store the error for display
+      return { error: error instanceof Error ? error.message : 'Failed to prepare preview' };
     }
   }, [files, reloadKey]); // Include reloadKey to force re-adaptation
 
@@ -80,7 +81,7 @@ export const SandpackPreview = ({
   }
 
   // Error adapting files
-  if (!sandpackData) {
+  if (!sandpackData || 'error' in sandpackData) {
     return (
       <div className="flex items-center justify-center h-full">
         <Card className="max-w-lg p-6">
@@ -89,7 +90,7 @@ export const SandpackPreview = ({
             <div>
               <h3 className="font-semibold">Preview Error</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Failed to prepare preview. Check the generated files.
+                {'error' in sandpackData ? sandpackData.error : 'Failed to prepare preview. Check the generated files.'}
               </p>
             </div>
           </div>
@@ -141,6 +142,9 @@ export const SandpackPreview = ({
           <SandpackProvider
             template={sandpackData.template}
             files={sandpackData.files}
+            customSetup={{
+              dependencies: sandpackData.dependencies,
+            }}
             theme="dark"
           >
             <SandpackLayout>
