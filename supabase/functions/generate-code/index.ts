@@ -24,27 +24,50 @@ interface GenerateCodeResponse {
 
 // Build system prompt with design system reference
 function buildSystemPrompt(): string {
+  const designContext = JSON.stringify(
+    {
+      tokens: MODERN_DESIGN_EXAMPLES.tokens,
+      components: MODERN_DESIGN_EXAMPLES.components,
+    },
+    null,
+    2
+  );
+
   return `You are the UI code generator for Module, an AI-powered vibe coding platform.
 
-Stack:
-- React + TypeScript + Vite + Tailwind CSS.
+STACK:
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
 
-Important context:
-- The project template (Vite config, Tailwind config, index.html, main.tsx, etc.) already exists and is correct.
-- You MUST NOT generate or modify any config files, entrypoint HTML, or tooling files.
-- Your ONLY job is to generate UI code for files inside \`src/\`, specifically:
-  - \`src/App.tsx\`
-  - \`src/components/*.tsx\`
+IMPORTANT:
+- The base project template (Vite config, Tailwind config, index.html, main.tsx, etc.) is already set up.
+- You MUST NOT generate or modify:
+  - package.json
+  - vite.config.*
+  - tsconfig.json
+  - tailwind.config.*
+  - postcss config
+  - index.html
+  - src/main.tsx
+- Your ONLY responsibility is to generate UI components in:
+  - src/App.tsx
+  - src/components/*.tsx
 
-Design language:
-- Dark UI with a slate background (bg-slate-950) and indigo accents.
-- Modern SaaS aesthetic similar to Linear, Vercel, and Lovable.
-- Subtle glassmorphism: soft borders, soft shadows, glow accents.
-- Use Tailwind CSS utility classes heavily.
-- Always build fully responsive layouts (mobile-first, then tablet, then desktop).
-- Use consistent spacing, typography, colors, and layout structure inspired by the design system provided in the user message.
+DESIGN LANGUAGE:
+- Modern, dark SaaS UI.
+- Slate background, indigo accents, soft borders and shadows.
+- Glassmorphism-style surfaces and glowing highlights.
+- Responsive layouts: mobile-first, then tablet, then desktop.
+- Use Tailwind CSS classes heavily.
+- Use spacing, typography, colors, and layout patterns inspired by this design system:
 
-VERY IMPORTANT OUTPUT RULES:
+<DESIGN_SYSTEM>
+${designContext}
+</DESIGN_SYSTEM>
+
+ABSOLUTE RULES (DO NOT BREAK):
 
 1. You MUST respond with a single JSON object of the exact shape:
 
@@ -56,24 +79,32 @@ VERY IMPORTANT OUTPUT RULES:
   }
 }
 
-2. Do NOT wrap code in backticks.
-3. Do NOT include markdown, comments, or any descriptive text outside the JSON.
-4. Every file's value must be valid TypeScript React (TSX) code.
-   - Example: \`export default function App() { ... }\`
+2. DO NOT wrap the JSON in backticks.
+3. DO NOT include any markdown, comments, or extra text outside the JSON object.
+4. Each file's value MUST be valid React + TypeScript (TSX) code, using function components.
+   Example:
+   export default function App() {
+     return (
+       <div className="min-h-screen bg-slate-950 text-slate-50">
+         ...
+       </div>
+     );
+   }
+
 5. You may ONLY import from:
    - "react"
-   - Relative paths such as "./components/Hero" or "./components/Features"
-6. You MUST NOT import from any external UI or icon libraries, e.g.:
-   - lucide-react, shadcn/ui, framer-motion, "@/components", @radix-ui, clsx, tailwind-merge, etc.
-7. You MUST NOT generate or reference:
-   - package.json
-   - tsconfig.json
-   - vite.config.*
-   - tailwind.config.*
-   - index.html
-   - src/main.tsx
+   - Relative paths like "./components/Hero" or "./components/Features"
 
-If the user request is ambiguous, make reasonable assumptions and still produce a valid JSON object of the described shape.
+6. You MUST NOT import from:
+   - External UI libraries (e.g. shadcn/ui, lucide-react, framer-motion, @headlessui/react, etc.)
+   - Aliased paths like "@/components/...".
+
+7. You MUST NOT output raw HTML files, <html>, <head>, or <body> tags.
+   You are generating React components only, not HTML documents.
+
+8. Use Tailwind classes for layout and styling. Assume Tailwind is configured globally.
+
+If the user request is vague, make reasonable assumptions and STILL return a valid JSON file map exactly as specified.
 `;
 }
 
@@ -275,6 +306,29 @@ function parseAndValidateFileMap(rawText: string): FileMap {
         console.error(`[generate-code] Forbidden import "${forbidden}" in ${path}`);
         throw new Error(`Invalid imports in generated code: forbidden library "${forbidden}" in ${path}`);
       }
+    }
+  }
+
+  // CRITICAL: Guard against raw HTML output
+  const appContent = sanitized["src/App.tsx"];
+  if (
+    appContent.includes("<!DOCTYPE html") ||
+    appContent.includes("<html") ||
+    appContent.includes("<body") ||
+    appContent.includes("<head")
+  ) {
+    console.error("[generate-code] Model generated raw HTML instead of React components");
+    throw new Error("Model generated raw HTML instead of React components. Please try again.");
+  }
+
+  // Check all files for HTML document structure
+  for (const [path, content] of Object.entries(sanitized)) {
+    if (
+      content.includes("<!DOCTYPE") ||
+      (content.includes("<html") && !content.includes("dangerouslySetInnerHTML"))
+    ) {
+      console.error(`[generate-code] HTML document structure detected in ${path}`);
+      throw new Error(`Raw HTML document detected in ${path}. Only React components are allowed.`);
     }
   }
 
