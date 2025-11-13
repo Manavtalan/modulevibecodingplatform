@@ -124,9 +124,15 @@ src/ (30+ files):
   - styles: design-tokens.css, globals.css
   - types: index.ts
   - utils: formatters.ts, validators.ts, helpers.ts
-Config files: package.json, tsconfig.json, vite.config.ts, tailwind.config.ts, postcss.config.js, .eslintrc.cjs, .gitignore, README.md
+Config files: tsconfig.json, vite.config.ts, tailwind.config.ts, postcss.config.js, .gitignore, README.md
 
-KEY PACKAGES: react, react-dom, lucide-react, clsx, tailwind-merge, typescript, vite, tailwindcss`;
+CRITICAL IMPORT RESTRICTIONS:
+- You may ONLY import from "react", "react-dom", and relative paths (e.g., "./components/Button", "../hooks/useToggle")
+- DO NOT import any third-party libraries: NO lucide-react, framer-motion, @radix-ui, shadcn, clsx, tailwind-merge, or ANY other external packages
+- DO NOT generate or modify package.json - the preview system will handle dependencies automatically
+- Use inline SVG icons instead of icon libraries
+- Use plain CSS/Tailwind for animations instead of animation libraries
+- All code must be self-contained within the generated files`;
         break;
         
       case 'vue':
@@ -305,6 +311,41 @@ STRICT REQUIREMENTS:
           }
 
           const totalTokens = inputTokens + outputTokens;
+
+          // Validate imports - check for invalid/null imports
+          const invalidImportPatterns = [
+            /from\s+['"]{2}/g,           // from ""
+            /from\s+null/g,              // from null
+            /import\s+null/g,            // import null
+            /from\s+['"]lucide-react/g,  // lucide-react
+            /from\s+['"]framer-motion/g, // framer-motion
+            /from\s+['"]@radix-ui/g,     // @radix-ui
+            /from\s+['"]@\/components\/ui/g, // shadcn ui
+            /from\s+['"]clsx/g,          // clsx
+            /from\s+['"]tailwind-merge/g // tailwind-merge
+          ];
+
+          let hasInvalidImport = false;
+          const invalidImportIssues: string[] = [];
+
+          for (const pattern of invalidImportPatterns) {
+            const matches = fullResponse.match(pattern);
+            if (matches) {
+              hasInvalidImport = true;
+              invalidImportIssues.push(`Found invalid import: ${matches[0]}`);
+            }
+          }
+
+          // If invalid imports found, return error
+          if (hasInvalidImport) {
+            console.error('Invalid imports detected:', invalidImportIssues);
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
+              error: 'Invalid imports in generated code',
+              details: invalidImportIssues.join(', ')
+            })}\n\n`));
+            controller.close();
+            return;
+          }
 
           // Simplified validation
           const qualityCheck = {

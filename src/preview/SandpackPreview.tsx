@@ -34,23 +34,12 @@ export const SandpackPreview = ({
       const result = adaptFilesToSandpack(files);
       
       // Validate the result
-      if (!result.template || !result.files || !result.dependencies) {
+      if (!result.template || !result.files) {
         console.error('Invalid adapter result:', result);
         return null;
       }
       
-      // Ensure dependencies is an object with string values only
-      const validDeps: Record<string, string> = {};
-      for (const [name, version] of Object.entries(result.dependencies)) {
-        if (typeof version === 'string' && version.trim().length > 0) {
-          validDeps[name] = version;
-        }
-      }
-      
-      return {
-        ...result,
-        dependencies: validDeps
-      };
+      return result;
     } catch (error) {
       console.error('Error adapting files for Sandpack:', error);
       return null;
@@ -152,10 +141,6 @@ export const SandpackPreview = ({
           <SandpackProvider
             template={sandpackData.template}
             files={sandpackData.files}
-            customSetup={{
-              dependencies: sandpackData.dependencies,
-              ...(sandpackData.entry ? { entry: sandpackData.entry } : {}),
-            }}
             theme="dark"
           >
             <SandpackLayout>
