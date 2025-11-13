@@ -245,7 +245,7 @@ serve(async (req) => {
           },
           body: JSON.stringify({
             model: model,
-            max_tokens: 4096,
+            max_tokens: 30000,
             temperature: 0.7,
             system: systemMessage?.content || '',
             messages: conversationMessages.map(m => ({
@@ -325,6 +325,7 @@ serve(async (req) => {
           },
           body: JSON.stringify({
             model: model,
+            max_tokens: 30000,
             temperature: 0.7,
             messages: messages.map(m => ({ role: m.role, content: m.content })),
             stream: true,
