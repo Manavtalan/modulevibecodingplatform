@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
+import { MODERN_DESIGN_EXAMPLES } from "./designExamples.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,10 +10,276 @@ const corsHeaders = {
 
 interface GenerateCodeRequest {
   prompt: string;
-  codeType?: 'react' | 'vue' | 'javascript' | 'typescript' | 'css';
-  framework?: string;
   conversation_id?: string;
-  model?: 'claude-sonnet-4-5' | 'gpt-4o' | 'gpt-4o-mini';
+  model?: "claude-sonnet-4-5" | "gpt-4o" | "gpt-4o-mini" | "gpt-5-mini";
+}
+
+export interface FileMap {
+  [path: string]: string;
+}
+
+interface GenerateCodeResponse {
+  files: FileMap;
+}
+
+// Build system prompt with design system injected
+function buildSystemPrompt(): string {
+  const designContext = JSON.stringify(
+    {
+      tokens: MODERN_DESIGN_EXAMPLES.tokens,
+      components: MODERN_DESIGN_EXAMPLES.components,
+    },
+    null,
+    2
+  );
+
+  return `You are the UI code generator for Module, an AI-powered vibe coding platform.
+
+Stack:
+- React + TypeScript + Vite + Tailwind CSS.
+
+Important:
+- The project template (Vite config, Tailwind config, index.html, main.tsx, etc.) is already correctly set up.
+- You must NOT generate or modify any config files, HTML entry files, or package definitions.
+- Your ONLY job is to generate UI code for files inside \`src/\`, specifically:
+  - \`src/App.tsx\`
+  - \`src/components/*.tsx\`
+
+Design language:
+- Dark UI, slate background (bg-slate-950), indigo accents, subtle glassmorphism.
+- Highly modern SaaS style, similar to Linear, Vercel, and Lovable.
+- Use Tailwind utility classes extensively.
+- Always make layouts fully responsive (mobile-first, then tablet, then desktop).
+- Use the following design system for colors, spacing, layout, and component patterns:
+
+<DESIGN_SYSTEM>
+${designContext}
+</DESIGN_SYSTEM>
+
+STRICT OUTPUT RULES:
+
+1. You MUST return a single JSON object of the form:
+
+{
+  "files": {
+    "src/App.tsx": "TSX CODE HERE",
+    "src/components/SomeComponent.tsx": "TSX CODE HERE",
+    "src/components/AnotherComponent.tsx": "TSX CODE HERE"
+  }
+}
+
+2. Do NOT wrap code in backticks or markdown.
+3. Do NOT include markdown, comments, prose, or any text outside the JSON object.
+4. All file contents must be valid TypeScript React (TSX):
+   - Example: \`export default function App() { ... }\`
+5. You may ONLY import from:
+   - "react"
+   - relative paths such as "./components/Hero" or "./components/Features"
+6. You MUST NOT import from any external UI libraries or packages such as:
+   - lucide-react
+   - shadcn/ui
+   - framer-motion
+   - @/components
+   - @radix-ui
+   - clsx
+   - tailwind-merge
+7. Do NOT generate or reference:
+   - package.json
+   - tsconfig.json
+   - vite.config.*
+   - tailwind.config.*
+   - index.html
+   - src/main.tsx
+   They already exist and are managed separately.
+
+If the user prompt is ambiguous, make sensible assumptions and still respond with a valid JSON file map.
+
+Examples of VALID imports:
+- import { useState } from "react";
+- import Hero from "./components/Hero";
+- import { Features } from "./components/Features";
+
+Examples of INVALID imports (DO NOT USE):
+- import { Button } from "@/components/ui/button"; ❌
+- import { ArrowRight } from "lucide-react"; ❌
+- import { motion } from "framer-motion"; ❌
+- import clsx from "clsx"; ❌
+`;
+}
+
+// Call model to get file map
+async function callModelForFiles(
+  userPrompt: string,
+  model: string,
+  anthropicKey?: string,
+  openaiKey?: string
+): Promise<FileMap> {
+  const systemPrompt = buildSystemPrompt();
+
+  // Use Claude by default
+  if (model === 'claude-sonnet-4-5' && anthropicKey) {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': anthropicKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4096,
+        system: systemPrompt,
+        messages: [
+          {
+            role: 'user',
+            content: `User request: ${userPrompt}
+
+Generate a complete UI based on the request.
+Return ONLY the JSON object described in the system prompt (no markdown, no comments).`,
+          },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[generate-code] Anthropic API error:', response.status, errorText);
+      throw new Error(`Anthropic API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('[generate-code] Anthropic response received');
+
+    // Extract text from response
+    const textBlock = data.content?.find((block: any) => block.type === 'text');
+    if (!textBlock?.text) {
+      throw new Error('No text content in Anthropic response');
+    }
+
+    return parseAndValidateFileMap(textBlock.text);
+  }
+
+  // Use OpenAI for other models
+  if (openaiKey) {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${openaiKey}`,
+      },
+      body: JSON.stringify({
+        model: model === 'gpt-4o' ? 'gpt-4o' : 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          {
+            role: 'user',
+            content: `User request: ${userPrompt}
+
+Generate a complete UI based on the request.
+Return ONLY the JSON object described in the system prompt (no markdown, no comments).`,
+          },
+        ],
+        max_tokens: 4096,
+        temperature: 0.4,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[generate-code] OpenAI API error:', response.status, errorText);
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('[generate-code] OpenAI response received');
+
+    const content = data.choices?.[0]?.message?.content;
+    if (!content) {
+      throw new Error('No content in OpenAI response');
+    }
+
+    return parseAndValidateFileMap(content);
+  }
+
+  throw new Error('No API key available for the selected model');
+}
+
+// Parse and validate the file map from model response
+function parseAndValidateFileMap(rawText: string): FileMap {
+  console.log('[generate-code] Parsing response...');
+  
+  // Clean up markdown if present
+  let cleanedText = rawText.trim();
+  if (cleanedText.startsWith('```json')) {
+    cleanedText = cleanedText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+  } else if (cleanedText.startsWith('```')) {
+    cleanedText = cleanedText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+  }
+
+  // Try to parse JSON
+  let parsed: GenerateCodeResponse;
+  try {
+    parsed = JSON.parse(cleanedText);
+  } catch (err) {
+    console.error('[generate-code] Failed to parse JSON. Raw text:', cleanedText.substring(0, 500));
+    throw new Error('Model did not return valid JSON');
+  }
+
+  // Validate structure
+  if (!parsed.files || typeof parsed.files !== 'object') {
+    console.error('[generate-code] Invalid structure:', parsed);
+    throw new Error('Model JSON missing "files" object');
+  }
+
+  if (typeof parsed.files['src/App.tsx'] !== 'string') {
+    console.error('[generate-code] Missing src/App.tsx in:', Object.keys(parsed.files));
+    throw new Error('Model did not include "src/App.tsx"');
+  }
+
+  // Sanitize: ensure all file contents are strings
+  const sanitized: FileMap = {};
+  for (const [path, content] of Object.entries(parsed.files)) {
+    if (typeof content === 'string') {
+      sanitized[path] = content;
+    }
+  }
+
+  // Validate imports - reject broken imports
+  for (const [path, content] of Object.entries(sanitized)) {
+    if (!content) continue;
+
+    // Check for invalid empty imports
+    if (
+      content.includes('from ""') ||
+      content.includes("from ''") ||
+      content.includes('from null') ||
+      content.includes('import null')
+    ) {
+      console.error(`[generate-code] Invalid empty import in ${path}`);
+      throw new Error(`Invalid imports in generated code: ${path}`);
+    }
+
+    // Check for forbidden third-party imports
+    const forbiddenImports = [
+      'lucide-react',
+      'framer-motion',
+      '@radix-ui',
+      '@/components/ui',
+      'clsx',
+      'tailwind-merge',
+      'shadcn',
+    ];
+
+    for (const forbidden of forbiddenImports) {
+      if (content.includes(`from "${forbidden}"`) || content.includes(`from '${forbidden}'`)) {
+        console.error(`[generate-code] Forbidden import "${forbidden}" in ${path}`);
+        throw new Error(`Invalid imports in generated code: forbidden library "${forbidden}" in ${path}`);
+      }
+    }
+  }
+
+  console.log('[generate-code] Validation passed. Files:', Object.keys(sanitized));
+  return sanitized;
 }
 
 serve(async (req) => {
@@ -29,7 +296,7 @@ serve(async (req) => {
     if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
       throw new Error('Missing required environment variables');
     }
-    
+
     if (!ANTHROPIC_API_KEY && !OPENAI_API_KEY) {
       throw new Error('No AI API keys configured');
     }
@@ -55,7 +322,7 @@ serve(async (req) => {
       });
     }
 
-    const { prompt, codeType = 'react', framework, conversation_id, model = 'claude-sonnet-4-5' } = await req.json() as GenerateCodeRequest;
+    const { prompt, model = 'claude-sonnet-4-5' } = await req.json() as GenerateCodeRequest;
 
     if (!prompt || prompt.trim().length === 0) {
       return new Response(JSON.stringify({ error: 'Prompt is required' }), {
@@ -64,6 +331,9 @@ serve(async (req) => {
       });
     }
 
+    console.log(`[generate-code] Request from user ${user.id}, model: ${model}`);
+    console.log(`[generate-code] Prompt: ${prompt.substring(0, 100)}...`);
+
     // Check token quota
     const { data: tokenCheck } = await supabase.rpc('check_and_deduct_tokens', {
       _user_id: user.id,
@@ -71,387 +341,55 @@ serve(async (req) => {
     });
 
     if (tokenCheck && !tokenCheck.allowed) {
-      return new Response(JSON.stringify({ 
+      return new Response(JSON.stringify({
         error: '🚫 You have reached your 500,000 token usage limit. Please upgrade or contact support to continue using Module.',
-        remaining: tokenCheck.remaining 
+        remaining: tokenCheck.remaining
       }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Optimized system prompt (reduced from 1457 to ~100 lines)
-    const baseFormat = `You are a senior full-stack developer. Generate production-ready web applications.
+    // Generate files
+    const files = await callModelForFiles(prompt, model, ANTHROPIC_API_KEY, OPENAI_API_KEY);
 
-CRITICAL OUTPUT FORMAT:
-[PLAN]
-{"files":[{"path":"src/App.tsx","description":"Main app"},...]}
-[/PLAN]
+    // Log request to database
+    const { error: logError } = await supabase.from('requests_log').insert({
+      user_id: user.id,
+      prompt,
+      model_used: model,
+      input_tokens: 0, // Will be updated if we track tokens
+      output_tokens: 0,
+      total_tokens: 0,
+    });
 
-[FILE:path/to/file.tsx]
-... complete file content ...
-[/FILE]
-
-[COMPLETE]
-{"filesGenerated":N,"success":true}
-[/COMPLETE]
-
-CORE RULES:
-- Use [FILE:path] and [/FILE] markers for ALL files
-- Generate MINIMUM 30-35 files for React apps
-- Modern, professional UI design
-- Responsive (mobile-first)
-- Semantic HTML5
-- Smooth animations
-- Accessibility (WCAG AA)
-- No placeholder comments - complete implementations only`;
-
-    let systemPrompt = '';
-    switch (codeType) {
-      case 'react':
-        systemPrompt = `${baseFormat}
-
-REACT + VITE APP STRUCTURE (30-35 FILES REQUIRED):
-
-public/ (3 files): favicon.ico, robots.txt, logo.svg
-src/ (30+ files):
-  - main.tsx, App.tsx, vite-env.d.ts, index.css
-  - components/layout: Navbar, Header, Footer, Sidebar
-  - components/sections: Hero, Features, About, Testimonials, CTA, Contact
-  - components/ui: Button, Card, Badge, Input, Loading, Alert, Modal
-  - hooks: useMediaQuery, useToggle, useLocalStorage, useDebounce
-  - lib: utils.ts, constants.ts
-  - styles: design-tokens.css, globals.css
-  - types: index.ts
-  - utils: formatters.ts, validators.ts, helpers.ts
-Config files: tsconfig.json, vite.config.ts, tailwind.config.ts, postcss.config.js, .gitignore, README.md
-
-CRITICAL IMPORT RESTRICTIONS:
-- You may ONLY import from "react", "react-dom", and relative paths (e.g., "./components/Button", "../hooks/useToggle")
-- DO NOT import any third-party libraries: NO lucide-react, framer-motion, @radix-ui, shadcn, clsx, tailwind-merge, or ANY other external packages
-- DO NOT generate or modify package.json - the preview system will handle dependencies automatically
-- Use inline SVG icons instead of icon libraries
-- Use plain CSS/Tailwind for animations instead of animation libraries
-- All code must be self-contained within the generated files`;
-        break;
-        
-      case 'vue':
-        systemPrompt = `${baseFormat}
-
-VUE 3 + VITE STRUCTURE (25-30 FILES):
-public/, src/ with components, composables, views, styles, router
-Config: package.json, vite.config.ts, tsconfig.json, tailwind.config.ts`;
-        break;
-        
-      default:
-        systemPrompt = baseFormat;
+    if (logError) {
+      console.error('[generate-code] Failed to log request:', logError);
     }
 
-    // Enhance prompt with quality requirements
-    let enhancedPrompt = `${prompt}
+    console.log(`[generate-code] Success! Generated ${Object.keys(files).length} files`);
 
-STRICT REQUIREMENTS:
-- Generate 30-35+ files for complete applications
-- Use [FILE:path] markers for EVERY file
-- Professional, modern UI design
-- Complete implementations (no TODOs)
-- Production-ready code quality`;
-
-    const messages = [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: enhancedPrompt }
-    ];
-
-    console.log('=== Code Generation Request ===');
-    console.log('Model:', model);
-    console.log('Code Type:', codeType);
-    console.log('Framework:', framework || 'none');
-    console.log('Prompt length:', prompt.length);
-    console.log('Expected files:', codeType === 'react' ? '30+ files' : 'multiple files');
-
-    let apiResponse: Response;
-    let reader: ReadableStreamDefaultReader<Uint8Array>;
-
-    if (model.startsWith('claude')) {
-      // Use Anthropic API
-      if (!ANTHROPIC_API_KEY) {
-        throw new Error('Anthropic API key not configured');
+    // Return the file map
+    return new Response(
+      JSON.stringify({ files } as GenerateCodeResponse),
+      {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
-
-      apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'x-api-key': ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: model,
-          max_tokens: 16000,
-          temperature: 0.7,
-          system: systemPrompt,
-          messages: [{ role: 'user', content: enhancedPrompt }],
-          stream: true,
-        }),
-      });
-    } else {
-      // Use OpenAI API
-      if (!OPENAI_API_KEY) {
-        throw new Error('OpenAI API key not configured');
-      }
-
-      apiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: model,
-          max_tokens: 16000,
-          messages: messages,
-          stream: true,
-        }),
-      });
-    }
-
-    if (!apiResponse.ok) {
-      const errorText = await apiResponse.text();
-      console.error('API error:', apiResponse.status, errorText);
-      
-      if (apiResponse.status === 429) {
-        return new Response(JSON.stringify({ 
-          error: 'Rate limit exceeded',
-          details: 'Too many requests. Please try again later.' 
-        }), {
-          status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      
-      return new Response(JSON.stringify({ 
-        error: 'Failed to generate code',
-        details: errorText 
-      }), {
+    );
+  } catch (error) {
+    console.error('[generate-code] Error:', error);
+    return new Response(
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      }),
+      {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    reader = apiResponse.body?.getReader()!;
-    if (!reader) {
-      throw new Error('Failed to get response reader');
-    }
-
-    const encoder = new TextEncoder();
-    const decoder = new TextDecoder();
-
-    let fullResponse = '';
-    let inputTokens = 0;
-    let outputTokens = 0;
-
-    const stream = new ReadableStream({
-      async start(controller) {
-        try {
-          let buffer = '';
-          
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split('\n');
-            buffer = lines.pop() || '';
-
-            for (const line of lines) {
-              if (!line.trim() || !line.startsWith('data: ')) continue;
-              
-              const data = line.slice(6).trim();
-              if (!data || data === '[DONE]') continue;
-              
-              try {
-                const parsed = JSON.parse(data);
-                
-                // Handle both OpenAI and Anthropic formats
-                let delta = '';
-                if (parsed.choices?.[0]?.delta?.content) {
-                  // OpenAI format
-                  delta = parsed.choices[0].delta.content;
-                } else if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
-                  // Anthropic format
-                  delta = parsed.delta.text;
-                }
-                
-                if (delta) {
-                  fullResponse += delta;
-                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: delta })}\n\n`));
-                }
-                
-                // Handle token usage from both providers
-                if (parsed.usage) {
-                  inputTokens = parsed.usage.prompt_tokens || parsed.usage.input_tokens || 0;
-                  outputTokens = parsed.usage.completion_tokens || parsed.usage.output_tokens || 0;
-                } else if (parsed.type === 'message_start' && parsed.message?.usage) {
-                  inputTokens = parsed.message.usage.input_tokens || 0;
-                } else if (parsed.type === 'message_delta' && parsed.usage) {
-                  outputTokens = parsed.usage.output_tokens || 0;
-                }
-              } catch (e) {
-                console.error('Parse error:', e);
-              }
-            }
-          }
-
-          // Estimate tokens if not provided
-          if (inputTokens === 0) {
-            inputTokens = Math.ceil(prompt.length / 4);
-          }
-          if (outputTokens === 0) {
-            outputTokens = Math.ceil(fullResponse.length / 4);
-          }
-
-          const totalTokens = inputTokens + outputTokens;
-
-          // Validate imports - check for invalid/null imports
-          const invalidImportPatterns = [
-            /from\s+['"]{2}/g,           // from ""
-            /from\s+null/g,              // from null
-            /import\s+null/g,            // import null
-            /from\s+['"]lucide-react/g,  // lucide-react
-            /from\s+['"]framer-motion/g, // framer-motion
-            /from\s+['"]@radix-ui/g,     // @radix-ui
-            /from\s+['"]@\/components\/ui/g, // shadcn ui
-            /from\s+['"]clsx/g,          // clsx
-            /from\s+['"]tailwind-merge/g // tailwind-merge
-          ];
-
-          let hasInvalidImport = false;
-          const invalidImportIssues: string[] = [];
-
-          for (const pattern of invalidImportPatterns) {
-            const matches = fullResponse.match(pattern);
-            if (matches) {
-              hasInvalidImport = true;
-              invalidImportIssues.push(`Found invalid import: ${matches[0]}`);
-            }
-          }
-
-          // If invalid imports found, return error
-          if (hasInvalidImport) {
-            console.error('Invalid imports detected:', invalidImportIssues);
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
-              error: 'Invalid imports in generated code',
-              details: invalidImportIssues.join(', ')
-            })}\n\n`));
-            controller.close();
-            return;
-          }
-
-          // Simplified validation
-          const qualityCheck = {
-            valid: fullResponse.includes('gradient') || fullResponse.includes('backdrop-blur') || fullResponse.includes('transition'),
-            suggestions: []
-          };
-          
-          const tokenValidation = {
-            valid: true,
-            issues: []
-          };
-          
-          // File count validation
-          const fileMatches = fullResponse.match(/\[FILE:/g);
-          const fileCount = fileMatches ? fileMatches.length : 0;
-          const expectedFiles = codeType === 'react' ? 30 : 20;
-          
-          console.log(`✅ Generation complete: ${fullResponse.length} characters, ${fileCount} files generated`);
-          
-          // File count validation and warning
-          if (fileCount < expectedFiles) {
-            console.warn(`⚠️ WARNING: Expected ${expectedFiles}+ files for ${codeType}, but only ${fileCount} were generated`);
-            
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
-              warning: `Incomplete generation: ${fileCount}/${expectedFiles} files. Consider regenerating.`,
-              fileCount,
-              expectedFiles
-            })}\n\n`));
-          }
-
-          // Deduct tokens
-          await supabase.rpc('check_and_deduct_tokens', {
-            _user_id: user.id,
-            _tokens_to_use: totalTokens
-          });
-
-          // Create or update conversation
-          let conversationId = conversation_id;
-          if (!conversationId) {
-            const { data: newConv } = await supabase
-              .from('conversations')
-              .insert({
-                user_id: user.id,
-                title: prompt.slice(0, 100),
-                mode: 'code_generation'
-              })
-              .select()
-              .single();
-            
-            conversationId = newConv?.id;
-          }
-
-          // Save messages
-          if (conversationId) {
-            await supabase.from('messages').insert([
-              {
-                conversation_id: conversationId,
-                role: 'user',
-                content: prompt,
-                token_est: inputTokens
-              },
-              {
-                conversation_id: conversationId,
-                role: 'assistant',
-                content: fullResponse,
-                token_est: outputTokens,
-                model_used: model,
-                metadata: { code_type: codeType, framework, file_count: fileCount }
-              }
-            ]);
-
-            await supabase
-              .from('conversations')
-              .update({ last_active: new Date().toISOString() })
-              .eq('id', conversationId);
-          }
-
-          // Log request
-          await supabase.from('requests_log').insert({
-            user_id: user.id,
-            tokens_est: totalTokens,
-            model: model
-          });
-
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
-            done: true, 
-            conversation_id: conversationId,
-            tokens: { input: inputTokens, output: outputTokens, total: totalTokens },
-            quality_check: {
-              valid: qualityCheck.valid,
-              suggestions: qualityCheck.suggestions
-            },
-            token_validation: {
-              valid: tokenValidation.valid,
-              issues: tokenValidation.issues
-            },
-            file_count: fileCount
-          })}\n\n`));
-
-          controller.close();
-        } catch (error) {
-          console.error('Stream error:', error);
-          controller.error(error);
-        }
       }
-    });
+    );
+  }
+});
 
     return new Response(stream, {
       headers: {
