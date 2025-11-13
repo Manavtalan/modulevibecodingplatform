@@ -56,29 +56,51 @@ function usesTypeScript(files: GenFile[]): boolean {
 }
 
 /**
+ * Sanitize dependencies to ensure all values are valid strings
+ */
+function sanitizeDependencies(raw: any): Record<string, string> {
+  const result: Record<string, string> = {};
+
+  if (raw && typeof raw === "object") {
+    for (const [name, version] of Object.entries(raw)) {
+      if (typeof version === "string" && version.trim().length > 0) {
+        result[name] = version.trim();
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
  * Extract dependencies from package.json
  */
 function extractDependencies(files: GenFile[]): Record<string, string> {
   const packageJson = files.find(f => f.path === 'package.json');
+  
+  // Default React dependencies
+  const defaultReactDeps: Record<string, string> = {
+    react: "^18.3.1",
+    "react-dom": "^18.3.1"
+  };
+
   if (!packageJson) {
-    // Default React dependencies
-    return {
-      react: "^18.3.1",
-      "react-dom": "^18.3.1"
-    };
+    return defaultReactDeps;
   }
 
   try {
     const pkg = JSON.parse(packageJson.content);
+    const deps = sanitizeDependencies(pkg.dependencies);
+    const devDeps = sanitizeDependencies(pkg.devDependencies);
+    
     return {
-      ...pkg.dependencies,
-      ...pkg.devDependencies
+      ...defaultReactDeps,
+      ...deps,
+      ...devDeps
     };
-  } catch {
-    return {
-      react: "^18.3.1",
-      "react-dom": "^18.3.1"
-    };
+  } catch (e) {
+    console.warn("Invalid package.json in preview adapter:", e);
+    return defaultReactDeps;
   }
 }
 
@@ -182,10 +204,15 @@ export function adaptFilesToSandpack(files: GenFile[]): PreviewAdapterResult {
   const dependencies = extractDependencies(files);
   const entry = findEntry(files, isReact);
 
+  // Final safety check - ensure dependencies are valid
+  const safeDependencies = sanitizeDependencies(dependencies);
+  
+  console.debug("Sandpack preview config:", { template, entry, dependencies: safeDependencies });
+
   return {
     template,
     files: sandpackFiles,
-    dependencies,
+    dependencies: safeDependencies,
     entry
   };
 }

@@ -31,9 +31,28 @@ export const SandpackPreview = ({
     if (files.length === 0) return null;
     
     try {
-      return adaptFilesToSandpack(files);
+      const result = adaptFilesToSandpack(files);
+      
+      // Validate the result
+      if (!result.template || !result.files || !result.dependencies) {
+        console.error('Invalid adapter result:', result);
+        return null;
+      }
+      
+      // Ensure dependencies is an object with string values only
+      const validDeps: Record<string, string> = {};
+      for (const [name, version] of Object.entries(result.dependencies)) {
+        if (typeof version === 'string' && version.trim().length > 0) {
+          validDeps[name] = version;
+        }
+      }
+      
+      return {
+        ...result,
+        dependencies: validDeps
+      };
     } catch (error) {
-      console.error('Error adapting files:', error);
+      console.error('Error adapting files for Sandpack:', error);
       return null;
     }
   }, [files, reloadKey]); // Include reloadKey to force re-adaptation
@@ -135,7 +154,7 @@ export const SandpackPreview = ({
             files={sandpackData.files}
             customSetup={{
               dependencies: sandpackData.dependencies,
-              entry: sandpackData.entry,
+              ...(sandpackData.entry ? { entry: sandpackData.entry } : {}),
             }}
             theme="dark"
           >
