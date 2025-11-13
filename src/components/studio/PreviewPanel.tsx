@@ -3,7 +3,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Copy, Download, ExternalLink, Smartphone, Tablet, Monitor, AlertCircle, RefreshCw, FileText } from "lucide-react";
+import { Copy, Download, Smartphone, Tablet, Monitor, AlertCircle, RefreshCw, FileText } from "lucide-react";
 import { CodeFile } from "@/pages/ModuleStudio";
 import { FilePlan } from "@/components/GenerationProgress";
 import { DiagnosticInfo } from "@/hooks/useCodeGeneration";
@@ -12,8 +12,10 @@ import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ReactPreview } from "./ReactPreview";
 import FileExplorer from "@/components/FileExplorer";
+import { SandpackPreview } from "@/preview/SandpackPreview";
+import { usePreviewFiles } from "@/preview/usePreviewFiles";
+import { getCurrentProject } from "@/stores/projectStore";
 
 interface PreviewPanelProps {
   files: CodeFile[];
@@ -29,8 +31,6 @@ interface PreviewPanelProps {
   onFileOpen?: (path: string) => void;
 }
 
-type DeviceMode = 'mobile' | 'tablet' | 'desktop';
-
 export const PreviewPanel = ({
   files,
   activeTab,
@@ -45,8 +45,21 @@ export const PreviewPanel = ({
   onFileOpen
 }: PreviewPanelProps) => {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  const [deviceMode, setDeviceMode] = useState<DeviceMode>('desktop');
   const [showDiagnostics, setShowDiagnostics] = useState(false);
+  
+  // Get current project ID
+  const project = getCurrentProject();
+  const projectId = project?.id || 'default';
+  
+  // Use the preview files hook for debouncing and device management
+  const { 
+    debouncedFiles, 
+    device, 
+    setDevice, 
+    isUpdating, 
+    forceReload,
+    reloadKey 
+  } = usePreviewFiles(projectId, files);
 
   // Auto-select first file when files change
   useEffect(() => {
@@ -75,14 +88,6 @@ export const PreviewPanel = ({
     toast({ title: "Project downloaded!" });
   };
 
-  const getDeviceClass = () => {
-    switch (deviceMode) {
-      case 'mobile': return 'max-w-[375px] mx-auto';
-      case 'tablet': return 'max-w-[768px] mx-auto';
-      default: return 'w-full';
-    }
-  };
-
   const getLanguage = (filename: string) => {
     if (filename.endsWith('.html')) return 'html';
     if (filename.endsWith('.css')) return 'css';
@@ -90,192 +95,6 @@ export const PreviewPanel = ({
     if (filename.endsWith('.jsx') || filename.endsWith('.tsx')) return 'jsx';
     if (filename.endsWith('.ts')) return 'typescript';
     return 'text';
-  };
-
-  const renderPreview = () => {
-    if (files.length === 0) {
-      // Show detailed error info if available
-      const hasParsingErrors = diagnosticInfo && diagnosticInfo.parsingErrors.length > 0;
-      
-      return (
-        <div className="flex items-center justify-center h-full p-8">
-          <Card className="max-w-2xl p-6 space-y-4">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="h-6 w-6 text-yellow-500 mt-1" />
-              <div className="space-y-3 flex-1">
-                <div>
-                  <h3 className="text-lg font-semibold">No Files Generated</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {hasParsingErrors 
-                      ? "The AI generated content, but we couldn't parse it into files."
-                      : "Ask Module to generate code to see a live preview."}
-                  </p>
-                </div>
-                
-                {hasParsingErrors && diagnosticInfo && (
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Parsing Issues Detected</AlertTitle>
-                    <AlertDescription className="mt-2 space-y-1">
-                      {diagnosticInfo.parsingErrors.map((err, idx) => (
-                        <div key={idx} className="text-xs">• {err}</div>
-                      ))}
-                    </AlertDescription>
-                  </Alert>
-                )}
-                
-                <div className="flex gap-2 pt-2">
-                  {rawOutputAvailable && (
-                    <Dialog open={showDiagnostics} onOpenChange={setShowDiagnostics}>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <FileText className="h-4 w-4 mr-2" />
-                          View Raw Output
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-4xl max-h-[80vh]">
-                        <DialogHeader>
-                          <DialogTitle>Raw AI Output & Diagnostics</DialogTitle>
-                          <DialogDescription>
-                            This is the raw content received from the AI. Use this to debug parsing issues.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <ScrollArea className="h-[60vh] rounded border p-4 bg-muted/30">
-                          {diagnosticInfo && (
-                            <div className="space-y-4 text-sm">
-                              <div>
-                                <strong>Extraction Method:</strong> {diagnosticInfo.extractionMethod}
-                              </div>
-                              <div>
-                                <strong>File Markers Found:</strong> {diagnosticInfo.fileMarkersFound}
-                              </div>
-                              <div>
-                                <strong>Code Blocks Found:</strong> {diagnosticInfo.codeBlocksFound}
-                              </div>
-                              <div>
-                                <strong>Raw Content ({diagnosticInfo.rawContent.length} bytes):</strong>
-                                <pre className="mt-2 p-3 bg-background rounded text-xs whitespace-pre-wrap break-all">
-                                  {diagnosticInfo.rawContent}
-                                </pre>
-                              </div>
-                            </div>
-                          )}
-                        </ScrollArea>
-                      </DialogContent>
-                    </Dialog>
-                  )}
-                  
-                  {onRegenerate && (
-                    <Button variant="default" size="sm" onClick={onRegenerate}>
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Regenerate with Stricter Prompt
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </Card>
-        </div>
-      );
-    }
-
-    // Check if it's a React app
-    const hasReactFiles = files.some(f => 
-      f.path.includes('.tsx') || 
-      f.path.includes('.jsx') || 
-      f.content.includes('import React') ||
-      f.content.includes('from "react"') ||
-      f.content.includes('from \'react\'')
-    );
-
-    if (hasReactFiles) {
-      return <ReactPreview files={files} deviceMode={deviceMode} />;
-    }
-    
-    // Check if it's a Vue app (Sandpack also supports Vue, but for now we'll show a message)
-    const hasVueFiles = files.some(f => 
-      f.path.includes('.vue') || 
-      f.content.includes('<script setup')
-    );
-
-    if (hasVueFiles) {
-      return (
-        <div className="flex items-center justify-center h-full p-8">
-          <Card className="max-w-2xl p-6 space-y-4">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="h-6 w-6 text-blue-500 mt-1" />
-              <div className="space-y-3 flex-1">
-                <div>
-                  <h3 className="text-lg font-semibold">Vue Application Generated</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Vue preview coming soon! Use the Code tab to view and download the generated files.
-                  </p>
-                </div>
-                
-                <div className="flex gap-2 pt-2">
-                  <Button variant="default" size="sm" onClick={() => onTabChange('code')}>
-                    <FileText className="h-4 w-4 mr-2" />
-                    View Code Files
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={handleDownloadProject}>
-                    <Download className="h-4 w-4 mr-2" />
-                    Download Project
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </div>
-      );
-    }
-
-    // Find HTML file for simple web pages
-    const htmlFile = files.find(f => f.path.endsWith('.html'));
-    if (!htmlFile) {
-      return (
-        <div className="flex items-center justify-center h-full p-8">
-          <Card className="max-w-lg p-6">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="h-6 w-6 text-yellow-500" />
-              <div>
-                <h3 className="font-semibold">No HTML File Found</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Switch to the Code tab to view the generated files.
-                </p>
-                <Button variant="outline" size="sm" className="mt-3" onClick={() => onTabChange('code')}>
-                  View Code Files
-                </Button>
-              </div>
-            </div>
-          </Card>
-        </div>
-      );
-    }
-
-    // Create a blob URL for the HTML preview
-    let htmlContent = htmlFile.content;
-
-    // Inject CSS and JS inline for preview
-    const cssFile = files.find(f => f.path.endsWith('.css'));
-    const jsFile = files.find(f => f.path.endsWith('.js'));
-
-    if (cssFile) {
-      htmlContent = htmlContent.replace('</head>', `<style>${cssFile.content}</style></head>`);
-    }
-    if (jsFile) {
-      htmlContent = htmlContent.replace('</body>', `<script>${jsFile.content}</script></body>`);
-    }
-
-    return (
-      <div className={`${getDeviceClass()} h-full transition-all duration-300`}>
-        <iframe
-          srcDoc={htmlContent}
-          className="w-full h-full border-0 bg-white rounded-lg shadow-sm"
-          title="Preview"
-          sandbox="allow-scripts"
-        />
-      </div>
-    );
   };
 
   return (
@@ -291,35 +110,48 @@ export const PreviewPanel = ({
 
         <div className="flex items-center gap-2">
           {activeTab === 'preview' && files.length > 0 && (
-            <div className="flex items-center gap-1 border rounded-md p-1">
-              <Button
-                variant={deviceMode === 'mobile' ? 'secondary' : 'ghost'}
-                size="icon"
-                className="h-6 w-6"
-                onClick={() => setDeviceMode('mobile')}
+            <>
+              <div className="flex items-center gap-1 border rounded-md p-1">
+                <Button
+                  variant={device === 'mobile' ? 'secondary' : 'ghost'}
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={() => setDevice('mobile')}
+                  title="Mobile view"
+                >
+                  <Smartphone className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant={device === 'tablet' ? 'secondary' : 'ghost'}
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={() => setDevice('tablet')}
+                  title="Tablet view"
+                >
+                  <Tablet className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant={device === 'desktop' ? 'secondary' : 'ghost'}
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={() => setDevice('desktop')}
+                  title="Desktop view"
+                >
+                  <Monitor className="h-3 w-3" />
+                </Button>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={forceReload}
+                title="Reload preview"
               >
-                <Smartphone className="h-3 w-3" />
+                <RefreshCw className="h-4 w-4" />
               </Button>
-              <Button
-                variant={deviceMode === 'tablet' ? 'secondary' : 'ghost'}
-                size="icon"
-                className="h-6 w-6"
-                onClick={() => setDeviceMode('tablet')}
-              >
-                <Tablet className="h-3 w-3" />
-              </Button>
-              <Button
-                variant={deviceMode === 'desktop' ? 'secondary' : 'ghost'}
-                size="icon"
-                className="h-6 w-6"
-                onClick={() => setDeviceMode('desktop')}
-              >
-                <Monitor className="h-3 w-3" />
-              </Button>
-            </div>
+            </>
           )}
           {files.length > 0 && (
-            <Button variant="ghost" size="icon" onClick={handleDownloadProject}>
+            <Button variant="ghost" size="icon" onClick={handleDownloadProject} title="Download project">
               <Download className="h-4 w-4" />
             </Button>
           )}
@@ -329,8 +161,13 @@ export const PreviewPanel = ({
       {/* Content Area */}
       <div className="flex-1 overflow-hidden">
         {activeTab === 'preview' ? (
-          <div className="h-full overflow-auto bg-muted/30 p-4">
-            {renderPreview()}
+          <div className="h-full overflow-hidden">
+            <SandpackPreview 
+              files={debouncedFiles}
+              device={device}
+              isUpdating={isUpdating}
+              reloadKey={reloadKey}
+            />
           </div>
         ) : (
           <div className="flex h-full">
