@@ -157,7 +157,7 @@ export const SandpackPreview = ({
       )}
 
       {/* Preview area */}
-      <div className="flex-1 flex items-center justify-center bg-muted/30 p-4">
+      <div className={`flex-1 flex bg-muted/30 ${device === 'desktop' ? '' : 'items-center justify-center p-4'}`}>
         <div
           key={reloadKey} // Force remount on reload
           style={{
@@ -166,7 +166,7 @@ export const SandpackPreview = ({
             maxWidth: '100%',
             maxHeight: '100%',
           }}
-          className="transition-all duration-300 rounded-lg overflow-hidden shadow-lg"
+          className={`transition-all duration-300 overflow-hidden ${device === 'desktop' ? '' : 'rounded-lg shadow-lg'}`}
         >
           <SandpackProvider
             template="react-ts"
