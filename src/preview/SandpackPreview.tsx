@@ -7,7 +7,7 @@ import {
 } from '@codesandbox/sandpack-react';
 import { Card } from '@/components/ui/card';
 import { AlertCircle, Loader2 } from 'lucide-react';
-import { GenFile, adaptFilesToSandpack } from './previewAdapter';
+import { GenFile, adaptFilesToSandpack, FIXED_SANDPACK_DEPS } from './previewAdapter';
 import { DeviceMode } from './usePreviewFiles';
 
 interface SandpackPreviewProps {
@@ -18,7 +18,14 @@ interface SandpackPreviewProps {
 }
 
 /**
- * Sandpack-based preview component that renders React/TS and static projects
+ * Sandpack-based preview component that renders React/TS projects
+ * 
+ * ARCHITECTURE:
+ * - Always uses fixed Vite + React + TypeScript + Tailwind template
+ * - AI files ONLY override src/App.tsx and src/components/*
+ * - Dependencies are FIXED (never from AI)
+ * - Validation runs BEFORE merging into template
+ * - Broken code shows friendly error, never crashes Sandpack
  */
 export const SandpackPreview = ({ 
   files, 
@@ -26,16 +33,20 @@ export const SandpackPreview = ({
   isUpdating,
   reloadKey 
 }: SandpackPreviewProps) => {
-  // Adapt files to Sandpack format
+  // Adapt and validate AI files, merge with fixed template
   const sandpackData = useMemo(() => {
     if (files.length === 0) return null;
     
     try {
+      // This function:
+      // 1. Validates AI-generated files (validateGeneratedFiles)
+      // 2. Merges with BASE_TEMPLATE_FILES (buildSandpackFiles)
+      // 3. Returns { files, validation } - template and deps are FIXED
       const result = adaptFilesToSandpack(files);
       
-      // Validate the result
-      if (!result.template || !result.files || !result.dependencies) {
-        console.error('Invalid adapter result:', result);
+      // Validate the result structure
+      if (!result.files) {
+        console.error('Invalid adapter result: missing files', result);
         return null;
       }
       
@@ -158,10 +169,10 @@ export const SandpackPreview = ({
           className="transition-all duration-300 rounded-lg overflow-hidden shadow-lg"
         >
           <SandpackProvider
-            template={sandpackData.template}
+            template="react-ts"
             files={sandpackData.files}
             customSetup={{
-              dependencies: sandpackData.dependencies,
+              dependencies: FIXED_SANDPACK_DEPS,
             }}
             theme="dark"
           >
