@@ -107,6 +107,15 @@ export const PreviewPanel = ({
       return;
     }
 
+    // Remove import statements and prepare code
+    const cleanCode = (code: string) => {
+      return code
+        .replace(/import\s+.*?from\s+['"]react['"];?\n?/g, '')
+        .replace(/import\s+.*?from\s+['"].*?['"];?\n?/g, '')
+        .replace(/export\s+default\s+/g, '')
+        .replace(/export\s+/g, '');
+    };
+
     // Build the standalone HTML
     const html = `<!DOCTYPE html>
 <html lang="en">
@@ -126,12 +135,11 @@ export const PreviewPanel = ({
 <body>
   <div id="root"></div>
   <script type="text/babel">
-    const { useState, useEffect, useCallback, useMemo, useRef } = React;
+    const { useState, useEffect, useCallback, useMemo, useRef, Fragment } = React;
     
-    ${componentFiles.map(f => `// ${f.path}\n${f.content}`).join('\n\n')}
+    ${componentFiles.map(f => cleanCode(f.content)).join('\n\n')}
     
-    // ${appFile.path}
-    ${appFile.content}
+    ${cleanCode(appFile.content)}
     
     // Render the app
     const root = ReactDOM.createRoot(document.getElementById('root'));
