@@ -223,8 +223,8 @@ export const PreviewPanel = ({
       {/* Content Area */}
       <div className="flex-1 overflow-hidden">
         {activeTab === 'preview' ? (
-          <div className="h-full overflow-hidden">
-            <SandpackPreview 
+          <div className="h-full w-full overflow-hidden">
+            <SandpackPreview
               files={debouncedFiles}
               device={device}
               isUpdating={isUpdating}
