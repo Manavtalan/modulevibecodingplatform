@@ -174,6 +174,11 @@ export const SandpackPreview = ({
             customSetup={{
               dependencies: FIXED_SANDPACK_DEPS,
             }}
+            options={{
+              externalResources: [
+                "https://cdn.tailwindcss.com"
+              ]
+            }}
             theme="dark"
           >
             <SandpackLayout>
