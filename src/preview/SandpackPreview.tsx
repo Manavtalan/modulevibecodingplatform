@@ -136,10 +136,10 @@ export const SandpackPreview = ({
   );
 
   return (
-    <div className="h-full w-full flex flex-col">
+    <div className="h-full w-full flex flex-col overflow-hidden">
       {/* Server framework warning */}
       {hasServerFramework && (
-        <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-2">
+        <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-2 flex-shrink-0">
           <p className="text-xs text-yellow-600 dark:text-yellow-400">
             ⚠️ This project uses server features. Full server preview isn't supported in browser-only preview yet. Only client-side rendering is shown.
           </p>
@@ -148,7 +148,7 @@ export const SandpackPreview = ({
 
       {/* Loading indicator */}
       {isUpdating && (
-        <div className="bg-blue-500/10 border-b border-blue-500/20 px-4 py-2">
+        <div className="bg-blue-500/10 border-b border-blue-500/20 px-4 py-2 flex-shrink-0">
           <div className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400">
             <Loader2 className="h-3 w-3 animate-spin" />
             <span>Updating preview...</span>
@@ -157,15 +157,15 @@ export const SandpackPreview = ({
       )}
 
       {/* Preview area */}
-      <div className={`flex-1 flex bg-muted/30 ${device === 'desktop' ? '' : 'items-center justify-center p-4'}`}>
+      <div className={`flex-1 min-h-0 flex bg-muted/30 ${device === 'desktop' ? '' : 'items-center justify-center p-4'}`}>
         <div
           key={reloadKey} // Force remount on reload
           style={{
             width: dimensions.width,
-            height: '100%',
+            height: device === 'desktop' ? '100%' : dimensions.height,
             maxWidth: '100%',
           }}
-          className={`transition-all duration-300 overflow-hidden ${device === 'desktop' ? '' : 'rounded-lg shadow-lg'}`}
+          className={`h-full transition-all duration-300 overflow-hidden ${device === 'desktop' ? 'w-full' : 'rounded-lg shadow-lg'}`}
         >
           <SandpackProvider
             template="react-ts"
