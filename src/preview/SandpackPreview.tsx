@@ -162,9 +162,8 @@ export const SandpackPreview = ({
           key={reloadKey} // Force remount on reload
           style={{
             width: dimensions.width,
-            height: dimensions.height,
+            height: '100%',
             maxWidth: '100%',
-            maxHeight: '100%',
           }}
           className={`transition-all duration-300 overflow-hidden ${device === 'desktop' ? '' : 'rounded-lg shadow-lg'}`}
         >
@@ -181,26 +180,12 @@ export const SandpackPreview = ({
             }}
             theme="dark"
           >
-            <SandpackLayout>
-              <div className="flex flex-col h-full w-full">
-                {/* Preview */}
-                <div className="flex-1 bg-white">
-                  <SandpackPreviewComponent
-                    showOpenInCodeSandbox={false}
-                    showRefreshButton={false}
-                    style={{ height: '100%' }}
-                  />
-                </div>
-                
-                {/* Console */}
-                <div className="h-32 border-t border-border bg-background">
-                  <SandpackConsole
-                    showHeader={false}
-                    showSyntaxError
-                    style={{ height: '100%' }}
-                  />
-                </div>
-              </div>
+            <SandpackLayout style={{ height: '100%' }}>
+              <SandpackPreviewComponent
+                showOpenInCodeSandbox={false}
+                showRefreshButton={false}
+                style={{ height: '100%', width: '100%' }}
+              />
             </SandpackLayout>
           </SandpackProvider>
         </div>
