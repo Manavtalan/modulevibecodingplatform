@@ -3,7 +3,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Copy, Download, Smartphone, Tablet, Monitor, AlertCircle, RefreshCw, FileText } from "lucide-react";
+import { Copy, Download, Smartphone, Tablet, Monitor, AlertCircle, RefreshCw, FileText, ExternalLink } from "lucide-react";
 import { CodeFile } from "@/pages/ModuleStudio";
 import { FilePlan } from "@/components/GenerationProgress";
 import { DiagnosticInfo } from "@/hooks/useCodeGeneration";
@@ -97,6 +97,60 @@ export const PreviewPanel = ({
     return 'text';
   };
 
+  const handleOpenInNewTab = () => {
+    // Create a standalone HTML file with all the code
+    const appFile = files.find(f => f.path === 'src/App.tsx');
+    const componentFiles = files.filter(f => f.path.startsWith('src/components/'));
+    
+    if (!appFile) {
+      toast({ title: "No app file found", variant: "destructive" });
+      return;
+    }
+
+    // Build the standalone HTML
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Module Preview</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body { margin: 0; padding: 0; }
+    #root { width: 100%; min-height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useCallback, useMemo, useRef } = React;
+    
+    ${componentFiles.map(f => `// ${f.path}\n${f.content}`).join('\n\n')}
+    
+    // ${appFile.path}
+    ${appFile.content}
+    
+    // Render the app
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>`;
+
+    // Create blob and open in new tab
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    
+    // Clean up after a delay
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    
+    toast({ title: "Opened in new tab!" });
+  };
+
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Tab Header */}
@@ -147,6 +201,14 @@ export const PreviewPanel = ({
                 title="Reload preview"
               >
                 <RefreshCw className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleOpenInNewTab}
+                title="Open in new tab"
+              >
+                <ExternalLink className="h-4 w-4" />
               </Button>
             </>
           )}
